@@ -19,7 +19,7 @@ func NewUserController() *UserController {
 	}
 }
 
-func (r *UserController) Show(ctx contractshttp.Context) {
+func (r *UserController) Index(ctx contractshttp.Context) {
 	// Create user
 	if err := facades.Orm.Query().Create(&models.User{
 		Name:   "Goravel",

@@ -10,13 +10,15 @@ The framework style is consistent with [Laravel](https://github.com/laravel/lara
 
 Welcome to star, PR and issues！
 
-## Getting started
+## Getting Started
 
-```
-go run . 
-// or
-air
-```
+### Start Service
+
+`go run .` or `air`
+
+### DB Operation
+
+`app/http/controllers/user_controller.go::Index`
 
 ## Documentation
 
