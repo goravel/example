@@ -16,9 +16,17 @@ Welcome to star, PR and issues！
 
 `go run .` or `air`
 
-### DB Operation
+[About air]: https://www.goravel.dev/getting-started/installation.html#live-reload
+
+### DB
 
 `app/http/controllers/user_controller.go::Index`
+
+### Websocket
+
+`app/http/controllers/websocket_controller.go::Server`
+
+About distributed Websocket can refer to the article: https://learnku.com/articles/39701
 
 ## Documentation
 

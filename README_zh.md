@@ -16,9 +16,17 @@ Goravel 是一个功能完备、具有良好扩展能力的 Web 应用程序框�
 
 `go run .` or `air`
 
-### DB 操作
+[关于 air]: https://www.goravel.dev/zh/getting-started/installation.html#热更新
+
+### DB
 
 `app/http/controllers/user_controller.go::Index`
+
+### Websocket
+
+`app/http/controllers/websocket_controller.go::Server`
+
+关于分布式 Websocket 可参考文章：https://learnku.com/articles/39701
 
 ## 文档
 

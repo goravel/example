@@ -14,6 +14,10 @@ func Web() {
 		})
 	})
 
-	userController := controllers.NewUserController()
-	facades.Route.Get("/users", userController.Index)
+	dbController := controllers.NewDBController()
+	facades.Route.Get("/db", dbController.Index)
+
+	// Websocket
+	websocketController := controllers.NewWebsocketController()
+	facades.Route.Get("/ws", websocketController.Server)
 }
