@@ -28,6 +28,10 @@ Welcome to star, PR and issues！
 
 About distributed Websocket can refer to the article: https://learnku.com/articles/39701
 
+### Validation
+
+`app/http/controllers/validation_controller.go::Server`
+
 ## Documentation
 
 Online documentation [https://www.goravel.dev](https://www.goravel.dev)

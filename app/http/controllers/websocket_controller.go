@@ -12,17 +12,15 @@ import (
 1. Install package
 go get -u github.com/gorilla/websocket
 
-2. Generate Controller
+2. Add route to `/route/web.go`
 
-3. Add route to `/route/web.go`
-
-4. Run Server
+3. Run Server
 air
 
-5. Run Client
-cd websocket_client && go run .
+4. Run Client
+cd /packages/websocket_client && go run .
 
-6. Result
+5. Result
 Server got `ping` and Client got `pong`
  ********************************/
 

@@ -14,14 +14,12 @@ import (
 go run . artisan make:migration User
 go run . artisan migrate
 
-2. Generate Controller
+2. Add route to `/route/web.go`
 
-3. Add route to `/route/web.go`
-
-4. Run Server
+3. Run Server
 air
 
-5. Visit 127.0.0.1:3000/db
+4. Visit 127.0.0.1:3000/db
  ********************************/
 
 type DBController struct {
