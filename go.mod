@@ -3,7 +3,8 @@ module goravel
 go 1.18
 
 require (
-	github.com/goravel/framework v1.9.0
+	github.com/goravel/framework v1.9.1
+	github.com/gorilla/websocket v1.5.0
 	google.golang.org/grpc v1.50.1
 )
 
@@ -80,7 +81,6 @@ require (
 	github.com/gookit/validate v1.4.5 // indirect
 	github.com/goravel/file-rotatelogs v0.0.0-20211215053220-2ab31dd9575c // indirect
 	github.com/goravel/file-rotatelogs/v2 v2.4.1 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
