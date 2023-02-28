@@ -20,17 +20,21 @@ Welcome to star, PR and issues！
 
 ### DB
 
-`app/http/controllers/user_controller.go::Index`
+`app/http/controllers/user_controller.go`
 
 ### Websocket
 
-`app/http/controllers/websocket_controller.go::Server`
+`app/http/controllers/websocket_controller.go`
 
 About distributed Websocket can refer to the article: https://learnku.com/articles/39701
 
 ### Validation
 
-`app/http/controllers/validation_controller.go::Server`
+`app/http/controllers/validation_controller.go`
+
+### JWT Middleware
+
+`app/http/controllers/jwt_controller.go`
 
 ## Documentation
 

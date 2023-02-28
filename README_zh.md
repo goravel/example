@@ -20,17 +20,21 @@ Goravel 是一个功能完备、具有良好扩展能力的 Web 应用程序框�
 
 ### DB
 
-`app/http/controllers/user_controller.go::Index`
+`app/http/controllers/user_controller.go`
 
 ### Websocket
 
-`app/http/controllers/websocket_controller.go::Server`
+`app/http/controllers/websocket_controller.go`
 
 关于分布式 Websocket 可参考文章：https://learnku.com/articles/39701
 
 ### Validation
 
-`app/http/controllers/validation_controller.go::Server`
+`app/http/controllers/validation_controller.go`
+
+### JWT Middleware
+
+`app/http/controllers/jwt_controller.go`
 
 ## 文档
 
@@ -43,10 +47,6 @@ Goravel 是一个功能完备、具有良好扩展能力的 Web 应用程序框�
 微信入群，请备注 Goravel
 
 <p align="left"><img src="https://www.goravel.dev/wechat.jpg" width="200"></p>
-
-## 赞赏
-
-<p align="left"><img src="https://www.goravel.dev/reward.jpg" width="200"></p>
 
 ## 开源许可
 
