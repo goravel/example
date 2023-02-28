@@ -32,6 +32,10 @@ About distributed Websocket can refer to the article: https://learnku.com/articl
 
 `app/http/controllers/validation_controller.go::Server`
 
+### JWT Middleware
+
+
+
 ## Documentation
 
 Online documentation [https://www.goravel.dev](https://www.goravel.dev)

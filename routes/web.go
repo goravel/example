@@ -5,6 +5,7 @@ import (
 	"github.com/goravel/framework/facades"
 
 	"goravel/app/http/controllers"
+	"goravel/app/http/middleware"
 )
 
 func Web() {
@@ -27,4 +28,9 @@ func Web() {
 	facades.Route.Post("/validation/json", validationController.Json)
 	facades.Route.Post("/validation/request", validationController.Request)
 	facades.Route.Post("/validation/form", validationController.Form)
+
+	// JWT
+	jwtController := controllers.NewJwtController()
+	facades.Route.Get("/jwt/login", jwtController.Login)
+	facades.Route.Middleware(middleware.Jwt()).Get("/jwt", jwtController.Index)
 }
