@@ -20,21 +20,23 @@ Welcome to star, PR and issues！
 
 ### DB
 
-`app/http/controllers/user_controller.go`
+[app/http/controllers/db_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/db_controller.go)
 
 ### Websocket
 
-`app/http/controllers/websocket_controller.go`
-
-About distributed Websocket can refer to the article: https://learnku.com/articles/39701
+[app/http/controllers/websocket_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/websocket_controller.go)
 
 ### Validation
 
-`app/http/controllers/validation_controller.go`
+[app/http/controllers/validation_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/validation_controller.go)
 
 ### JWT Middleware
 
-`app/http/controllers/jwt_controller.go`
+[app/http/controllers/jwt_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/jwt_controller.go)
+
+### Testing
+
+[tests/services/user_test.go](https://github.com/goravel/example/blob/master/tests/services/user_test.go)
 
 ## Documentation
 

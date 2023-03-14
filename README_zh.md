@@ -20,21 +20,29 @@ Goravel 是一个功能完备、具有良好扩展能力的 Web 应用程序框�
 
 ### DB
 
-`app/http/controllers/user_controller.go`
+[app/http/controllers/db_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/db_controller.go)
 
 ### Websocket
 
-`app/http/controllers/websocket_controller.go`
+[app/http/controllers/websocket_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/websocket_controller.go)
 
 关于分布式 Websocket 可参考文章：https://learnku.com/articles/39701
 
 ### Validation
 
-`app/http/controllers/validation_controller.go`
+[app/http/controllers/validation_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/validation_controller.go)
 
 ### JWT Middleware
 
-`app/http/controllers/jwt_controller.go`
+[app/http/controllers/jwt_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/jwt_controller.go)
+
+### Testing With Mock
+
+[app/services/user_test.go](https://github.com/goravel/example/blob/master/app/services/user_test.go)
+
+### Testing With Configuration
+
+[tests/services/user_test.go](https://github.com/goravel/example/blob/master/tests/services/user_test.go)
 
 ## 文档
 
