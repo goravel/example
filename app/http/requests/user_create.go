@@ -13,20 +13,20 @@ func (r *UserCreate) Authorize(ctx http.Context) error {
 	return nil
 }
 
-func (r *UserCreate) Rules() map[string]string {
+func (r *UserCreate) Rules(ctx http.Context) map[string]string {
 	return map[string]string{
 		"name": "required",
 	}
 }
 
-func (r *UserCreate) Messages() map[string]string {
+func (r *UserCreate) Messages(ctx http.Context) map[string]string {
 	return map[string]string{}
 }
 
-func (r *UserCreate) Attributes() map[string]string {
+func (r *UserCreate) Attributes(ctx http.Context) map[string]string {
 	return map[string]string{}
 }
 
-func (r *UserCreate) PrepareForValidation(data validation.Data) error {
+func (r *UserCreate) PrepareForValidation(ctx http.Context, data validation.Data) error {
 	return nil
 }

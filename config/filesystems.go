@@ -50,6 +50,16 @@ func init() {
 				"bucket": config.Env("TENCENT_BUCKET"),
 				"url":    config.Env("TENCENT_URL"),
 			},
+			"minio": map[string]any{
+				"driver":   "minio",
+				"key":      config.Env("MINIO_ACCESS_KEY_ID"),
+				"secret":   config.Env("MINIO_ACCESS_KEY_SECRET"),
+				"region":   config.Env("MINIO_REGION"),
+				"bucket":   config.Env("MINIO_BUCKET"),
+				"url":      config.Env("MINIO_URL"),
+				"endpoint": config.Env("MINIO_ENDPOINT"),
+				"ssl":      config.Env("MINIO_SSL", false),
+			},
 		},
 	})
 }

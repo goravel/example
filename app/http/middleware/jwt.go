@@ -16,7 +16,7 @@ func Jwt() contractshttp.Middleware {
 			ctx.Request().AbortWithStatus(http.StatusUnauthorized)
 		}
 
-		if err := facades.Auth.Parse(ctx, token); err != nil {
+		if _, err := facades.Auth.Parse(ctx, token); err != nil {
 			if errors.Is(err, auth.ErrorTokenExpired) {
 				token, err = facades.Auth.Refresh(ctx)
 				if err != nil {
