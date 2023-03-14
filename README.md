@@ -34,7 +34,11 @@ Welcome to star, PR and issues！
 
 [app/http/controllers/jwt_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/jwt_controller.go)
 
-### Testing
+### Testing With Mock
+
+[app/services/user_test.go](https://github.com/goravel/example/blob/master/app/services/user_test.go)
+
+### Testing With Configuration
 
 [tests/services/user_test.go](https://github.com/goravel/example/blob/master/tests/services/user_test.go)
 
