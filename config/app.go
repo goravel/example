@@ -59,12 +59,6 @@ func init() {
 		// will not be safe. Please do this before deploying an application!
 		"key": config.Env("APP_KEY", ""),
 
-		// Application URL
-		"url": config.Env("APP_URL", "http://localhost"),
-
-		// Application host, http server listening address.
-		"host": config.Env("APP_HOST", "127.0.0.1:3000"),
-
 		// Autoload service providers
 		//
 		// The service providers listed here will be automatically loaded on the
