@@ -22,11 +22,13 @@ func Jwt() contractshttp.Middleware {
 				if err != nil {
 					// Refresh time exceeded
 					ctx.Request().AbortWithStatus(http.StatusUnauthorized)
+					return
 				}
 
 				token = "Bearer " + token
 			} else {
 				ctx.Request().AbortWithStatus(http.StatusUnauthorized)
+				return
 			}
 		}
 
