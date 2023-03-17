@@ -37,6 +37,7 @@ func Jwt() contractshttp.Middleware {
 		//var user models.User
 		//if err := facades.Auth.User(ctx, &user); err != nil {
 		//	ctx.Request().AbortWithStatus(http.StatusUnauthorized)
+		//  return
 		//}
 		//ctx.WithValue("user", user)
 
