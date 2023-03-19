@@ -42,6 +42,10 @@ Welcome to star, PR and issues！
 
 [tests/services/user_test.go](https://github.com/goravel/example/blob/master/tests/services/user_test.go)
 
+### GRPC
+
+[app/grpc/controllers/user_controller.go](https://github.com/goravel/example/blob/master/app/grpc/controllers/user_controller.go)
+
 ## Documentation
 
 Online documentation [https://www.goravel.dev](https://www.goravel.dev)
