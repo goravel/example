@@ -10,16 +10,24 @@ import (
 )
 
 /*********************************
-1. Generate DB
+1. Configure DB in .env file
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=goravel
+DB_USERNAME=root
+DB_PASSWORD=
+
+2. Generate DB
 go run . artisan make:migration User
 go run . artisan migrate
 
-2. Add route to `/route/web.go`
+3. Add route to `/route/web.go`
 
-3. Run Server
+4. Run Server
 air
 
-4. Visit 127.0.0.1:3000/db
+5. Visit 127.0.0.1:3000/db
  ********************************/
 
 type DBController struct {

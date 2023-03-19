@@ -8,18 +8,21 @@ import (
 )
 
 /*********************************
-1. Generate Middleware
+1. Generate JWT secret
+go run . artisan jwt:secret
+
+2. Generate Middleware
 go run . artisan make:middleware Jwt
 
-2. Add route to `/route/web.go`
+3. Add route to `/route/web.go`
 
-3. Run Server
+4. Run Server
 air
 
-4. Visit 127.0.0.1:3000/jwt/login to get token
+5. Visit 127.0.0.1:3000/jwt/login to get token
 curl --location '127.0.0.1:3000/jwt/login'
 
-5. Visit 127.0.0.1:3000/jwt to check token
+6. Visit 127.0.0.1:3000/jwt to check token
 curl --location '127.0.0.1:3000/jwt' \
 --header 'Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXkiOiIxIiwic3ViIjoidXNlciIsImV4cCI6MTY3NzU5OTIzMiwiaWF0IjoxNjc3NTk1NjMyfQ.3NY3SNvFE_2vHJAuBH1QwhPyTA_CtiV8y4w8nC1J5eM'
  ********************************/
