@@ -33,4 +33,5 @@ func Web() {
 	jwtController := controllers.NewJwtController()
 	facades.Route.Get("/jwt/login", jwtController.Login)
 	facades.Route.Middleware(middleware.Jwt()).Get("/jwt", jwtController.Index)
+
 }
