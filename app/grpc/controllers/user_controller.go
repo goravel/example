@@ -15,12 +15,15 @@ import (
 )
 
 /*********************************
-This is a example for gRPC. There are a server and a client.
+gRPC Example
+
+This is an example for gRPC. There are a server and a client.
 This repository is the Server side, it provides get user by token function.
 The repository of Client is `git@github.com:goravel/example-client.git`,
 The Client can get user by token from the server.
 You need initialize your JWT, DB first in this repository, you can find the step in
 `app/http/controllers/jwt_controller.go` and `app/http/controllers/db_controller.go`
+[gRPC Document](https://www.goravel.dev/the-basics/grpc.html)
 
 1. Configure gRPC host in the .env file
 GRPC_HOST=127.0.0.1
@@ -86,6 +89,8 @@ curl --location --request GET 'http://127.0.0.1:3010/user' \
 ```
 
 16. We succeed get user by gRPC from Server in Client
+
+17. There is a server interceptor example about opentracing, you can find it in `app/grpc/interceptors/opentracing_server.go`
  ********************************/
 
 type UserController struct {
