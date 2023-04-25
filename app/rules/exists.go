@@ -6,7 +6,7 @@ import (
 )
 
 /**
- * exists 验证一个值在某个表中的字段中存在，相比较于Laravel，支持同时判断多个字段
+ * exists 验证一个值在某个表中的字段中存在，相较于Laravel，支持同时判断多个字段
  * exists verify a value exists in a table field, compared to Laravel, support judging multiple fields at the same time
  * 用法：exists:表名称,字段名称,字段名称,字段名称
  * Usage: exists:table_name,field_name,field_name,field_name

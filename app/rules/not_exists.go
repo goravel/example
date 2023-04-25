@@ -6,7 +6,7 @@ import (
 )
 
 /**
- * not_exists 验证一个值在某个表中的字段中不存在，相比较于Laravel，支持同时判断多个字段
+ * not_exists 验证一个值在某个表中的字段中不存在，相较于Laravel，支持同时判断多个字段
  * not_exists verify a value does not exist in a table field, compared to Laravel, support judging multiple fields at the same time
  * 用法：not_exists:表名称,字段名称,字段名称,字段名称
  * Usage: not_exists:table_name,field_name,field_name,field_name
