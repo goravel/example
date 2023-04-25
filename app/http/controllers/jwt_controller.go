@@ -1,9 +1,7 @@
 package controllers
 
 import (
-	"net/http"
-
-	contractshttp "github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
 )
 
@@ -37,7 +35,7 @@ func NewJwtController() *JwtController {
 	}
 }
 
-func (r *JwtController) Login(ctx contractshttp.Context) {
+func (r *JwtController) Login(ctx http.Context) {
 	token, err := facades.Auth.LoginUsingID(ctx, 1)
 	if err != nil {
 		ctx.Response().String(http.StatusInternalServerError, err.Error())
@@ -45,13 +43,13 @@ func (r *JwtController) Login(ctx contractshttp.Context) {
 		return
 	}
 
-	ctx.Response().Success().Json(contractshttp.Json{
+	ctx.Response().Success().Json(http.Json{
 		"token": token,
 	})
 }
 
-func (r *JwtController) Index(ctx contractshttp.Context) {
-	ctx.Response().Success().Json(contractshttp.Json{
+func (r *JwtController) Index(ctx http.Context) {
+	ctx.Response().Success().Json(http.Json{
 		"token": ctx.Request().Header("Authorization", ""),
 	})
 }
