@@ -51,5 +51,5 @@ func (receiver *NotExists) Passes(_ validation.Data, val any, options ...any) bo
 
 // Message Get the validation error message.
 func (receiver *NotExists) Message() string {
-	return "记录已存在"
+	return "record already exists"
 }
