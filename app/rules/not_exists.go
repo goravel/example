@@ -29,7 +29,6 @@ func (receiver *NotExists) Passes(_ validation.Data, val any, options ...any) bo
 	fieldName := options[1].(string)
 	requestValue := val.(string)
 
-	// Check if it is empty
 	if len(requestValue) == 0 {
 		return false
 	}
