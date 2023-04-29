@@ -64,6 +64,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
+<<<<<<< HEAD
 	github.com/gin-gonic/gin v1.9.0 // indirect
 	github.com/glebarez/go-sqlite v1.21.1 // indirect
 	github.com/glebarez/sqlite v1.8.0 // indirect
@@ -71,6 +72,11 @@ require (
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/spec v0.20.9 // indirect
 	github.com/go-openapi/swag v0.22.3 // indirect
+=======
+	github.com/gin-gonic/gin v1.8.2 // indirect
+	github.com/glebarez/go-sqlite v1.21.1 // indirect
+	github.com/glebarez/sqlite v1.8.0 // indirect
+>>>>>>> e059852 (Upgrade v1.11)
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.11.2 // indirect
