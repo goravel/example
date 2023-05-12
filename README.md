@@ -46,6 +46,10 @@ Welcome to star, PR and issues！
 
 [app/grpc/controllers/user_controller.go](https://github.com/goravel/example/blob/master/app/grpc/controllers/user_controller.go)
 
+### Swagger
+
+[app/http/controllers/swagger_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/swagger_controller.go)
+
 ## Documentation
 
 Online documentation [https://www.goravel.dev](https://www.goravel.dev)

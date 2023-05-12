@@ -49,6 +49,10 @@ Laravel！
 
 [app/grpc/controllers/user_controller.go](https://github.com/goravel/example/blob/master/app/grpc/controllers/user_controller.go)
 
+### Swagger
+
+[app/http/controllers/swagger_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/swagger_controller.go)
+
 ## 文档
 
 在线文档 [https://www.goravel.dev/zh](https://www.goravel.dev/zh)
