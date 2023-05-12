@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
+	httpswagger "github.com/swaggo/http-swagger"
 
 	"goravel/app/http/controllers"
 	"goravel/app/http/middleware"
@@ -33,4 +34,13 @@ func Web() {
 	jwtController := controllers.NewJwtController()
 	facades.Route.Get("/jwt/login", jwtController.Login)
 	facades.Route.Middleware(middleware.Jwt()).Get("/jwt", jwtController.Index)
+
+	// Swagger
+	swaggerController := controllers.NewSwaggerController()
+	facades.Route.Get("/swagger", swaggerController.Index)
+	facades.Route.StaticFile("/swagger.json", "./docs/swagger.json")
+	facades.Route.Get("/swagger/*any", func(ctx http.Context) {
+		handler := httpswagger.Handler(httpswagger.URL("http://localhost:3000/swagger.json"))
+		handler(ctx.Response().Writer(), ctx.Request().Origin())
+	})
 }
