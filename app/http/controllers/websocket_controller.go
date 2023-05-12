@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"fmt"
-	"net/http"
+	nethttp "net/http"
 
-	contractshttp "github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/http"
 	"github.com/gorilla/websocket"
 )
 
@@ -34,12 +34,12 @@ func NewWebsocketController() *WebsocketController {
 	}
 }
 
-func (r *WebsocketController) Server(ctx contractshttp.Context) {
+func (r *WebsocketController) Server(ctx http.Context) {
 	upGrader := websocket.Upgrader{
 		ReadBufferSize:  4096, // Specify the read buffer size
 		WriteBufferSize: 4096, // Specify the write buffer size
 		// Detect request origin
-		CheckOrigin: func(r *http.Request) bool {
+		CheckOrigin: func(r *nethttp.Request) bool {
 			if r.Method != "GET" {
 				fmt.Println("method is not GET")
 				return false

@@ -1,9 +1,7 @@
 package controllers
 
 import (
-	"net/http"
-
-	contractshttp "github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
 
 	"goravel/app/models"
@@ -40,13 +38,13 @@ func NewDBController() *DBController {
 	}
 }
 
-func (r *DBController) Index(ctx contractshttp.Context) {
+func (r *DBController) Index(ctx http.Context) {
 	// Create user
 	if err := facades.Orm.Query().Create(&models.User{
 		Name:   "Goravel",
 		Avatar: "logo.png",
 	}); err != nil {
-		ctx.Response().Json(http.StatusInternalServerError, contractshttp.Json{
+		ctx.Response().Json(http.StatusInternalServerError, http.Json{
 			"error": err.Error(),
 		})
 		return
@@ -55,13 +53,13 @@ func (r *DBController) Index(ctx contractshttp.Context) {
 	// Fetch all user
 	var users []models.User
 	if err := facades.Orm.Query().Find(&users); err != nil {
-		ctx.Response().Json(http.StatusInternalServerError, contractshttp.Json{
+		ctx.Response().Json(http.StatusInternalServerError, http.Json{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	ctx.Response().Success().Json(contractshttp.Json{
+	ctx.Response().Success().Json(http.Json{
 		"length": len(users),
 	})
 }
