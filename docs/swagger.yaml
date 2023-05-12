@@ -1,0 +1,17 @@
+info:
+  contact: {}
+paths:
+  /swagger:
+    get:
+      consumes:
+      - application/json
+      description: Description
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+      summary: Summary
+      tags:
+      - example
+swagger: "2.0"
