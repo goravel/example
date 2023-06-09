@@ -422,8 +422,8 @@ github.com/goravel/file-rotatelogs v0.0.0-20211215053220-2ab31dd9575c h1:obhFK91
 github.com/goravel/file-rotatelogs v0.0.0-20211215053220-2ab31dd9575c/go.mod h1:YSWsLXlG16u5CWFaXNZHhEQD10+NwF3xfgDV816OwLE=
 github.com/goravel/file-rotatelogs/v2 v2.4.1 h1:ogkeIFcTHSBRUBpZYiyJbpul8hkVXxHPuDbOaP78O1M=
 github.com/goravel/file-rotatelogs/v2 v2.4.1/go.mod h1:euk9qr52WrzM8ICs1hecFcR4CZ/ZZOPdacHfvHgbOf0=
-github.com/goravel/framework v1.11.1 h1:Z1lqk8vrPuEsK9hpTLgyw0Ler7mcwNsUwrDIgCkpPKQ=
-github.com/goravel/framework v1.11.1/go.mod h1:mSy+CLo+73q5CwYU3oBc7Puv09Kxxu/2H4F4lO0bIv4=
+github.com/goravel/framework v1.11.3 h1:Ye/vUJmGmbchqm2POyF0HMrdnZrwoFzyU+cdU5rLiFA=
+github.com/goravel/framework v1.11.3/go.mod h1:mSy+CLo+73q5CwYU3oBc7Puv09Kxxu/2H4F4lO0bIv4=
 github.com/gorilla/securecookie v1.1.1/go.mod h1:ra0sb63/xPlUeL+yeDciTfxMRAA+MP+HVt/4epWDjd4=
 github.com/gorilla/sessions v1.2.1/go.mod h1:dk2InVEVJ0sfLlnXv9EAgkf6ecYs/i80K/zI+bUmuGM=
 github.com/gorilla/websocket v1.5.0 h1:PPwGk2jz7EePpoHN/+ClbZu8SPxiqlu12wZP/3sWmnc=
