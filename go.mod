@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/framework v1.11.1
+	github.com/goravel/framework v1.11.3
 	github.com/gorilla/websocket v1.5.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
