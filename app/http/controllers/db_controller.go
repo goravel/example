@@ -40,7 +40,7 @@ func NewDBController() *DBController {
 
 func (r *DBController) Index(ctx http.Context) {
 	// Create user
-	if err := facades.Orm.Query().Create(&models.User{
+	if err := facades.Orm().Query().Create(&models.User{
 		Name:   "Goravel",
 		Avatar: "logo.png",
 	}); err != nil {
@@ -52,7 +52,7 @@ func (r *DBController) Index(ctx http.Context) {
 
 	// Fetch all user
 	var users []models.User
-	if err := facades.Orm.Query().Find(&users); err != nil {
+	if err := facades.Orm().Query().Find(&users); err != nil {
 		ctx.Response().Json(http.StatusInternalServerError, http.Json{
 			"error": err.Error(),
 		})

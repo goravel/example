@@ -82,7 +82,7 @@ func (r *ValidationController) Request(ctx http.Context) {
 }
 
 func (r *ValidationController) Form(ctx http.Context) {
-	validator, err := facades.Validation.Make(map[string]any{
+	validator, err := facades.Validation().Make(map[string]any{
 		"name": ctx.Request().Form("name", ""),
 	}, map[string]string{
 		"name": "required",

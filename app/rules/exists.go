@@ -34,7 +34,7 @@ func (receiver *Exists) Passes(_ validation.Data, val any, options ...any) bool 
 	}
 
 	var count int64
-	query := facades.Orm.Query().Table(tableName).Where(fieldName, requestValue)
+	query := facades.Orm().Query().Table(tableName).Where(fieldName, requestValue)
 	if len(options) > 2 {
 		for i := 2; i < len(options); i++ {
 			query = query.OrWhere(options[i].(string), requestValue)

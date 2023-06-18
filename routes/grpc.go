@@ -8,5 +8,5 @@ import (
 )
 
 func Grpc() {
-	proto.RegisterUserServiceServer(facades.Grpc.Server(), controllers.NewUserController())
+	proto.RegisterUserServiceServer(facades.Grpc().Server(), controllers.NewUserController())
 }

@@ -5,7 +5,7 @@ import (
 )
 
 func init() {
-	config := facades.Config
+	config := facades.Config()
 	config.Add("route", map[string]any{
 		// HTTP Host
 		"host": config.Env("APP_HOST", "127.0.0.1:3000"),
