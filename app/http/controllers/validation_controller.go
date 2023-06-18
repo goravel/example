@@ -33,7 +33,6 @@ func NewValidationController() *ValidationController {
 func (r *ValidationController) Json(ctx http.Context) {
 	validator, err := ctx.Request().Validate(map[string]string{
 		"name": "required",
-		"date": "date",
 	})
 	if err != nil {
 		ctx.Response().Json(http.StatusBadRequest, http.Json{
