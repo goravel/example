@@ -39,8 +39,8 @@ GRPC_PORT=3001
 5. Add gRPC Server in `main.go`
 ```
 go func() {
-	if err := facades.Grpc.Run(); err != nil {
-		facades.Log.Errorf("Run grpc error: %+v", err)
+	if err := facades.Grpc().Run(); err != nil {
+		facades.Log().Errorf("Run grpc error: %+v", err)
 	}
 }()
 ```
@@ -139,9 +139,9 @@ func (receiver *UserController) GetUser(ctx context.Context, req *proto.UserRequ
 }
 
 func refreshToken(ctx contractshttp.Context, token string) (string, error) {
-	if _, err := facades.Auth.Parse(ctx, token); err != nil {
+	if _, err := facades.Auth().Parse(ctx, token); err != nil {
 		if errors.Is(err, auth.ErrorTokenExpired) {
-			token, err = facades.Auth.Refresh(ctx)
+			token, err = facades.Auth().Refresh(ctx)
 			if err != nil {
 				return "", err
 			}
@@ -157,7 +157,7 @@ func refreshToken(ctx contractshttp.Context, token string) (string, error) {
 
 func getUser(ctx contractshttp.Context) (models.User, error) {
 	var user models.User
-	if err := facades.Auth.User(ctx, &user); err != nil {
+	if err := facades.Auth().User(ctx, &user); err != nil {
 		return user, err
 	}
 

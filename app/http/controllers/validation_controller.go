@@ -33,6 +33,7 @@ func NewValidationController() *ValidationController {
 func (r *ValidationController) Json(ctx http.Context) {
 	validator, err := ctx.Request().Validate(map[string]string{
 		"name": "required",
+		"date": "date",
 	})
 	if err != nil {
 		ctx.Response().Json(http.StatusBadRequest, http.Json{
@@ -82,7 +83,7 @@ func (r *ValidationController) Request(ctx http.Context) {
 }
 
 func (r *ValidationController) Form(ctx http.Context) {
-	validator, err := facades.Validation.Make(map[string]any{
+	validator, err := facades.Validation().Make(map[string]any{
 		"name": ctx.Request().Form("name", ""),
 	}, map[string]string{
 		"name": "required",

@@ -22,7 +22,7 @@ func (r *UserImpl) Create() (models.User, error) {
 		Name:   "name",
 		Avatar: "avatar",
 	}
-	if err := facades.Orm.Query().Create(&user); err != nil {
+	if err := facades.Orm().Query().Create(&user); err != nil {
 		return user, err
 	}
 

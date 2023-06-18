@@ -5,7 +5,7 @@ import (
 )
 
 func init() {
-	config := facades.Config
+	config := facades.Config()
 	config.Add("cache", map[string]any{
 		// Default Cache Store
 		//
@@ -23,10 +23,6 @@ func init() {
 		"stores": map[string]any{
 			"memory": map[string]any{
 				"driver": "memory",
-			},
-			"redis": map[string]any{
-				"driver":     "redis",
-				"connection": "default",
 			},
 		},
 

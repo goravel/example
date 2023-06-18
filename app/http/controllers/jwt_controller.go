@@ -36,7 +36,7 @@ func NewJwtController() *JwtController {
 }
 
 func (r *JwtController) Login(ctx http.Context) {
-	token, err := facades.Auth.LoginUsingID(ctx, 1)
+	token, err := facades.Auth().LoginUsingID(ctx, 1)
 	if err != nil {
 		ctx.Response().String(http.StatusInternalServerError, err.Error())
 

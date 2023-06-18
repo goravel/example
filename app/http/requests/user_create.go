@@ -7,6 +7,7 @@ import (
 
 type UserCreate struct {
 	Name string `form:"name" json:"name"`
+	Date string `form:"date" json:"date"`
 }
 
 func (r *UserCreate) Authorize(ctx http.Context) error {
@@ -16,6 +17,7 @@ func (r *UserCreate) Authorize(ctx http.Context) error {
 func (r *UserCreate) Rules(ctx http.Context) map[string]string {
 	return map[string]string{
 		"name": "required",
+		"date": "date",
 	}
 }
 

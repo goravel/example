@@ -32,9 +32,9 @@ func (c MDReaderWriter) Set(key, val string) {
 }
 
 func NewJaegerTracer() (opentracing.Tracer, io.Closer) {
-	sender := transport.NewHTTPTransport(facades.Config.GetString("grpc.trace.endpoint"))
+	sender := transport.NewHTTPTransport(facades.Config().GetString("grpc.trace.endpoint"))
 	tracer, closer := jaeger.NewTracer(
-		facades.Config.GetString("app.env")+"."+facades.Config.GetString("app.name"),
+		facades.Config().GetString("app.env")+"."+facades.Config().GetString("app.name"),
 		jaeger.NewConstSampler(true),
 		jaeger.NewRemoteReporter(sender, jaeger.ReporterOptions.Logger(jaeger.StdLogger)),
 	)

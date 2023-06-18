@@ -5,7 +5,7 @@ import (
 )
 
 func init() {
-	config := facades.Config
+	config := facades.Config()
 	config.Add("database", map[string]any{
 		// Default database connection name, only support Mysql now.
 		"default": config.Env("DB_CONNECTION", "mysql"),
