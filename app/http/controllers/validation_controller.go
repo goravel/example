@@ -30,85 +30,77 @@ func NewValidationController() *ValidationController {
 	}
 }
 
-func (r *ValidationController) Json(ctx http.Context) {
+func (r *ValidationController) Json(ctx http.Context) http.Response {
 	validator, err := ctx.Request().Validate(map[string]string{
 		"name": "required",
 	})
 	if err != nil {
-		ctx.Response().Json(http.StatusBadRequest, http.Json{
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": err.Error(),
 		})
-		return
 	}
 	if validator.Fails() {
-		ctx.Response().Json(http.StatusBadRequest, http.Json{
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": validator.Errors().All(),
 		})
-		return
 	}
 
 	var user models.User
 	if err := validator.Bind(&user); err != nil {
-		ctx.Response().Json(http.StatusBadRequest, http.Json{
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": err.Error(),
 		})
-		return
 	}
 
-	ctx.Response().Success().Json(http.Json{
+	return ctx.Response().Success().Json(http.Json{
 		"name": user.Name,
 	})
 }
 
-func (r *ValidationController) Request(ctx http.Context) {
+func (r *ValidationController) Request(ctx http.Context) http.Response {
 	var userCreate requests.UserCreate
 	errors, err := ctx.Request().ValidateRequest(&userCreate)
 	if err != nil {
-		ctx.Response().Json(http.StatusBadRequest, http.Json{
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": err.Error(),
 		})
-		return
 	}
 	if errors != nil {
-		ctx.Response().Json(http.StatusBadRequest, http.Json{
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": errors.All(),
 		})
-		return
 	}
 
-	ctx.Response().Success().Json(http.Json{
+	return ctx.Response().Success().Json(http.Json{
 		"name": userCreate.Name,
 	})
 }
 
-func (r *ValidationController) Form(ctx http.Context) {
+func (r *ValidationController) Form(ctx http.Context) http.Response {
 	validator, err := facades.Validation().Make(map[string]any{
-		"name": ctx.Request().Form("name", ""),
+		"name": ctx.Request().Input("name", ""),
 	}, map[string]string{
 		"name": "required",
 	})
 	if err != nil {
-		ctx.Response().Json(http.StatusBadRequest, http.Json{
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": err.Error(),
 		})
-		return
 	}
 	if validator.Fails() {
-		ctx.Response().Json(http.StatusBadRequest, http.Json{
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": validator.Errors().All(),
 		})
-		return
 	}
 
 	var user models.User
 	if err := validator.Bind(&user); err != nil {
-		ctx.Response().Json(http.StatusBadRequest, http.Json{
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": err.Error(),
 		})
-		return
 	}
 
-	ctx.Response().Success().Json(http.Json{
+	return ctx.Response().Success().Json(http.Json{
 		"name": user.Name,
 	})
 }

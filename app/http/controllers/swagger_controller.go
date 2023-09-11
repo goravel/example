@@ -38,15 +38,15 @@ func NewSwaggerController() *JwtController {
 
 // Index an example for Swagger
 //
-//  @Summary      Summary
-//  @Description  Description
-//  @Tags         example
-//  @Accept       json
-//  @Success      200
-//  @Failure      400
-//  @Router       /swagger [get]
-func (r *SwaggerController) Index(ctx http.Context) {
-	ctx.Response().Success().Json(http.Json{
+//	@Summary      Summary
+//	@Description  Description
+//	@Tags         example
+//	@Accept       json
+//	@Success      200
+//	@Failure      400
+//	@Router       /swagger [get]
+func (r *SwaggerController) Index(ctx http.Context) http.Response {
+	return ctx.Response().Success().Json(http.Json{
 		"code": http.StatusOK,
 	})
 }

@@ -10,8 +10,8 @@ import (
 )
 
 func Web() {
-	facades.Route().Get("/", func(ctx http.Context) {
-		ctx.Response().Json(200, http.Json{
+	facades.Route().Get("/", func(ctx http.Context) http.Response {
+		return ctx.Response().Json(200, http.Json{
 			"Hello": "Goravel",
 		})
 	})
@@ -39,8 +39,10 @@ func Web() {
 	swaggerController := controllers.NewSwaggerController()
 	facades.Route().Get("/swagger", swaggerController.Index)
 	facades.Route().StaticFile("/swagger.json", "./docs/swagger.json")
-	facades.Route().Get("/swagger/*any", func(ctx http.Context) {
+	facades.Route().Get("/swagger/*any", func(ctx http.Context) http.Response {
 		handler := httpswagger.Handler(httpswagger.URL("http://localhost:3000/swagger.json"))
 		handler(ctx.Response().Writer(), ctx.Request().Origin())
+
+		return nil
 	})
 }

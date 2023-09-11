@@ -18,7 +18,7 @@ go get -u github.com/gorilla/websocket
 air
 
 4. Run Client
-cd /packages/websocket_client && go run .
+cd ./packages/websocket_client && go run .
 
 5. Result
 Server got `ping` and Client got `pong`
@@ -34,7 +34,7 @@ func NewWebsocketController() *WebsocketController {
 	}
 }
 
-func (r *WebsocketController) Server(ctx http.Context) {
+func (r *WebsocketController) Server(ctx http.Context) http.Response {
 	upGrader := websocket.Upgrader{
 		ReadBufferSize:  4096, // Specify the read buffer size
 		WriteBufferSize: 4096, // Specify the write buffer size
@@ -54,7 +54,7 @@ func (r *WebsocketController) Server(ctx http.Context) {
 
 	ws, err := upGrader.Upgrade(ctx.Response().Writer(), ctx.Request().Origin(), nil)
 	if err != nil {
-		return
+		return ctx.Response().String(http.StatusInternalServerError, err.Error())
 	}
 	defer ws.Close()
 	for {
@@ -71,4 +71,6 @@ func (r *WebsocketController) Server(ctx http.Context) {
 			break
 		}
 	}
+
+	return nil
 }

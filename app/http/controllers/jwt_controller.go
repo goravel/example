@@ -3,6 +3,8 @@ package controllers
 import (
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
+
+	"goravel/app/models"
 )
 
 /*********************************
@@ -35,21 +37,29 @@ func NewJwtController() *JwtController {
 	}
 }
 
-func (r *JwtController) Login(ctx http.Context) {
-	token, err := facades.Auth().LoginUsingID(ctx, 1)
-	if err != nil {
-		ctx.Response().String(http.StatusInternalServerError, err.Error())
-
-		return
+func (r *JwtController) Login(ctx http.Context) http.Response {
+	user := &models.User{
+		Name:   "Goravel",
+		Avatar: "logo.png",
+	}
+	if err := facades.Orm().Query().Create(&user); err != nil {
+		return ctx.Response().Json(http.StatusInternalServerError, http.Json{
+			"error": err.Error(),
+		})
 	}
 
-	ctx.Response().Success().Json(http.Json{
+	token, err := facades.Auth().LoginUsingID(ctx, user.ID)
+	if err != nil {
+		return ctx.Response().String(http.StatusInternalServerError, err.Error())
+	}
+
+	return ctx.Response().Success().Json(http.Json{
 		"token": token,
 	})
 }
 
-func (r *JwtController) Index(ctx http.Context) {
-	ctx.Response().Success().Json(http.Json{
+func (r *JwtController) Index(ctx http.Context) http.Response {
+	return ctx.Response().Success().Json(http.Json{
 		"token": ctx.Request().Header("Authorization", ""),
 	})
 }
