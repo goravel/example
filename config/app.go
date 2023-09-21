@@ -23,7 +23,7 @@ import (
 	"goravel/app/providers"
 )
 
-//Boot Start all init methods of the current folder to bootstrap all config.
+// Boot Start all init methods of the current folder to bootstrap all config.
 func Boot() {}
 
 func init() {

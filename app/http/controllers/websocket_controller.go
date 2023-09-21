@@ -18,19 +18,19 @@ go get -u github.com/gorilla/websocket
 air
 
 4. Run Client
-cd /packages/websocket_client && go run .
+cd packages/websocket_client && go run .
 
 5. Result
 Server got `ping` and Client got `pong`
  ********************************/
 
 type WebsocketController struct {
-	//Dependent services
+	// Dependent services
 }
 
 func NewWebsocketController() *WebsocketController {
 	return &WebsocketController{
-		//Inject services
+		// Inject services
 	}
 }
 
