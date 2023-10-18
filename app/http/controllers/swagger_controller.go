@@ -16,7 +16,7 @@ swag init
 3. Install http-swagger
 go get -u github.com/swaggo/http-swagger
 
-4. Optimize the document of endpoint: app/http/controllers/swagger_controller.go
+4. Optimize the document of endpoint: `app/http/controllers/swagger_controller.go`
 
 5. Add route to `/route/web.go`
 
@@ -27,12 +27,12 @@ air
  ********************************/
 
 type SwaggerController struct {
-	//Dependent services
+	// Dependent services
 }
 
 func NewSwaggerController() *JwtController {
 	return &JwtController{
-		//Inject services
+		// Inject services
 	}
 }
 

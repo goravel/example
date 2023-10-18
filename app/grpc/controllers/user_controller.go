@@ -50,19 +50,21 @@ go func() {
 6. Run Server
 `air`
 
-6. Clone gRPC Client
+7. Clone gRPC Client
 ```
 cd .. && git clone git@github.com:goravel/example-client.git && cd example-client
 ```
 
-7. Configure gRPC in .env file(goravel/example-client)
+8. Configure gRPC in .env file(goravel/example-client)
+
 APP_HOST=127.0.0.1
 APP_PORT=3010
 
 GRPC_USER_HOST=127.0.0.1
 GRPC_USER_PORT=3001
+APP_PORT=3010
 
-8. Add gRPC client to config/grpc.go file(goravel/example-client)
+9. Add gRPC client to config/grpc.go file(goravel/example-client)
 ```
 "clients": map[string]any{
 	"user": map[string]any{
@@ -73,11 +75,11 @@ GRPC_USER_PORT=3001
 },
 ```
 
-9. Add User Service to `app/services/user`, it is used to call the server side(goravel/example-client)
+10. Add User Service to `app/services/user`, it is used to call the server side(goravel/example-client)
 
-10. Add `app/http/controllers/user_controller.go` to call UserService(goravel/example-client)
+11. Add `app/http/controllers/user_controller.go` to call UserService(goravel/example-client)
 
-11. Add get user route to `route/web.go`(goravel/example-client)
+12. Add get user route to `route/web.go`(goravel/example-client)
 
 13. Run Client(goravel/example-client)
 `air`

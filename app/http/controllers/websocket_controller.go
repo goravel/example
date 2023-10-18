@@ -25,12 +25,12 @@ Server got `ping` and Client got `pong`
  ********************************/
 
 type WebsocketController struct {
-	//Dependent services
+	// Dependent services
 }
 
 func NewWebsocketController() *WebsocketController {
 	return &WebsocketController{
-		//Inject services
+		// Inject services
 	}
 }
 
