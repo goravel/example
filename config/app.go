@@ -18,7 +18,9 @@ import (
 	"github.com/goravel/framework/queue"
 	"github.com/goravel/framework/route"
 	"github.com/goravel/framework/schedule"
+	"github.com/goravel/framework/testing"
 	"github.com/goravel/framework/validation"
+	"github.com/goravel/gin"
 
 	"goravel/app/providers"
 )
@@ -81,6 +83,7 @@ func init() {
 			&validation.ServiceProvider{},
 			&crypt.ServiceProvider{},
 			&hash.ServiceProvider{},
+			&testing.ServiceProvider{},
 			&providers.AppServiceProvider{},
 			&providers.AuthServiceProvider{},
 			&providers.RouteServiceProvider{},
@@ -89,6 +92,8 @@ func init() {
 			&providers.QueueServiceProvider{},
 			&providers.EventServiceProvider{},
 			&providers.ValidationServiceProvider{},
+			&providers.DatabaseServiceProvider{},
+			&gin.ServiceProvider{},
 		},
 	})
 }

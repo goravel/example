@@ -6,9 +6,11 @@ import (
 
 	proto "github.com/goravel/example-proto"
 	"github.com/goravel/framework/auth"
+	contractsauth "github.com/goravel/framework/contracts/auth"
 	contractshttp "github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
 	goravelhttp "github.com/goravel/framework/http"
+	"github.com/goravel/framework/support/debug"
 	"github.com/pkg/errors"
 
 	"goravel/app/models"
@@ -54,6 +56,10 @@ cd .. && git clone git@github.com:goravel/example-client.git && cd example-clien
 ```
 
 8. Configure gRPC in .env file(goravel/example-client)
+
+APP_HOST=127.0.0.1
+APP_PORT=3010
+
 GRPC_USER_HOST=127.0.0.1
 GRPC_USER_PORT=3001
 APP_PORT=3010
@@ -140,7 +146,11 @@ func (receiver *UserController) GetUser(ctx context.Context, req *proto.UserRequ
 }
 
 func refreshToken(ctx contractshttp.Context, token string) (string, error) {
-	if _, err := facades.Auth().Parse(ctx, token); err != nil {
+	var (
+		payload *contractsauth.Payload
+		err     error
+	)
+	if payload, err = facades.Auth().Parse(ctx, token); err != nil {
 		if errors.Is(err, auth.ErrorTokenExpired) {
 			token, err = facades.Auth().Refresh(ctx)
 			if err != nil {
@@ -152,6 +162,8 @@ func refreshToken(ctx contractshttp.Context, token string) (string, error) {
 			return "", err
 		}
 	}
+
+	debug.Dump(payload)
 
 	return token, nil
 }

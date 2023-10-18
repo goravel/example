@@ -38,28 +38,26 @@ func NewDBController() *DBController {
 	}
 }
 
-func (r *DBController) Index(ctx http.Context) {
+func (r *DBController) Index(ctx http.Context) http.Response {
 	// Create user
 	if err := facades.Orm().Query().Create(&models.User{
 		Name:   "Goravel",
 		Avatar: "logo.png",
 	}); err != nil {
-		ctx.Response().Json(http.StatusInternalServerError, http.Json{
+		return ctx.Response().Json(http.StatusInternalServerError, http.Json{
 			"error": err.Error(),
 		})
-		return
 	}
 
 	// Fetch all user
 	var users []models.User
 	if err := facades.Orm().Query().Find(&users); err != nil {
-		ctx.Response().Json(http.StatusInternalServerError, http.Json{
+		return ctx.Response().Json(http.StatusInternalServerError, http.Json{
 			"error": err.Error(),
 		})
-		return
 	}
 
-	ctx.Response().Success().Json(http.Json{
+	return ctx.Response().Success().Json(http.Json{
 		"length": len(users),
 	})
 }

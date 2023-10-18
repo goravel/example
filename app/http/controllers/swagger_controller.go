@@ -45,8 +45,8 @@ func NewSwaggerController() *JwtController {
 //	@Success      200
 //	@Failure      400
 //	@Router       /swagger [get]
-func (r *SwaggerController) Index(ctx http.Context) {
-	ctx.Response().Success().Json(http.Json{
+func (r *SwaggerController) Index(ctx http.Context) http.Response {
+	return ctx.Response().Success().Json(http.Json{
 		"code": http.StatusOK,
 	})
 }
