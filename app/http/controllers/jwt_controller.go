@@ -26,12 +26,12 @@ curl --location '127.0.0.1:3000/jwt' \
  ********************************/
 
 type JwtController struct {
-	//Dependent services
+	// Dependent services
 }
 
 func NewJwtController() *JwtController {
 	return &JwtController{
-		//Inject services
+		// Inject services
 	}
 }
 

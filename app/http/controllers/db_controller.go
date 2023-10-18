@@ -29,12 +29,12 @@ air
  ********************************/
 
 type DBController struct {
-	//Dependent services
+	// Dependent services
 }
 
 func NewDBController() *DBController {
 	return &DBController{
-		//Inject services
+		// Inject services
 	}
 }
 

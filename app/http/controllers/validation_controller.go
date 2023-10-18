@@ -17,16 +17,25 @@ go run . artisan make:request UserCreate
 3. Run Server
 air
 
-3. Visit 127.0.0.1:3000/validation/*
+4. Visit 127.0.0.1:3000/validation/*
+4.1 curl --location --request POST 'http://127.0.0.1:3000/validation/json'
+4.2 curl --location --request POST 'http://127.0.0.1:3000/validation/json' --header 'Content-Type: application/json' --data-raw '{"name": ""}'
+4.3 curl --location --request POST 'http://127.0.0.1:3000/validation/json' --header 'Content-Type: application/json' --data-raw '{"name": "goravel"}'
+4.4 curl --location --request POST 'http://127.0.0.1:3000/validation/request'
+4.5 curl --location --request POST 'http://127.0.0.1:3000/validation/request' --header 'Content-Type: application/json' --data-raw '{"name": ""}'
+4.6 curl --location --request POST 'http://127.0.0.1:3000/validation/request' --header 'Content-Type: application/json' --data-raw '{"name": "goravel"}'
+4.7 curl --location --request POST 'http://127.0.0.1:3000/validation/form'
+4.8 curl --location --request POST 'http://127.0.0.1:3000/validation/form' --header 'Content-Type: multipart/form-data' --form 'name=""'
+4.9 curl --location --request POST 'http://127.0.0.1:3000/validation/form' --header 'Content-Type: multipart/form-data' --form 'name="goravel"'
  ********************************/
 
 type ValidationController struct {
-	//Dependent services
+	// Dependent services
 }
 
 func NewValidationController() *ValidationController {
 	return &ValidationController{
-		//Inject services
+		// Inject services
 	}
 }
 
@@ -48,7 +57,7 @@ func (r *ValidationController) Json(ctx http.Context) {
 	}
 
 	var user models.User
-	if err := validator.Bind(&user); err != nil {
+	if err = validator.Bind(&user); err != nil {
 		ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": err.Error(),
 		})
@@ -101,7 +110,7 @@ func (r *ValidationController) Form(ctx http.Context) {
 	}
 
 	var user models.User
-	if err := validator.Bind(&user); err != nil {
+	if err = validator.Bind(&user); err != nil {
 		ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": err.Error(),
 		})

@@ -12,12 +12,12 @@ type RouteServiceProvider struct {
 }
 
 func (receiver *RouteServiceProvider) Register(app foundation.Application) {
-	//Add HTTP middlewares
+	// Add HTTP middlewares
 	kernel := http.Kernel{}
 	facades.Route().GlobalMiddleware(kernel.Middleware()...)
 }
 
 func (receiver *RouteServiceProvider) Boot(app foundation.Application) {
-	//Add routes
+	// Add routes
 	routes.Web()
 }
