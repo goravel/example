@@ -30,8 +30,8 @@ type SwaggerController struct {
 	// Dependent services
 }
 
-func NewSwaggerController() *JwtController {
-	return &JwtController{
+func NewSwaggerController() *SwaggerController {
+	return &SwaggerController{
 		// Inject services
 	}
 }
