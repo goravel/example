@@ -53,6 +53,10 @@ Laravel！
 
 [app/http/controllers/swagger_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/swagger_controller.go)
 
+### 单页面前端应用集成到框架
+
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go)
+
 ## 文档
 
 在线文档 [https://www.goravel.dev/zh](https://www.goravel.dev/zh)

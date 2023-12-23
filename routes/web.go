@@ -45,4 +45,13 @@ func Web() {
 
 		return nil
 	})
+
+	// Single Page Application
+	// 1. Add your single page application to `resources/views/*`
+	// 2. Add route to `/route/web.go`, needs to contain your home page and static routes
+	// 3. Configure nginx based on the /nginx.conf file
+	facades.Route().Get("web", func(ctx http.Context) http.Response {
+		return ctx.Response().View().Make("index.html")
+	})
+	facades.Route().Static("css", "./resources/views/css")
 }

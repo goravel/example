@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/framework v1.13.4
+	github.com/goravel/framework v1.13.5
 	github.com/goravel/gin v1.1.4
 	github.com/gorilla/websocket v1.5.0
 	github.com/opentracing/opentracing-go v1.2.0
