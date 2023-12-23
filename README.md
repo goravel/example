@@ -50,6 +50,10 @@ Welcome to star, PR and issues！
 
 [app/http/controllers/swagger_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/swagger_controller.go)
 
+### Integration of single page application into the framework
+
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go)
+
 ## Documentation
 
 Online documentation [https://www.goravel.dev](https://www.goravel.dev)
