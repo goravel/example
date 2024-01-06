@@ -10,15 +10,15 @@ document: https://github.com/swaggo/http-swagger
 
 go install github.com/swaggo/swag/cmd/swag@latest
 
-2. Init document
-swag init
-
-3. Install http-swagger
+2. Install http-swagger
 go get -u github.com/swaggo/http-swagger
 
-4. Optimize the document of endpoint: `app/http/controllers/swagger_controller.go`
+3. Optimize the document of endpoint: `app/http/controllers/swagger_controller.go`
 
-5. Add route to `/route/web.go`
+4. Add route to `/route/web.go`
+
+5. Init document
+swag init
 
 6. Run Server
 air
