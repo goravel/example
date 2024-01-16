@@ -3,7 +3,6 @@ package routes
 import (
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
-	httpswagger "github.com/swaggo/http-swagger"
 
 	"goravel/app/http/controllers"
 	"goravel/app/http/middleware"
@@ -37,14 +36,7 @@ func Web() {
 
 	// Swagger
 	swaggerController := controllers.NewSwaggerController()
-	facades.Route().Get("/swagger", swaggerController.Index)
-	facades.Route().StaticFile("/swagger.json", "./docs/swagger.json")
-	facades.Route().Get("/swagger/*any", func(ctx http.Context) http.Response {
-		handler := httpswagger.Handler(httpswagger.URL("http://localhost:3000/swagger.json"))
-		handler(ctx.Response().Writer(), ctx.Request().Origin())
-
-		return nil
-	})
+	facades.Route().Get("/swagger/*any", swaggerController.Index)
 
 	// Single Page Application
 	// 1. Add your single page application to `resources/views/*`

@@ -2,6 +2,9 @@ package controllers
 
 import (
 	"github.com/goravel/framework/contracts/http"
+	"github.com/swaggo/http-swagger/v2"
+
+	_ "goravel/docs"
 )
 
 /*********************************
@@ -23,7 +26,7 @@ swag init
 6. Run Server
 air
 
-7. Visit: http://localhost:3000/swagger/index.html
+7. Visit: http://localhost:3000/swagger/
  ********************************/
 
 type SwaggerController struct {
@@ -46,7 +49,8 @@ func NewSwaggerController() *SwaggerController {
 //	@Failure      400
 //	@Router       /swagger [get]
 func (r *SwaggerController) Index(ctx http.Context) http.Response {
-	return ctx.Response().Success().Json(http.Json{
-		"code": http.StatusOK,
-	})
+	handler := httpSwagger.Handler()
+	handler(ctx.Response().Writer(), ctx.Request().Origin())
+
+	return nil
 }
