@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"github.com/goravel/framework/contracts/http"
-	"github.com/swaggo/http-swagger"
+	"github.com/swaggo/http-swagger/v2"
 
 	_ "goravel/docs"
 )
