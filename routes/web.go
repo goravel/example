@@ -3,7 +3,6 @@ package routes
 import (
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
-	httpswagger "github.com/swaggo/http-swagger"
 
 	"goravel/app/http/controllers"
 	"goravel/app/http/middleware"
