@@ -52,7 +52,11 @@ Welcome to star, PR and issues！
 
 ### Integration of single page application into the framework
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L41)
+
+### View nesting
+
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L50)
 
 ## Documentation
 

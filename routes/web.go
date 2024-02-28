@@ -46,4 +46,12 @@ func Web() {
 		return ctx.Response().View().Make("index.html")
 	})
 	facades.Route().Static("css", "./resources/views/css")
+
+	// View Nesting
+	// Check the views in `resources/views/admin/*`
+	facades.Route().Get("view", func(ctx http.Context) http.Response {
+		return ctx.Response().View().Make("admin/index.tmpl", map[string]any{
+			"name": "Goravel",
+		})
+	})
 }

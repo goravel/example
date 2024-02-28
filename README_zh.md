@@ -57,6 +57,10 @@ Laravel！
 
 [routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go)
 
+### 视图嵌套
+
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L50)
+
 ## 文档
 
 在线文档 [https://www.goravel.dev/zh](https://www.goravel.dev/zh)
