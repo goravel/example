@@ -3,10 +3,13 @@ package requests
 import (
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/contracts/validation"
+	"github.com/spf13/cast"
 )
 
 type UserCreate struct {
-	Name string `form:"name" json:"name"`
+	Name   string   `form:"name" json:"name"`
+	Tags   []string `form:"tags" json:"tags"`
+	Scores []int    `form:"scores" json:"scores"`
 }
 
 func (r *UserCreate) Authorize(ctx http.Context) error {
@@ -15,7 +18,9 @@ func (r *UserCreate) Authorize(ctx http.Context) error {
 
 func (r *UserCreate) Rules(ctx http.Context) map[string]string {
 	return map[string]string{
-		"name": "required",
+		"name":     "required",
+		"tags.*":   "required|string",
+		"scores.*": "required|int",
 	}
 }
 
@@ -28,5 +33,9 @@ func (r *UserCreate) Attributes(ctx http.Context) map[string]string {
 }
 
 func (r *UserCreate) PrepareForValidation(ctx http.Context, data validation.Data) error {
+	if scores, exist := data.Get("scores"); exist {
+		return data.Set("scores", cast.ToIntSlice(scores))
+	}
+
 	return nil
 }
