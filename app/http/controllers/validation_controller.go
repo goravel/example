@@ -81,7 +81,9 @@ func (r *ValidationController) Request(ctx http.Context) http.Response {
 	}
 
 	return ctx.Response().Success().Json(http.Json{
-		"name": userCreate.Name,
+		"name":   userCreate.Name,
+		"tags":   userCreate.Tags,
+		"scores": userCreate.Scores,
 	})
 }
 
