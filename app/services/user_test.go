@@ -26,7 +26,9 @@ func (s *UserTestSuite) SetupTest() {
 
 func (s *UserTestSuite) TestCreate() {
 	// 1. test prepare
-	mockOrm, mockDb, _, _ := mock.Orm()
+	mockFactory := mock.Factory()
+	mockOrm := mockFactory.Orm()
+	mockDb := mockFactory.OrmQuery()
 	mockOrm.On("Query").Return(mockDb).Once()
 	mockDb.On("Create", &models.User{
 		Name:   "name",

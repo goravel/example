@@ -17,9 +17,9 @@ func Jwt() contractshttp.Middleware {
 			return
 		}
 
-		if _, err := facades.Auth().Parse(ctx, token); err != nil {
+		if _, err := facades.Auth(ctx).Parse(token); err != nil {
 			if errors.Is(err, auth.ErrorTokenExpired) {
-				token, err = facades.Auth().Refresh(ctx)
+				token, err = facades.Auth(ctx).Refresh()
 				if err != nil {
 					// Refresh time exceeded
 					ctx.Request().AbortWithStatus(http.StatusUnauthorized)

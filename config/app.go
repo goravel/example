@@ -18,7 +18,9 @@ import (
 	"github.com/goravel/framework/queue"
 	"github.com/goravel/framework/route"
 	"github.com/goravel/framework/schedule"
+	"github.com/goravel/framework/session"
 	"github.com/goravel/framework/testing"
+	"github.com/goravel/framework/translation"
 	"github.com/goravel/framework/validation"
 	"github.com/goravel/gin"
 
@@ -55,6 +57,20 @@ func init() {
 		// ahead and set this to a sensible default for you out of the box.
 		"timezone": "UTC",
 
+		// Application Locale Configuration
+		//
+		// The application locale determines the default locale that will be used
+		// by the translation service provider.You are free to set this value
+		// to any of the locales which will be supported by the application.
+		"locale": "en",
+
+		// Application Fallback Locale
+		//
+		// The fallback locale determines the locale to use when the current one
+		// is not available.You may change the value to correspond to any of
+		// the language folders that are provided through your application.
+		"fallback_locale": "en",
+
 		// Encryption Key
 		//
 		// 32 character string, otherwise these encrypted strings
@@ -83,6 +99,8 @@ func init() {
 			&validation.ServiceProvider{},
 			&crypt.ServiceProvider{},
 			&hash.ServiceProvider{},
+			&session.ServiceProvider{},
+			&translation.ServiceProvider{},
 			&testing.ServiceProvider{},
 			&providers.AppServiceProvider{},
 			&providers.AuthServiceProvider{},
