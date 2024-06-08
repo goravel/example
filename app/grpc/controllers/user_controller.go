@@ -150,9 +150,9 @@ func refreshToken(ctx contractshttp.Context, token string) (string, error) {
 		payload *contractsauth.Payload
 		err     error
 	)
-	if payload, err = facades.Auth().Parse(ctx, token); err != nil {
+	if payload, err = facades.Auth(ctx).Parse(token); err != nil {
 		if errors.Is(err, auth.ErrorTokenExpired) {
-			token, err = facades.Auth().Refresh(ctx)
+			token, err = facades.Auth(ctx).Refresh()
 			if err != nil {
 				return "", err
 			}
@@ -170,7 +170,7 @@ func refreshToken(ctx contractshttp.Context, token string) (string, error) {
 
 func getUser(ctx contractshttp.Context) (models.User, error) {
 	var user models.User
-	if err := facades.Auth().User(ctx, &user); err != nil {
+	if err := facades.Auth(ctx).User(&user); err != nil {
 		return user, err
 	}
 
