@@ -1,4 +1,4 @@
-<p align="center"><img src="https://www.goravel.dev/logo.png" width="300"></p>
+<p align="center"><img src="https://www.goravel.dev/logo.png?v=1.14.x" width="300"></p>
 
 English | [中文](./README_zh.md)
 
