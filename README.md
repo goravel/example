@@ -56,7 +56,19 @@ Welcome to star, PR and issues！
 
 ### View nesting
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L50)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L52)
+
+### Localization
+
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L60)
+
+### Session
+
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L69)
+
+### Cookie
+
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L85)
 
 ## Documentation
 

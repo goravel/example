@@ -55,11 +55,23 @@ Laravel！
 
 ### 单页面前端应用集成到框架
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L43)
 
 ### 视图嵌套
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L50)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L52)
+
+### 本地化
+
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L60)
+
+### Session
+
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L69)
+
+### Cookie
+
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L85)
 
 ## 文档
 

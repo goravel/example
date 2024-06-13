@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"github.com/goravel/framework/auth"
-	contractshttp "github.com/goravel/framework/contracts/http"
+	httpcontract "github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
 )
 
-func Jwt() contractshttp.Middleware {
-	return func(ctx contractshttp.Context) {
+func Jwt() httpcontract.Middleware {
+	return func(ctx httpcontract.Context) {
 		token := ctx.Request().Header("Authorization", "")
 		if token == "" {
 			ctx.Request().AbortWithStatus(http.StatusUnauthorized)

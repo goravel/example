@@ -9,6 +9,11 @@ import (
 	"goravel/tests"
 )
 
+/*
+*********************************************
+Please init .env file before running the test.
+**********************************************
+*/
 type UserTestSuite struct {
 	suite.Suite
 	tests.TestCase
@@ -30,8 +35,8 @@ func (s *UserTestSuite) TearDownTest() {
 }
 
 func (s *UserTestSuite) TestCreateByConfig() {
-	user, err := s.user.Create()
+	user, err := s.user.Create("feature")
 	s.Nil(err)
 	s.True(user.ID > 0)
-	s.Equal("name", user.Name)
+	s.Equal("feature", user.Name)
 }
