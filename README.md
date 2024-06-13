@@ -1,4 +1,4 @@
-<p align="center"><img src="https://www.goravel.dev/logo.png" width="300"></p>
+<p align="center"><img src="https://www.goravel.dev/logo.png?v=1.14.x" width="300"></p>
 
 English | [中文](./README_zh.md)
 
@@ -56,7 +56,19 @@ Welcome to star, PR and issues！
 
 ### View nesting
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L50)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L52)
+
+### Localization
+
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L60)
+
+### Session
+
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L69)
+
+### Cookie
+
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L85)
 
 ## Documentation
 

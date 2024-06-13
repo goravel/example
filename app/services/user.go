@@ -7,7 +7,7 @@ import (
 )
 
 type User interface {
-	Create() (models.User, error)
+	Create(name string) (models.User, error)
 }
 
 type UserImpl struct {
@@ -17,9 +17,9 @@ func NewUserImpl() *UserImpl {
 	return &UserImpl{}
 }
 
-func (r *UserImpl) Create() (models.User, error) {
+func (r *UserImpl) Create(name string) (models.User, error) {
 	user := models.User{
-		Name:   "name",
+		Name:   name,
 		Avatar: "avatar",
 	}
 	if err := facades.Orm().Query().Create(&user); err != nil {

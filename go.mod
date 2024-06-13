@@ -3,8 +3,11 @@ module goravel
 go 1.21
 
 require (
+	github.com/gofiber/fiber/v2 v2.52.4
+	github.com/gofiber/template/html/v2 v2.1.1
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/framework v1.14.0
+	github.com/goravel/fiber v1.2.0
+	github.com/goravel/framework v1.14.1
 	github.com/goravel/gin v1.2.1
 	github.com/gorilla/websocket v1.5.0
 	github.com/opentracing/opentracing-go v1.2.0
@@ -36,6 +39,7 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/RichardKnop/logging v0.0.0-20190827224416-1a693bdd4fae // indirect
 	github.com/RichardKnop/machinery/v2 v2.0.13 // indirect
+	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aws/aws-sdk-go v1.49.6 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
@@ -81,6 +85,8 @@ require (
 	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/gofiber/template v1.8.3 // indirect
+	github.com/gofiber/utils v1.1.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang-migrate/migrate/v4 v4.17.1 // indirect
@@ -115,7 +121,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
-	github.com/klauspost/compress v1.17.2 // indirect
+	github.com/klauspost/compress v1.17.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
@@ -123,6 +129,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
@@ -138,7 +145,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/pterm/pterm v0.12.79 // indirect
 	github.com/rabbitmq/amqp091-go v1.9.0 // indirect
-	github.com/redis/go-redis/v9 v9.5.2 // indirect
+	github.com/redis/go-redis/v9 v9.5.3 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
@@ -162,6 +169,9 @@ require (
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/unrolled/secure v1.14.0 // indirect
 	github.com/urfave/cli/v2 v2.27.2 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasthttp v1.54.0 // indirect
+	github.com/valyala/tcplisten v1.0.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect

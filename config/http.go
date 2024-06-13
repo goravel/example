@@ -1,6 +1,9 @@
 package config
 
 import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/template/html/v2"
+	fiberfacades "github.com/goravel/fiber/facades"
 	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/facades"
 	ginfacades "github.com/goravel/gin/facades"
@@ -16,6 +19,20 @@ func init() {
 			"gin": map[string]any{
 				"route": func() (route.Route, error) {
 					return ginfacades.Route("gin"), nil
+				},
+			},
+			"fiber": map[string]any{
+				// prefork mode, see https://docs.gofiber.io/api/fiber/#config
+				"prefork": false,
+				// Optional, default is 4096 KB
+				"body_limit":   4096,
+				"header_limit": 4096,
+				"route": func() (route.Route, error) {
+					return fiberfacades.Route("fiber"), nil
+				},
+				// Optional, default is "html/template"
+				"template": func() (fiber.Views, error) {
+					return html.New("./resources/views", ".tmpl"), nil
 				},
 			},
 		},

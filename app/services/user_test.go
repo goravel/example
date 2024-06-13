@@ -31,16 +31,16 @@ func (s *UserTestSuite) TestCreate() {
 	mockDb := mockFactory.OrmQuery()
 	mockOrm.On("Query").Return(mockDb).Once()
 	mockDb.On("Create", &models.User{
-		Name:   "name",
+		Name:   "unit",
 		Avatar: "avatar",
 	}).Return(nil).Once()
 
 	// 2. test execute
-	user, err := s.user.Create()
+	user, err := s.user.Create("unit")
 
 	// 3. test assert
 	s.Nil(err)
-	s.Equal("name", user.Name)
+	s.Equal("unit", user.Name)
 	mockOrm.AssertExpectations(s.T())
 	mockDb.AssertExpectations(s.T())
 }
