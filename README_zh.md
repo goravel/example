@@ -37,13 +37,13 @@ Laravel！
 
 [app/http/controllers/jwt_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/jwt_controller.go)
 
-### Testing With Mock
+### Unit Test (Testing With Mock)
 
-[app/services/user_test.go](https://github.com/goravel/example/blob/master/app/services/user_test.go)
+[app/http/controllers/validation_controller_test.go](https://github.com/goravel/example/blob/master/app/http/controllers/validation_controller_test.go)
 
-### Testing With Configuration
+### Integration Test (Testing With Configuration)
 
-[tests/services/user_test.go](https://github.com/goravel/example/blob/master/tests/services/user_test.go)
+[tests/controllers/validation_controller_test.go](https://github.com/goravel/example/blob/master/tests/controllers/validation_controller_test.go)
 
 ### GRPC
 
@@ -67,11 +67,11 @@ Laravel！
 
 ### Session
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L69)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L65)
 
 ### Cookie
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L85)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L81)
 
 ## 文档
 
