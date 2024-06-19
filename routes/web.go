@@ -58,13 +58,8 @@ func Web() {
 	})
 
 	// Localization
-	facades.Route().Middleware(middleware.Lang()).Get("lang", func(ctx http.Context) http.Response {
-		return ctx.Response().Success().Json(http.Json{
-			"current_locale": facades.App().CurrentLocale(ctx),
-			"name":           facades.Lang(ctx).Get("name"),
-			"fallback":       facades.Lang(ctx).Get("description"),
-		})
-	})
+	langController := controllers.NewLangController()
+	facades.Route().Middleware(middleware.Lang()).Get("lang", langController.Index)
 
 	// Session
 	facades.Route().Prefix("session").Group(func(router route.Router) {
