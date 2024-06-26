@@ -1,8 +1,8 @@
 CREATE TABLE users (
-  id integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+  id SERIAL PRIMARY KEY NOT NULL,
   name varchar(255) DEFAULT '' NOT NULL,
   avatar varchar(255) DEFAULT '' NOT NULL,
-  created_at datetime NOT NULL,
-  updated_at datetime NOT NULL,
-  deleted_at datetime DEFAULT NULL
+  created_at timestamp NOT NULL,
+  updated_at timestamp NOT NULL,
+  deleted_at timestamp DEFAULT NULL
 );
