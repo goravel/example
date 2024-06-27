@@ -28,12 +28,16 @@ func (s *ThrottleTestSuite) TearDownTest() {
 
 func (s *ThrottleTestSuite) TestThrottle() {
 	tests := []struct {
-		name         string
-		expectStatus string
+		name             string
+		expectStatusCode int
 	}{
 		{
-			name:         "throttle",
-			expectStatus: "429",
+			name:             "no throttle",
+			expectStatusCode: 200,
+		},
+		{
+			name:             "throttle",
+			expectStatusCode: 429,
 		},
 	}
 
@@ -41,11 +45,11 @@ func (s *ThrottleTestSuite) TestThrottle() {
 		s.Run(test.name, func() {
 			var resp *http.Response
 			var err error
-			for i := 0; i < 10; i++ {
+			for i := 0; i < 5; i++ {
 				resp, err = http.Get(route("/jwt/login"))
 				s.Require().NoError(err)
 			}
-			s.Equal(test.expectStatus, resp.Status)
+			s.Equal(test.expectStatusCode, resp.StatusCode)
 		})
 	}
 }
