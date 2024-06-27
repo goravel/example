@@ -5,11 +5,14 @@ import (
 	"testing"
 
 	"github.com/goravel/framework/facades"
+	"github.com/goravel/framework/support/file"
 	"github.com/goravel/framework/support/str"
 )
 
 func TestMain(m *testing.M) {
 	m.Run()
+
+	file.Remove("storage")
 }
 
 func route(path string) string {
