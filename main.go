@@ -17,7 +17,7 @@ func main() {
 		}
 	}()
 
-	// Start GRPC server
+	// Start grpc server
 	go func() {
 		if err := facades.Grpc().Run(); err != nil {
 			facades.Log().Errorf("Run grpc error: %+v", err)
