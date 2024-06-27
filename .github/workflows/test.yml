@@ -14,7 +14,7 @@ jobs:
 #      - name: Set up PostgreSQL
 #        uses: harmon758/postgresql-action@v1
 #        with:
-#          postgresql version: '11'
+#          postgresql version: '16'
 #          postgresql db: 'goravel'
 #          postgresql user: 'goravel'
 #          postgresql password: 'goravel'
