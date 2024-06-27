@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/goravel/framework/facades"
+	frameworkmiddleware "github.com/goravel/framework/http/middleware"
 
 	"goravel/app/http/controllers"
 	"goravel/app/http/middleware"
@@ -24,7 +25,7 @@ func Api() {
 
 	// JWT
 	jwtController := controllers.NewJwtController()
-	facades.Route().Get("/jwt/login", jwtController.Login)
+	facades.Route().Middleware(frameworkmiddleware.Throttle("login")).Get("/jwt/login", jwtController.Login)
 	facades.Route().Middleware(middleware.Jwt()).Get("/jwt", jwtController.Index)
 
 	// Swagger
