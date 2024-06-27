@@ -15,9 +15,16 @@ func (receiver *RouteServiceProvider) Register(app foundation.Application) {
 }
 
 func (receiver *RouteServiceProvider) Boot(app foundation.Application) {
-	//Add HTTP middleware
+	// Add HTTP middleware
 	facades.Route().GlobalMiddleware(http.Kernel{}.Middleware()...)
 
-	//Add routes
+	receiver.configureRateLimiting()
+
+	// Add routes
 	routes.Web()
+	routes.Api()
+}
+
+func (receiver *RouteServiceProvider) configureRateLimiting() {
+
 }

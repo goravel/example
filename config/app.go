@@ -20,6 +20,7 @@ import (
 	"github.com/goravel/framework/route"
 	"github.com/goravel/framework/schedule"
 	"github.com/goravel/framework/session"
+	"github.com/goravel/framework/support/carbon"
 	"github.com/goravel/framework/testing"
 	"github.com/goravel/framework/translation"
 	"github.com/goravel/framework/validation"
@@ -53,24 +54,30 @@ func init() {
 
 		// Application Timezone
 		//
-		// Here you may specify the default timezone for your application, which
-		// will be used by the PHP date and date-time functions. We have gone
-		// ahead and set this to a sensible default for you out of the box.
-		"timezone": "UTC",
+		// Here you may specify the default timezone for your application.
+		// Example: UTC, Asia/Shanghai
+		// More: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+		"timezone": carbon.UTC,
 
 		// Application Locale Configuration
 		//
 		// The application locale determines the default locale that will be used
-		// by the translation service provider.You are free to set this value
+		// by the translation service provider. You are free to set this value
 		// to any of the locales which will be supported by the application.
 		"locale": "en",
 
 		// Application Fallback Locale
 		//
 		// The fallback locale determines the locale to use when the current one
-		// is not available.You may change the value to correspond to any of
+		// is not available. You may change the value to correspond to any of
 		// the language folders that are provided through your application.
-		"fallback_locale": "cn",
+		"fallback_locale": "en",
+
+		// Application Lang Path
+		//
+		// The path to the language files for the application. You may change
+		// the path to a different directory if you would like to customize it.
+		"lang_path": "lang",
 
 		// Encryption Key
 		//
@@ -96,10 +103,10 @@ func init() {
 			&grpc.ServiceProvider{},
 			&mail.ServiceProvider{},
 			&auth.ServiceProvider{},
+			&hash.ServiceProvider{},
+			&crypt.ServiceProvider{},
 			&filesystem.ServiceProvider{},
 			&validation.ServiceProvider{},
-			&crypt.ServiceProvider{},
-			&hash.ServiceProvider{},
 			&session.ServiceProvider{},
 			&translation.ServiceProvider{},
 			&testing.ServiceProvider{},
