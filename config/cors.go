@@ -18,7 +18,7 @@ func init() {
 		"allowed_methods":      []string{"*"},
 		"allowed_origins":      []string{"*"},
 		"allowed_headers":      []string{"*"},
-		"exposed_headers":      []string{"*"},
+		"exposed_headers":      []string{""},
 		"max_age":              0,
 		"supports_credentials": false,
 	})
