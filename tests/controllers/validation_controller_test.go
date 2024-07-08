@@ -39,7 +39,8 @@ func (s *ValidationControllerTestSuite) TearDownTest() {
 
 func (s *ValidationControllerTestSuite) TestJson() {
 	payload := strings.NewReader(`{
-		"name": "Goravel"
+		"name": "Goravel",
+		"date": "2024-07-08 18:33:32"
 	}`)
 	resp, err := http.Post(route("/validation/json"), "application/json", payload)
 	s.Require().NoError(err)
@@ -47,5 +48,21 @@ func (s *ValidationControllerTestSuite) TestJson() {
 	body, err := io.ReadAll(resp.Body)
 	s.Require().NoError(err)
 	s.Equal(http.StatusOK, resp.StatusCode)
-	s.Contains(string(body), "{\"name\":\"Goravel\"}")
+	s.Equal(string(body), "{\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\"}")
+}
+
+func (s *ValidationControllerTestSuite) TestRequest() {
+	payload := strings.NewReader(`{
+		"name": "Goravel",
+		"date": "2024-07-08 18:33:32",
+		"tags": ["tag1", "tag2"],
+		"scores": [1, 2]
+	}`)
+	resp, err := http.Post(route("/validation/request"), "application/json", payload)
+	s.Require().NoError(err)
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	s.Require().NoError(err)
+	s.Equal(http.StatusOK, resp.StatusCode)
+	s.Equal(string(body), "{\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\",\"scores\":[1,2],\"tags\":[\"tag1\",\"tag2\"]}")
 }
