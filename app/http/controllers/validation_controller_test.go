@@ -4,11 +4,10 @@ import (
 	"testing"
 
 	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/support/carbon"
 	testingmock "github.com/goravel/framework/testing/mock"
 	"github.com/goravel/gin"
 	"github.com/stretchr/testify/suite"
-
-	"goravel/app/models"
 )
 
 type ValidationControllerTestSuite struct {
@@ -36,11 +35,13 @@ func (s *ValidationControllerTestSuite) TestJson() {
 	mockContext.EXPECT().Request().Return(mockRequest).Once()
 	mockRequest.EXPECT().Validate(map[string]string{
 		"name": "required",
+		"date": "required|date",
 	}).Return(mockValidator, nil).Once()
 	mockValidator.EXPECT().Fails().Return(false).Once()
-	var user models.User
+	var user User
 	mockValidator.EXPECT().Bind(&user).Run(func(user any) {
-		user.(*models.User).Name = "Goravel"
+		user.(*User).Name = "Goravel"
+		user.(*User).Date = carbon.NewDateTime(carbon.Parse("2024-07-08 22:34:31"))
 	}).Return(nil).Once()
 	mockContext.EXPECT().Response().Return(mockResponse).Once()
 	mockResponseStatus := mockFactory.ResponseStatus()
@@ -49,6 +50,7 @@ func (s *ValidationControllerTestSuite) TestJson() {
 	resp := &gin.JsonResponse{}
 	mockResponseStatus.EXPECT().Json(http.Json{
 		"name": "Goravel",
+		"date": "2024-07-08 22:34:31",
 	}).Return(resp).Once()
 
 	s.Equal(resp, NewValidationController().Json(mockContext))

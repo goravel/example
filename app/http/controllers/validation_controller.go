@@ -30,6 +30,11 @@ air
 4.9 curl --location --request POST 'http://127.0.0.1:3000/validation/form' --header 'Content-Type: multipart/form-data' --form 'name="goravel"'
  ********************************/
 
+type User struct {
+	Name string          `json:"name" form:"name"`
+	Date carbon.DateTime `json:"date" form:"date"`
+}
+
 type ValidationController struct {
 	// Dependent services
 }
@@ -56,10 +61,7 @@ func (r *ValidationController) Json(ctx http.Context) http.Response {
 		})
 	}
 
-	var user struct {
-		Name string          `json:"name" form:"name"`
-		Date carbon.DateTime `json:"date" form:"date"`
-	}
+	var user User
 	if err := validator.Bind(&user); err != nil {
 		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": err.Error(),
