@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/goravel/framework/support/debug"
 	"io"
 	"net/http"
 	"sync"
@@ -62,6 +63,10 @@ func (s *SessionTestSuite) TestIndex() {
 					s.Require().NoError(err)
 					s.Equal(http.StatusOK, resp.StatusCode)
 					s.Equal(test.expectResponse, string(body))
+
+					if test.expectResponse != string(body) {
+						debug.Dump(string(body))
+					}
 
 					wg.Done()
 				}()
