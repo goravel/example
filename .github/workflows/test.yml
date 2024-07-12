@@ -11,13 +11,13 @@ jobs:
         go: [ "1.21", "1.22" ]
     runs-on: ubuntu-latest
     steps:
-      - name: Set up PostgreSQL
-        uses: harmon758/postgresql-action@v1
-        with:
-          postgresql version: '11'
-          postgresql db: 'goravel'
-          postgresql user: 'goravel'
-          postgresql password: 'goravel'
+#      - name: Set up PostgreSQL
+#        uses: harmon758/postgresql-action@v1
+#        with:
+#          postgresql version: '11'
+#          postgresql db: 'goravel'
+#          postgresql user: 'goravel'
+#          postgresql password: 'goravel'
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
