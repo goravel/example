@@ -70,7 +70,7 @@ func Web() {
 				"name": cast.ToString(ctx.Request().Session().Get("name")),
 			})
 		})
-		router.Get("get", func(ctx http.Context) http.Response {
+		router.Middleware(middleware.Session()).Get("get", func(ctx http.Context) http.Response {
 			return ctx.Response().Success().Json(http.Json{
 				"name": ctx.Request().Session().Get("name"),
 			})
