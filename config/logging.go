@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/goravel/framework/facades"
+	"github.com/goravel/framework/support/path"
 )
 
 func init() {
@@ -36,6 +37,13 @@ func init() {
 				"level":  config.Env("LOG_LEVEL", "debug"),
 				"days":   7,
 				"print":  true,
+			},
+			"http": map[string]any{
+				"driver": "daily",
+				"path":   path.Executable("storage/logs/http.log"),
+				"level":  "info",
+				"days":   7,
+				"print":  false,
 			},
 		},
 	})

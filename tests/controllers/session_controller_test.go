@@ -53,9 +53,9 @@ func (s *SessionTestSuite) TestIndex() {
 
 			cookies := resp.Cookies()
 
-			ticker := time.NewTicker(60 * time.Second)
-			// 10min timeout
-			after := time.After(600 * time.Second)
+			ticker := time.NewTicker(5 * time.Second)
+			// timeout
+			after := time.After(100 * time.Second)
 
 			for {
 				select {
