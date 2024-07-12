@@ -4,8 +4,8 @@ import (
 	"github.com/goravel/framework/support/debug"
 	"io"
 	"net/http"
-	"sync"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 
@@ -53,10 +53,16 @@ func (s *SessionTestSuite) TestIndex() {
 
 			cookies := resp.Cookies()
 
-			var wg sync.WaitGroup
-			for i := 0; i < 1000; i++ {
-				wg.Add(1)
-				go func() {
+			ticker := time.NewTicker(10 * time.Millisecond)
+			// 1min timeout
+			after := time.After(60 * time.Second)
+
+			for {
+				select {
+				case <-after:
+					ticker.Stop()
+					return
+				case <-ticker.C:
 					client := &http.Client{}
 					var req *http.Request
 					req, err = http.NewRequest("GET", route("/session/get"), nil)
@@ -77,9 +83,8 @@ func (s *SessionTestSuite) TestIndex() {
 					if test.expectResponse != string(body) {
 						debug.Dump(string(body))
 					}
+				}
 
-					wg.Done()
-				}()
 			}
 		})
 	}
