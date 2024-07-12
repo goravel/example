@@ -51,6 +51,8 @@ func (s *SessionTestSuite) TestIndex() {
 			resp, err := http.Get(route("/session/put"))
 			s.Require().NoError(err)
 
+			cookies := resp.Cookies()
+
 			var wg sync.WaitGroup
 			for i := 0; i < 1000; i++ {
 				wg.Add(1)
@@ -58,7 +60,7 @@ func (s *SessionTestSuite) TestIndex() {
 					client := &http.Client{}
 					var req *http.Request
 					req, err = http.NewRequest("GET", route("/session/get"), nil)
-					for _, v := range resp.Cookies() {
+					for _, v := range cookies {
 						req.AddCookie(v)
 					}
 
@@ -66,6 +68,7 @@ func (s *SessionTestSuite) TestIndex() {
 					s.Require().NoError(err)
 					defer resp.Body.Close()
 					body, err := io.ReadAll(resp.Body)
+					cookies = resp.Cookies()
 
 					s.Require().NoError(err)
 					s.Equal(http.StatusOK, resp.StatusCode)
