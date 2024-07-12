@@ -53,7 +53,7 @@ func (s *SessionTestSuite) TestIndex() {
 
 			cookies := resp.Cookies()
 
-			ticker := time.NewTicker(10 * time.Millisecond)
+			ticker := time.NewTicker(1 * time.Millisecond)
 			// 1min timeout
 			after := time.After(60 * time.Second)
 
