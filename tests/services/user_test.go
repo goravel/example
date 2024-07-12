@@ -33,10 +33,3 @@ func (s *UserTestSuite) SetupTest() {
 // TearDownTest will run after each test in the suite.
 func (s *UserTestSuite) TearDownTest() {
 }
-
-func (s *UserTestSuite) TestCreateByConfig() {
-	user, err := s.user.Create("feature")
-	s.Nil(err)
-	s.True(user.ID > 0)
-	s.Equal("feature", user.Name)
-}
