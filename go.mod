@@ -6,7 +6,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/gofiber/template/html/v2 v2.1.2
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.2.0
+	github.com/goravel/fiber v1.2.3-0.20240712070148-872090069dd1
 	github.com/goravel/framework v1.14.1-0.20240712083052-4dc2a254e8db
 	github.com/goravel/gin v1.2.3-0.20240712065957-fe9e02c7125d
 	github.com/gorilla/websocket v1.5.0

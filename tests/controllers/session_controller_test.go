@@ -48,14 +48,21 @@ func (s *SessionTestSuite) TestIndex() {
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			_, err := http.Get(route("/session/put"))
+			resp, err := http.Get(route("/session/put"))
 			s.Require().NoError(err)
 
 			var wg sync.WaitGroup
 			for i := 0; i < 1000; i++ {
 				wg.Add(1)
 				go func() {
-					resp, err := http.Get(route("/session/get"))
+					client := &http.Client{}
+					var req *http.Request
+					req, err = http.NewRequest("GET", route("/session/get"), nil)
+					for _, v := range resp.Cookies() {
+						req.AddCookie(v)
+					}
+
+					resp, err := client.Do(req)
 					s.Require().NoError(err)
 					defer resp.Body.Close()
 					body, err := io.ReadAll(resp.Body)

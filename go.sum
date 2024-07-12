@@ -420,8 +420,8 @@ github.com/gookit/validate v1.5.2 h1:i5I2OQ7WYHFRPRATGu9QarR9snnNHydvwSuHXaRWAV0
 github.com/gookit/validate v1.5.2/go.mod h1:yuPy2WwDlwGRa06fFJ5XIO8QEwhRnTC2LmxmBa5SE14=
 github.com/goravel/example-proto v0.0.1 h1:ZxETeKREQWjuJ49bX/Hqj1NLR5Vyj489Ks6dRxYeQsk=
 github.com/goravel/example-proto v0.0.1/go.mod h1:I8IPsHr4Ndf7KxmdsRpBR2LQ0Geo48+pjv9IIWf3mZg=
-github.com/goravel/fiber v1.2.0 h1:4xm19AxO6zP004NVgKCXqD4TSLljTyaKG0oaHeybaYU=
-github.com/goravel/fiber v1.2.0/go.mod h1:wn0p0n8ShtgqQgULhZNT27Oa6KO2BTCv6edMVX8L9Oo=
+github.com/goravel/fiber v1.2.3-0.20240712070148-872090069dd1 h1:tw8fUWGYsXVb+U67xAA4YkJtSxFoz9fMSeC862VXyEk=
+github.com/goravel/fiber v1.2.3-0.20240712070148-872090069dd1/go.mod h1:2iayq7/Opq0yn4h8pm5bEbRKioBD6lEOvjwIisZyF3M=
 github.com/goravel/file-rotatelogs/v2 v2.4.2 h1:g68AzbePXcm0V2CpUMc9j4qVzcDn7+7aoWSjZ51C0m4=
 github.com/goravel/file-rotatelogs/v2 v2.4.2/go.mod h1:23VuSW8cBS4ax5cmbV+5AaiLpq25b8UJ96IhbAkdo8I=
 github.com/goravel/framework v1.14.1-0.20240712083052-4dc2a254e8db h1:qLnlFPRWoByf+Ks0L0iikEcnnwoq8a+EzLFJqRrEjH0=
