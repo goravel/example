@@ -54,7 +54,7 @@ func (s *RouteTestSuite) TestUsers() {
 	s.Equal("Goravel", createdUser.User.Name)
 	s.Equal("https://goravel.dev/avatar.png", createdUser.User.Avatar)
 
-	// Get the Users
+	// Get Users
 	var users struct {
 		Users []models.User
 	}
@@ -101,7 +101,7 @@ func (s *RouteTestSuite) TestUsers() {
 	s.Require().Equal(http.StatusOK, resp.StatusCode())
 	s.Equal("{\"rows_affected\":1}", resp.String())
 
-	// Get the Users
+	// Get Users
 	resp, err = client.R().Get("users")
 
 	s.Require().NoError(err)
