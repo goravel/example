@@ -5,11 +5,10 @@ import (
 	"testing"
 
 	"github.com/goravel/framework/facades"
+	"github.com/goravel/framework/support/file"
 )
 
 func TestMain(m *testing.M) {
-	//facades.Artisan().Call("migrate")'
-
 	database, err := facades.Testing().Docker().Database()
 	if err != nil {
 		panic(err)
@@ -27,8 +26,7 @@ func TestMain(m *testing.M) {
 
 	exit := m.Run()
 
-	//file.Remove("goravel")
-
+	file.Remove("storage")
 	if err := database.Clear(); err != nil {
 		panic(err)
 	}
