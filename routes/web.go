@@ -93,4 +93,6 @@ func Web() {
 			})
 		})
 	})
+
+	facades.Route().Resource("users", controllers.NewUserController())
 }
