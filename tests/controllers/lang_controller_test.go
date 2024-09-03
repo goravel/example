@@ -2,13 +2,13 @@ package controllers
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
 
 	"goravel/tests"
+	"goravel/tests/utils"
 )
 
 /*
@@ -34,6 +34,8 @@ func (s *LangControllerTestSuite) TearDownTest() {
 }
 
 func (s *LangControllerTestSuite) TestIndex() {
+	client := utils.Http()
+
 	tests := []struct {
 		name           string
 		lang           string
@@ -52,15 +54,11 @@ func (s *LangControllerTestSuite) TestIndex() {
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			resp, err := http.Get(route(fmt.Sprintf("/lang?lang=%s", test.lang)))
-			s.Require().NoError(err)
+			resp, err := client.R().Get(fmt.Sprintf("/lang?lang=%s", test.lang))
 
-			defer resp.Body.Close()
-			body, err := io.ReadAll(resp.Body)
-
-			s.Require().NoError(err)
-			s.Equal(http.StatusOK, resp.StatusCode)
-			s.Equal(test.expectResponse, string(body))
+			s.NoError(err)
+			s.Equal(http.StatusOK, resp.StatusCode())
+			s.Equal(test.expectResponse, resp.String())
 		})
 	}
 }

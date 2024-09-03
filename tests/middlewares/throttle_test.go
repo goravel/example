@@ -1,12 +1,13 @@
 package middlewares
 
 import (
-	"net/http"
 	"testing"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/stretchr/testify/suite"
 
 	"goravel/tests"
+	"goravel/tests/utils"
 )
 
 type ThrottleTestSuite struct {
@@ -27,6 +28,8 @@ func (s *ThrottleTestSuite) TearDownTest() {
 }
 
 func (s *ThrottleTestSuite) TestThrottle() {
+	client := utils.Http()
+
 	tests := []struct {
 		name             string
 		expectStatusCode int
@@ -43,13 +46,13 @@ func (s *ThrottleTestSuite) TestThrottle() {
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			var resp *http.Response
+			var resp *resty.Response
 			var err error
 			for i := 0; i < 5; i++ {
-				resp, err = http.Get(route("/jwt/login"))
+				resp, err = client.R().Get("/jwt/login")
 				s.Require().NoError(err)
 			}
-			s.Equal(test.expectStatusCode, resp.StatusCode)
+			s.Equal(test.expectStatusCode, resp.StatusCode())
 		})
 	}
 }

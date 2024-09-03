@@ -5,12 +5,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-resty/resty/v2"
-	"github.com/goravel/framework/facades"
 	"github.com/stretchr/testify/suite"
 
 	"goravel/app/models"
 	"goravel/tests"
+	"goravel/tests/utils"
 )
 
 type RouteTestSuite struct {
@@ -32,11 +31,7 @@ func (s *RouteTestSuite) TearDownTest() {
 }
 
 func (s *RouteTestSuite) TestUsers() {
-	client := resty.New().
-		SetBaseURL(fmt.Sprintf("http://%s:%s",
-			facades.Config().GetString("APP_HOST"),
-			facades.Config().GetString("APP_PORT"))).
-		SetHeader("Content-Type", "application/json")
+	client := utils.Http()
 
 	// Add a user
 	var createdUser struct {

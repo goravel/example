@@ -18,12 +18,6 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	go func() {
-		if err := facades.Route().Run(); err != nil {
-			facades.Log().Errorf("Route run error: %v", err)
-		}
-	}()
-
 	exit := m.Run()
 
 	file.Remove("storage")

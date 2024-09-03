@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/goravel/framework/contracts/http"
-	frameworkmiddleware "github.com/goravel/framework/http/middleware"
+	httpmiddleware "github.com/goravel/framework/http/middleware"
 	"github.com/goravel/framework/session/middleware"
 )
 
@@ -13,7 +13,7 @@ type Kernel struct {
 // These middleware are run during every request to your application.
 func (kernel Kernel) Middleware() []http.Middleware {
 	return []http.Middleware{
-		frameworkmiddleware.Throttle("global"),
+		httpmiddleware.Throttle("global"),
 		middleware.StartSession(),
 	}
 }

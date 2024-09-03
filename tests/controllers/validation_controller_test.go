@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -9,6 +8,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"goravel/tests"
+	"goravel/tests/utils"
 )
 
 /*
@@ -42,13 +42,12 @@ func (s *ValidationControllerTestSuite) TestJson() {
 		"name": "Goravel",
 		"date": "2024-07-08 18:33:32"
 	}`)
-	resp, err := http.Post(route("/validation/json"), "application/json", payload)
-	s.Require().NoError(err)
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	s.Require().NoError(err)
-	s.Equal(http.StatusOK, resp.StatusCode)
-	s.Equal(string(body), "{\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\"}")
+
+	resp, err := utils.Http().R().SetBody(payload).Post("/validation/json")
+
+	s.NoError(err)
+	s.Equal(http.StatusOK, resp.StatusCode())
+	s.Equal("{\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\"}", resp.String())
 }
 
 func (s *ValidationControllerTestSuite) TestRequest() {
@@ -58,11 +57,10 @@ func (s *ValidationControllerTestSuite) TestRequest() {
 		"tags": ["tag1", "tag2"],
 		"scores": [1, 2]
 	}`)
-	resp, err := http.Post(route("/validation/request"), "application/json", payload)
-	s.Require().NoError(err)
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	s.Require().NoError(err)
-	s.Equal(http.StatusOK, resp.StatusCode)
-	s.Equal(string(body), "{\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\",\"scores\":[1,2],\"tags\":[\"tag1\",\"tag2\"]}")
+
+	resp, err := utils.Http().R().SetBody(payload).Post("/validation/request")
+
+	s.NoError(err)
+	s.Equal(http.StatusOK, resp.StatusCode())
+	s.Equal("{\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\",\"scores\":[1,2],\"tags\":[\"tag1\",\"tag2\"]}", resp.String())
 }

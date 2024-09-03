@@ -1,23 +1,30 @@
 package middlewares
 
 import (
-	"fmt"
+	"os"
 	"testing"
 
 	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support/file"
-	"github.com/goravel/framework/support/str"
 )
 
 func TestMain(m *testing.M) {
-	m.Run()
+	database, err := facades.Testing().Docker().Database()
+	if err != nil {
+		panic(err)
+	}
+
+	if err := database.Build(); err != nil {
+		panic(err)
+	}
+
+	exit := m.Run()
 
 	file.Remove("storage")
-}
 
-func route(path string) string {
-	return fmt.Sprintf("http://%s:%s/%s",
-		facades.Config().GetString("APP_HOST"),
-		facades.Config().GetString("APP_PORT"),
-		str.Of(path).LTrim("/").String())
+	if err := database.Clear(); err != nil {
+		panic(err)
+	}
+
+	os.Exit(exit)
 }
