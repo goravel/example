@@ -3,6 +3,7 @@ package feature
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/go-resty/resty/v2"
@@ -16,10 +17,17 @@ import (
 type RouteTestSuite struct {
 	suite.Suite
 	tests.TestCase
+	http *resty.Request
 }
 
 func TestRouteTestSuite(t *testing.T) {
-	suite.Run(t, &RouteTestSuite{})
+	suite.Run(t, &RouteTestSuite{
+		http: resty.New().
+			SetBaseURL(fmt.Sprintf("http://%s:%s",
+				facades.Config().GetString("APP_HOST"),
+				facades.Config().GetString("APP_PORT"))).
+			SetHeader("Content-Type", "application/json").R(),
+	})
 }
 
 // SetupTest will run before each test in the suite.
@@ -32,18 +40,12 @@ func (s *RouteTestSuite) TearDownTest() {
 }
 
 func (s *RouteTestSuite) TestUsers() {
-	client := resty.New().
-		SetBaseURL(fmt.Sprintf("http://%s:%s",
-			facades.Config().GetString("APP_HOST"),
-			facades.Config().GetString("APP_PORT"))).
-		SetHeader("Content-Type", "application/json")
-
 	// Add a user
 	var createdUser struct {
 		User models.User
 	}
 
-	resp, err := client.R().SetResult(&createdUser).SetBody(map[string]string{
+	resp, err := s.http.SetResult(&createdUser).SetBody(map[string]string{
 		"name":   "Goravel",
 		"avatar": "https://goravel.dev/avatar.png",
 	}).Post("users")
@@ -58,7 +60,7 @@ func (s *RouteTestSuite) TestUsers() {
 	var users struct {
 		Users []models.User
 	}
-	resp, err = client.R().SetResult(&users).Get("users")
+	resp, err = s.http.SetResult(&users).Get("users")
 
 	s.Require().NoError(err)
 	s.Require().Equal(http.StatusOK, resp.StatusCode())
@@ -72,7 +74,7 @@ func (s *RouteTestSuite) TestUsers() {
 		User models.User
 	}
 
-	resp, err = client.R().SetResult(&updatedUser).SetBody(map[string]string{
+	resp, err = s.http.SetResult(&updatedUser).SetBody(map[string]string{
 		"name": "Framework",
 	}).Put(fmt.Sprintf("users/%d", createdUser.User.ID))
 
@@ -86,7 +88,7 @@ func (s *RouteTestSuite) TestUsers() {
 	var user struct {
 		User models.User
 	}
-	resp, err = client.R().SetResult(&user).Get(fmt.Sprintf("users/%d", createdUser.User.ID))
+	resp, err = s.http.SetResult(&user).Get(fmt.Sprintf("users/%d", createdUser.User.ID))
 
 	s.Require().NoError(err)
 	s.Require().Equal(http.StatusOK, resp.StatusCode())
@@ -95,16 +97,100 @@ func (s *RouteTestSuite) TestUsers() {
 	s.Equal("https://goravel.dev/avatar.png", user.User.Avatar)
 
 	// Delete the User
-	resp, err = client.R().Delete(fmt.Sprintf("users/%d", createdUser.User.ID))
+	resp, err = s.http.Delete(fmt.Sprintf("users/%d", createdUser.User.ID))
 
 	s.Require().NoError(err)
 	s.Require().Equal(http.StatusOK, resp.StatusCode())
 	s.Equal("{\"rows_affected\":1}", resp.String())
 
 	// Get Users
-	resp, err = client.R().Get("users")
+	resp, err = s.http.Get("users")
 
 	s.Require().NoError(err)
 	s.Require().Equal(http.StatusOK, resp.StatusCode())
 	s.Equal("{\"users\":[]}", resp.String())
+}
+
+func (s *RouteTestSuite) TestLang() {
+	tests := []struct {
+		name           string
+		lang           string
+		expectResponse string
+	}{
+		{
+			name:           "use default lang",
+			expectResponse: "{\"current_locale\":\"en\",\"fallback\":\"Goravel 是一个基于 Go 语言的 Web 开发框架\",\"name\":\"Goravel Framework\"}",
+		},
+		{
+			name:           "lang is cn",
+			lang:           "cn",
+			expectResponse: "{\"current_locale\":\"cn\",\"fallback\":\"Goravel 是一个基于 Go 语言的 Web 开发框架\",\"name\":\"Goravel 框架\"}",
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			resp, err := s.http.Get(fmt.Sprintf("/lang?lang=%s", test.lang))
+
+			s.NoError(err)
+			s.Equal(http.StatusOK, resp.StatusCode())
+			s.Equal(test.expectResponse, resp.String())
+		})
+	}
+}
+
+func (s *RouteTestSuite) TestValidationJson() {
+	payload := strings.NewReader(`{
+		"name": "Goravel",
+		"date": "2024-07-08 18:33:32"
+	}`)
+
+	resp, err := s.http.SetBody(payload).Post("/validation/json")
+
+	s.NoError(err)
+	s.Equal(http.StatusOK, resp.StatusCode())
+	s.Equal("{\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\"}", resp.String())
+}
+
+func (s *RouteTestSuite) TestValidationRequest() {
+	payload := strings.NewReader(`{
+		"name": "Goravel",
+		"date": "2024-07-08 18:33:32",
+		"tags": ["tag1", "tag2"],
+		"scores": [1, 2]
+	}`)
+
+	resp, err := s.http.SetBody(payload).Post("/validation/request")
+
+	s.NoError(err)
+	s.Equal(http.StatusOK, resp.StatusCode())
+	s.Equal("{\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\",\"scores\":[1,2],\"tags\":[\"tag1\",\"tag2\"]}", resp.String())
+}
+
+func (s *RouteTestSuite) TestThrottle() {
+	tests := []struct {
+		name             string
+		expectStatusCode int
+	}{
+		{
+			name:             "no throttle",
+			expectStatusCode: 200,
+		},
+		{
+			name:             "throttle",
+			expectStatusCode: 429,
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			var resp *resty.Response
+			var err error
+			for i := 0; i < 5; i++ {
+				resp, err = s.http.Get("/jwt/login")
+				s.Require().NoError(err)
+			}
+			s.Equal(test.expectStatusCode, resp.StatusCode())
+		})
+	}
 }
