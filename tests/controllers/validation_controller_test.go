@@ -43,7 +43,7 @@ func (s *ValidationControllerTestSuite) TestJson() {
 		"date": "2024-07-08 18:33:32"
 	}`)
 
-	resp, err := utils.Http().R().SetBody(payload).Post("/validation/json")
+	resp, err := utils.Http().SetBody(payload).Post("/validation/json")
 
 	s.NoError(err)
 	s.Equal(http.StatusOK, resp.StatusCode())
@@ -58,7 +58,7 @@ func (s *ValidationControllerTestSuite) TestRequest() {
 		"scores": [1, 2]
 	}`)
 
-	resp, err := utils.Http().R().SetBody(payload).Post("/validation/request")
+	resp, err := utils.Http().SetBody(payload).Post("/validation/request")
 
 	s.NoError(err)
 	s.Equal(http.StatusOK, resp.StatusCode())

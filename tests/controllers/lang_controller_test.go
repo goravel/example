@@ -34,8 +34,6 @@ func (s *LangControllerTestSuite) TearDownTest() {
 }
 
 func (s *LangControllerTestSuite) TestIndex() {
-	client := utils.Http()
-
 	tests := []struct {
 		name           string
 		lang           string
@@ -54,7 +52,7 @@ func (s *LangControllerTestSuite) TestIndex() {
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			resp, err := client.R().Get(fmt.Sprintf("/lang?lang=%s", test.lang))
+			resp, err := utils.Http().Get(fmt.Sprintf("/lang?lang=%s", test.lang))
 
 			s.NoError(err)
 			s.Equal(http.StatusOK, resp.StatusCode())

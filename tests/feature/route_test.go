@@ -31,14 +31,12 @@ func (s *RouteTestSuite) TearDownTest() {
 }
 
 func (s *RouteTestSuite) TestUsers() {
-	client := utils.Http()
-
 	// Add a user
 	var createdUser struct {
 		User models.User
 	}
 
-	resp, err := client.R().SetResult(&createdUser).SetBody(map[string]string{
+	resp, err := utils.Http().SetResult(&createdUser).SetBody(map[string]string{
 		"name":   "Goravel",
 		"avatar": "https://goravel.dev/avatar.png",
 	}).Post("users")
@@ -53,7 +51,7 @@ func (s *RouteTestSuite) TestUsers() {
 	var users struct {
 		Users []models.User
 	}
-	resp, err = client.R().SetResult(&users).Get("users")
+	resp, err = utils.Http().SetResult(&users).Get("users")
 
 	s.Require().NoError(err)
 	s.Require().Equal(http.StatusOK, resp.StatusCode())
@@ -67,7 +65,7 @@ func (s *RouteTestSuite) TestUsers() {
 		User models.User
 	}
 
-	resp, err = client.R().SetResult(&updatedUser).SetBody(map[string]string{
+	resp, err = utils.Http().SetResult(&updatedUser).SetBody(map[string]string{
 		"name": "Framework",
 	}).Put(fmt.Sprintf("users/%d", createdUser.User.ID))
 
@@ -81,7 +79,7 @@ func (s *RouteTestSuite) TestUsers() {
 	var user struct {
 		User models.User
 	}
-	resp, err = client.R().SetResult(&user).Get(fmt.Sprintf("users/%d", createdUser.User.ID))
+	resp, err = utils.Http().SetResult(&user).Get(fmt.Sprintf("users/%d", createdUser.User.ID))
 
 	s.Require().NoError(err)
 	s.Require().Equal(http.StatusOK, resp.StatusCode())
@@ -90,14 +88,14 @@ func (s *RouteTestSuite) TestUsers() {
 	s.Equal("https://goravel.dev/avatar.png", user.User.Avatar)
 
 	// Delete the User
-	resp, err = client.R().Delete(fmt.Sprintf("users/%d", createdUser.User.ID))
+	resp, err = utils.Http().Delete(fmt.Sprintf("users/%d", createdUser.User.ID))
 
 	s.Require().NoError(err)
 	s.Require().Equal(http.StatusOK, resp.StatusCode())
 	s.Equal("{\"rows_affected\":1}", resp.String())
 
 	// Get Users
-	resp, err = client.R().Get("users")
+	resp, err = utils.Http().Get("users")
 
 	s.Require().NoError(err)
 	s.Require().Equal(http.StatusOK, resp.StatusCode())

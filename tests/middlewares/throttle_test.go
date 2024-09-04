@@ -28,8 +28,6 @@ func (s *ThrottleTestSuite) TearDownTest() {
 }
 
 func (s *ThrottleTestSuite) TestThrottle() {
-	client := utils.Http()
-
 	tests := []struct {
 		name             string
 		expectStatusCode int
@@ -49,7 +47,7 @@ func (s *ThrottleTestSuite) TestThrottle() {
 			var resp *resty.Response
 			var err error
 			for i := 0; i < 5; i++ {
-				resp, err = client.R().Get("/jwt/login")
+				resp, err = utils.Http().Get("/jwt/login")
 				s.Require().NoError(err)
 			}
 			s.Equal(test.expectStatusCode, resp.StatusCode())
