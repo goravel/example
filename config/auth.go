@@ -31,6 +31,9 @@ func init() {
 			"user": map[string]any{
 				"driver": "jwt",
 			},
+			"admin": map[string]any{
+				"driver": "jwt",
+			},
 		},
 	})
 }
