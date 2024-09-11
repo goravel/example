@@ -2,15 +2,14 @@ package middleware
 
 import (
 	"errors"
-	"net/http"
 
 	"github.com/goravel/framework/auth"
-	httpcontract "github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
 )
 
-func Auth() httpcontract.Middleware {
-	return func(ctx httpcontract.Context) {
+func Auth() http.Middleware {
+	return func(ctx http.Context) {
 		guard := facades.Config().GetString("auth.defaults.guard")
 		if ctx.Request().Header("Guard") != "" {
 			guard = ctx.Request().Header("Guard")
