@@ -11,12 +11,12 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"goravel/app/models"
-	"goravel/tests"
+	goraveltests "goravel/tests"
 )
 
 type RouteTestSuite struct {
 	suite.Suite
-	tests.TestCase
+	goraveltests.TestCase
 	http *resty.Client
 }
 
