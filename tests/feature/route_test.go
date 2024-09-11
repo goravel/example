@@ -11,12 +11,12 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"goravel/app/models"
-	"goravel/tests"
+	goraveltests "goravel/tests"
 )
 
 type RouteTestSuite struct {
 	suite.Suite
-	tests.TestCase
+	goraveltests.TestCase
 	http *resty.Client
 }
 
@@ -37,6 +37,63 @@ func (s *RouteTestSuite) SetupTest() {
 
 // TearDownTest will run after each test in the suite.
 func (s *RouteTestSuite) TearDownTest() {
+}
+
+func (s *RouteTestSuite) TestAuth() {
+	type Response struct {
+		User models.User
+	}
+
+	tests := []struct {
+		name  string
+		guard string
+	}{
+		{
+			name: "default guard",
+		},
+		{
+			name:  "admin guard",
+			guard: "admin",
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			// Unauthorized
+			resp, err := s.http.R().Get("auth/info")
+
+			s.Require().NoError(err)
+			s.Require().Equal(http.StatusUnauthorized, resp.StatusCode())
+
+			// Login
+			var authLogin Response
+			resp, err = s.http.R().SetResult(&authLogin).
+				SetHeader("Guard", test.guard).
+				SetBody(map[string]string{
+					"name": test.name,
+				}).Post("auth/login")
+
+			s.Require().NoError(err)
+			s.Require().Equal(http.StatusOK, resp.StatusCode())
+			s.True(authLogin.User.ID > 0)
+			s.Equal(test.name, authLogin.User.Name)
+
+			token := resp.Header().Get("Authorization")
+			s.Require().NotEmpty(token)
+
+			// Get User
+			var authUser Response
+			resp, err = s.http.R().SetResult(&authUser).SetHeaders(map[string]string{
+				"Authorization": token,
+				"Guard":         test.guard,
+			}).Get("auth/info")
+
+			s.Require().NoError(err)
+			s.Require().Equal(http.StatusOK, resp.StatusCode())
+			s.Equal(authLogin.User.ID, authUser.User.ID)
+			s.Equal(authLogin.User.Name, authUser.User.Name)
+		})
+	}
 }
 
 func (s *RouteTestSuite) TestLang() {
