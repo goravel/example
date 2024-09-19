@@ -96,4 +96,5 @@ func Web() {
 	})
 
 	facades.Route().Resource("users", controllers.NewUserController())
+	facades.Route().Post("users/save", controllers.NewUserController().Save)
 }

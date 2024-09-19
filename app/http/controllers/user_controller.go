@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/goravel/framework/contracts/database/orm"
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
 
@@ -90,5 +91,39 @@ func (r *UserController) Destroy(ctx http.Context) http.Response {
 
 	return ctx.Response().Success().Json(http.Json{
 		"rows_affected": result.RowsAffected,
+	})
+}
+
+// Save
+//
+//	@Description: 保存
+//	@receiver r
+//	@param ctx
+//	@return http.Response
+func (r *UserController) Save(ctx http.Context) http.Response {
+
+	user := models.User{
+		Name:   ctx.Request().Input("name"),
+		Avatar: ctx.Request().Input("avatar"),
+	}
+	err := facades.Orm().Transaction(func(tx orm.Transaction) error {
+		err := tx.FirstOrNew(&models.User{}, models.User{ID: user.ID})
+		if err != nil {
+			return err
+		}
+		err = tx.Save(&user)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
+			"error": err.Error(),
+		})
+	}
+	return ctx.Response().Success().Json(http.Json{
+		"user": user,
 	})
 }

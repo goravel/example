@@ -5,8 +5,9 @@ import (
 )
 
 type User struct {
-	orm.Model
+	ID     uint `gorm:"primaryKey" json:"id"`
 	Name   string
 	Avatar string
 	orm.SoftDeletes
+	orm.Timestamps
 }
