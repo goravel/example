@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
+	"github.com/goravel/framework/support/carbon"
 
 	"goravel/app/http/requests"
 	"goravel/app/models"
@@ -29,6 +30,11 @@ air
 4.9 curl --location --request POST 'http://127.0.0.1:3000/validation/form' --header 'Content-Type: multipart/form-data' --form 'name="goravel"'
  ********************************/
 
+type User struct {
+	Name string          `json:"name" form:"name"`
+	Date carbon.DateTime `json:"date" form:"date"`
+}
+
 type ValidationController struct {
 	// Dependent services
 }
@@ -42,6 +48,7 @@ func NewValidationController() *ValidationController {
 func (r *ValidationController) Json(ctx http.Context) http.Response {
 	validator, err := ctx.Request().Validate(map[string]string{
 		"name": "required",
+		"date": "required|date",
 	})
 	if err != nil {
 		return ctx.Response().Json(http.StatusBadRequest, http.Json{
@@ -54,7 +61,7 @@ func (r *ValidationController) Json(ctx http.Context) http.Response {
 		})
 	}
 
-	var user models.User
+	var user User
 	if err := validator.Bind(&user); err != nil {
 		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": err.Error(),
@@ -63,6 +70,7 @@ func (r *ValidationController) Json(ctx http.Context) http.Response {
 
 	return ctx.Response().Success().Json(http.Json{
 		"name": user.Name,
+		"date": user.Date.ToDateTimeString(),
 	})
 }
 
@@ -84,6 +92,7 @@ func (r *ValidationController) Request(ctx http.Context) http.Response {
 		"name":   userCreate.Name,
 		"tags":   userCreate.Tags,
 		"scores": userCreate.Scores,
+		"date":   userCreate.Date.ToDateTimeString(),
 	})
 }
 

@@ -4,6 +4,7 @@ import (
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/facades"
+	httpmiddleware "github.com/goravel/framework/http/middleware"
 	"github.com/spf13/cast"
 
 	"goravel/app/http/controllers"
@@ -33,7 +34,7 @@ func Web() {
 
 	// JWT
 	jwtController := controllers.NewJwtController()
-	facades.Route().Get("/jwt/login", jwtController.Login)
+	facades.Route().Middleware(httpmiddleware.Throttle("login")).Get("/jwt/login", jwtController.Login)
 	facades.Route().Middleware(middleware.Jwt()).Get("/jwt", jwtController.Index)
 
 	// Swagger
@@ -93,4 +94,6 @@ func Web() {
 			})
 		})
 	})
+
+	facades.Route().Resource("users", controllers.NewUserController())
 }

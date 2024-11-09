@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/goravel/framework/facades"
+	"github.com/goravel/framework/support/path"
 )
 
 func init() {
@@ -20,12 +21,16 @@ func init() {
 		// may even configure multiple disks of the same driver. Defaults have
 		// been set up for each driver as an example of the required values.
 		//
-		// Supported Drivers: "local", "s3", "oss", "cos", "custom"
+		// Supported Drivers: "local", "custom"
 		"disks": map[string]any{
 			"local": map[string]any{
 				"driver": "local",
-				"root":   "storage/app",
-				"url":    config.Env("APP_URL").(string) + "/storage",
+				"root":   path.Storage("app"),
+			},
+			"public": map[string]any{
+				"driver": "local",
+				"root":   path.Storage("app/public"),
+				"url":    config.Env("APP_URL", "").(string) + "/storage",
 			},
 		},
 	})

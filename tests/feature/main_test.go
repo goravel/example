@@ -1,29 +1,35 @@
-package controllers
+package feature
 
 import (
-	"fmt"
+	"os"
 	"testing"
 
 	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support/file"
-	"github.com/goravel/framework/support/str"
 )
 
 func TestMain(m *testing.M) {
+	database, err := facades.Testing().Docker().Database()
+	if err != nil {
+		panic(err)
+	}
+
+	if err := database.Build(); err != nil {
+		panic(err)
+	}
+
 	go func() {
 		if err := facades.Route().Run(); err != nil {
 			facades.Log().Errorf("Route run error: %v", err)
 		}
 	}()
 
-	m.Run()
+	exit := m.Run()
 
 	file.Remove("storage")
-}
+	if err := database.Clear(); err != nil {
+		panic(err)
+	}
 
-func route(path string) string {
-	return fmt.Sprintf("http://%s:%s/%s",
-		facades.Config().GetString("APP_HOST"),
-		facades.Config().GetString("APP_PORT"),
-		str.Of(path).LTrim("/").String())
+	os.Exit(exit)
 }
