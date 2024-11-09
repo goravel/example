@@ -1,11 +1,10 @@
 package middleware
 
 import (
-	"errors"
 	"net/http"
 
-	"github.com/goravel/framework/auth"
 	httpcontract "github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/errors"
 	"github.com/goravel/framework/facades"
 )
 
@@ -18,7 +17,7 @@ func Jwt() httpcontract.Middleware {
 		}
 
 		if _, err := facades.Auth(ctx).Parse(token); err != nil {
-			if errors.Is(err, auth.ErrorTokenExpired) {
+			if errors.Is(err, errors.AuthTokenExpired) {
 				token, err = facades.Auth(ctx).Refresh()
 				if err != nil {
 					// Refresh time exceeded
