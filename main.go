@@ -5,6 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/goravel/framework/contracts/queue"
 	"github.com/goravel/framework/facades"
 
 	"goravel/bootstrap"
@@ -41,6 +42,15 @@ func main() {
 			facades.Log().Errorf("Grpc run error: %v", err)
 		}
 	}()
-
+	go func() {
+		//测试队列
+		queueErr := facades.Queue().Worker(&queue.Args{
+			Queue:      "test_job", //队列名称
+			Concurrent: 4,          //4个并发
+		}).Run()
+		if queueErr != nil {
+			facades.Log().Errorf("Queue run error: %v", queueErr)
+		}
+	}()
 	select {}
 }

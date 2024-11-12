@@ -103,7 +103,7 @@ func init() {
 		// such as APC or Memcached.
 		"redis": map[string]any{
 			"default": map[string]any{
-				"host":     config.Env("REDIS_HOST", ""),
+				"host":     config.Env("REDIS_HOST", "127.0.0.1"),
 				"password": config.Env("REDIS_PASSWORD", ""),
 				"port":     config.Env("REDIS_PORT", 6379),
 				"database": config.Env("REDIS_DB", 0),
