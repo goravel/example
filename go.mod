@@ -10,7 +10,7 @@ require (
 	github.com/gofiber/template/html/v2 v2.1.2
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.2.4
-	github.com/goravel/framework v1.14.7
+	github.com/goravel/framework v1.14.8
 	github.com/goravel/gin v1.2.5
 	github.com/gorilla/websocket v1.5.0
 	github.com/opentracing/opentracing-go v1.2.0
