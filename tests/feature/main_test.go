@@ -24,6 +24,12 @@ func TestMain(m *testing.M) {
 		}
 	}()
 
+	go func() {
+		if err := facades.Queue().Worker(nil).Run(); err != nil {
+			facades.Log().Errorf("Queue run error: %v", err)
+		}
+	}()
+
 	exit := m.Run()
 
 	file.Remove("storage")
