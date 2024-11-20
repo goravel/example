@@ -20,7 +20,7 @@ func (receiver *SendShipmentNotification) Signature() string {
 
 func (receiver *SendShipmentNotification) Queue(args ...any) event.Queue {
 	return event.Queue{
-		Enable:     false,
+		Enable:     true,
 		Connection: "",
 		Queue:      "",
 	}

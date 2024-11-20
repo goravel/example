@@ -2,6 +2,7 @@ package feature
 
 import (
 	"testing"
+	"time"
 
 	"github.com/goravel/framework/contracts/event"
 	"github.com/goravel/framework/facades"
@@ -19,6 +20,8 @@ func TestEvent(t *testing.T) {
 	assert.NoError(t, facades.Event().Job(&events.OrderCanceled{}, []event.Arg{
 		{Type: "string", Value: "I'm OrderCanceled"},
 	}).Dispatch())
+
+	time.Sleep(1 * time.Second)
 
 	assert.ElementsMatch(t, []string{
 		"I'm OrderShipped",
