@@ -25,6 +25,7 @@ func (receiver *RouteServiceProvider) Boot(app foundation.Application) {
 	// Add routes
 	routes.Web()
 	routes.Api()
+	routes.Graphql()
 }
 
 func (receiver *RouteServiceProvider) configureRateLimiting() {
