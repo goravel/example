@@ -42,5 +42,12 @@ func main() {
 		}
 	}()
 
+	// Start queue server by facades.Queue().
+	go func() {
+		if err := facades.Queue().Worker(nil).Run(); err != nil {
+			facades.Log().Errorf("Queue run error: %v", err)
+		}
+	}()
+
 	select {}
 }

@@ -1,0 +1,31 @@
+directive @contact(
+  "Contact title of the subgraph owner"
+  name: String!
+  "URL where the subgraph's owner can be reached"
+  url: String
+  "Other relevant notes can be included here; supports markdown links"
+  description: String
+) on SCHEMA
+
+schema
+  @contact(
+    name: "FooBar Server Team"
+    url: "https://myteam.slack.com/archives/teams-chat-room-url"
+    description: "send urgent issues to [#oncall](https://yourteam.slack.com/archives/oncall)."
+  )  
+  @link(
+    url: "https://specs.apollo.dev/federation/v2.0",
+    import: [
+      "@key",
+    ]
+  ) {
+  query: Query
+}
+
+type Query {
+  foo(id: ID!): Foo
+}
+type Foo @key(fields: "id") {
+  id: ID!
+  name: String
+}
