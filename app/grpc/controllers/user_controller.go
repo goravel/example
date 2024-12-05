@@ -5,13 +5,12 @@ import (
 	"net/http"
 
 	proto "github.com/goravel/example-proto"
-	"github.com/goravel/framework/auth"
 	contractsauth "github.com/goravel/framework/contracts/auth"
 	contractshttp "github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/errors"
 	"github.com/goravel/framework/facades"
 	goravelhttp "github.com/goravel/framework/http"
 	"github.com/goravel/framework/support/debug"
-	"github.com/pkg/errors"
 
 	"goravel/app/models"
 )
@@ -151,7 +150,7 @@ func refreshToken(ctx contractshttp.Context, token string) (string, error) {
 		err     error
 	)
 	if payload, err = facades.Auth(ctx).Parse(token); err != nil {
-		if errors.Is(err, auth.ErrorTokenExpired) {
+		if errors.Is(err, errors.AuthTokenExpired) {
 			token, err = facades.Auth(ctx).Refresh()
 			if err != nil {
 				return "", err

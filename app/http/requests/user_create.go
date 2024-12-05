@@ -35,6 +35,10 @@ func (r *UserCreate) Attributes(ctx http.Context) map[string]string {
 	return map[string]string{}
 }
 
+func (r *UserCreate) Filters(ctx http.Context) map[string]string {
+	return map[string]string{}
+}
+
 func (r *UserCreate) PrepareForValidation(ctx http.Context, data validation.Data) error {
 	if scores, exist := data.Get("scores"); exist {
 		return data.Set("scores", cast.ToIntSlice(scores))
