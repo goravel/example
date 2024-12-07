@@ -42,3 +42,7 @@ func (r *UserCreate) PrepareForValidation(ctx http.Context, data validation.Data
 
 	return nil
 }
+
+func (r *UserCreate) Filters(ctx http.Context) map[string]string {
+	return map[string]string{}
+}

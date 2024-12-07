@@ -73,6 +73,15 @@ Laravel！
 
 [routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L81)
 
+### GraphQL
+
+```bash
+# download and install gqlgen locally, only need to run it once
+go get -d github.com/99designs/gqlgen
+# regenerate code
+go run github.com/99designs/gqlgen generate
+```
+
 ## 文档
 
 在线文档 [https://www.goravel.dev/zh](https://www.goravel.dev/zh)

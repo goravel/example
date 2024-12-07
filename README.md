@@ -18,15 +18,6 @@ Welcome to star, PR and issues！
 
 [About air]: https://www.goravel.dev/getting-started/installation.html#live-reload
 
-### GraphQL
-
-```bash
-# download and install gqlgen locally, only need to run it once
-go get -d github.com/99designs/gqlgen
-# regenerate code
-go run github.com/99designs/gqlgen generate
-```
-
 ### DB
 
 [app/http/controllers/db_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/db_controller.go)
@@ -78,6 +69,15 @@ go run github.com/99designs/gqlgen generate
 ### Cookie
 
 [routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L81)
+
+### GraphQL
+
+```bash
+# download and install gqlgen locally, only need to run it once
+go get -d github.com/99designs/gqlgen
+# regenerate code
+go run github.com/99designs/gqlgen generate
+```
 
 ## Documentation
 

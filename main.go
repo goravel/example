@@ -28,7 +28,7 @@ func main() {
 	// Listen for the OS signal
 	go func() {
 		<-quit
-		if err := facades.Route().Shutdown(); err != nil {
+		if err := facades.Route().Stop(); err != nil {
 			facades.Log().Errorf("Route Rhutdown error: %v", err)
 		}
 
@@ -44,7 +44,7 @@ func main() {
 
 	// Start queue server by facades.Queue().
 	go func() {
-		if err := facades.Queue().Worker(nil).Run(); err != nil {
+		if err := facades.Queue().Worker().Run(); err != nil {
 			facades.Log().Errorf("Queue run error: %v", err)
 		}
 	}()
