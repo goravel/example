@@ -5,16 +5,16 @@ import (
 	"github.com/goravel/framework/facades"
 )
 
-type M20241207095921CreateUserTable struct {
+type M20241207095921CreateUsersTable struct {
 }
 
 // Signature The unique signature for the migration.
-func (r *M20241207095921CreateUserTable) Signature() string {
+func (r *M20241207095921CreateUsersTable) Signature() string {
 	return "20241207095921_create_users_table"
 }
 
 // Up Run the migrations.
-func (r *M20241207095921CreateUserTable) Up() error {
+func (r *M20241207095921CreateUsersTable) Up() error {
 	if !facades.Schema().HasTable("users") {
 		return facades.Schema().Create("users", func(table schema.Blueprint) {
 			table.BigIncrements("id")
@@ -28,6 +28,6 @@ func (r *M20241207095921CreateUserTable) Up() error {
 }
 
 // Down Reverse the migrations.
-func (r *M20241207095921CreateUserTable) Down() error {
+func (r *M20241207095921CreateUsersTable) Down() error {
 	return facades.Schema().DropIfExists("users")
 }
