@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 	exit := m.Run()
 
 	file.Remove("storage")
-	if err := database.Clear(); err != nil {
+	if err := database.Fresh(); err != nil {
 		panic(err)
 	}
 
