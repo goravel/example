@@ -27,6 +27,5 @@ func (s *MigrationTestSuite) TearDownTest() {
 }
 
 func (s *MigrationTestSuite) TestMigrate() {
-	s.NoError(facades.Artisan().Call("migrate"))
 	s.True(facades.Schema().HasTable("users"))
 }

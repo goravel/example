@@ -18,9 +18,10 @@ func (r *M20241207095921CreateUsersTable) Up() error {
 	if !facades.Schema().HasTable("users") {
 		return facades.Schema().Create("users", func(table schema.Blueprint) {
 			table.BigIncrements("id")
-			table.String("name").Nullable()
-			table.String("avatar").Nullable()
+			table.String("name").Default("")
+			table.String("avatar").Default("")
 			table.Timestamps()
+			table.SoftDeletes()
 		})
 	}
 

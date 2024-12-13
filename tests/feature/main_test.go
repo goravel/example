@@ -18,6 +18,10 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
+	if err := database.Migrate(); err != nil {
+		panic(err)
+	}
+
 	go func() {
 		if err := facades.Route().Run(); err != nil {
 			facades.Log().Errorf("Route run error: %v", err)
