@@ -18,6 +18,10 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
+	if err := database.Migrate(); err != nil {
+		panic(err)
+	}
+
 	go func() {
 		if err := facades.Route().Run(); err != nil {
 			facades.Log().Errorf("Route run error: %v", err)
@@ -25,15 +29,17 @@ func TestMain(m *testing.M) {
 	}()
 
 	go func() {
-		if err := facades.Queue().Worker(nil).Run(); err != nil {
+		if err := facades.Queue().Worker().Run(); err != nil {
 			facades.Log().Errorf("Queue run error: %v", err)
 		}
 	}()
 
 	exit := m.Run()
 
-	file.Remove("storage")
-	if err := database.Clear(); err != nil {
+	if err := file.Remove("storage"); err != nil {
+		panic(err)
+	}
+	if err := database.Stop(); err != nil {
 		panic(err)
 	}
 

@@ -7,7 +7,11 @@ import (
 
 func Lang() httpcontract.Middleware {
 	return func(ctx httpcontract.Context) {
-		facades.App().SetLocale(ctx, ctx.Request().Input("lang", facades.Config().GetString("app.locale")))
+		lang := ctx.Request().Input("lang")
+		if lang == "" {
+			lang = facades.Config().GetString("app.locale")
+		}
+		facades.App().SetLocale(ctx, lang)
 
 		ctx.Request().Next()
 	}
