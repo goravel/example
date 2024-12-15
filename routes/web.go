@@ -13,6 +13,8 @@ import (
 
 func Web() {
 	facades.Route().Get("/", func(ctx http.Context) http.Response {
+		ctx.WithValue("c", "d")
+		facades.Log().WithContext(ctx.Context()).With(map[string]any{"a": "b"}).Info("Hello Goravel")
 		return ctx.Response().Json(200, http.Json{
 			"Hello": "Goravel",
 		})

@@ -10,9 +10,9 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/gofiber/template/html/v2 v2.1.2
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.2.3-0.20241212085741-2fe9d7b0bd53
-	github.com/goravel/framework v1.14.1-0.20241213101228-454a00d4c7fa
-	github.com/goravel/gin v1.2.3-0.20241212011321-d4ef1cabd352
+	github.com/goravel/fiber v1.2.3-0.20241214132050-52ad9b98c3fb
+	github.com/goravel/framework v1.14.1-0.20241214083012-9527d29ad584
+	github.com/goravel/gin v1.2.3-0.20241214132038-edd926c63c22
 	github.com/gorilla/websocket v1.5.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
@@ -32,7 +32,7 @@ require (
 	cloud.google.com/go v0.116.0 // indirect
 	cloud.google.com/go/auth v0.12.1 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.6 // indirect
-	cloud.google.com/go/compute/metadata v0.5.2 // indirect
+	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	cloud.google.com/go/iam v1.3.0 // indirect
 	cloud.google.com/go/pubsub v1.45.3 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
@@ -225,3 +225,5 @@ require (
 	modernc.org/memory v1.8.0 // indirect
 	modernc.org/sqlite v1.34.2 // indirect
 )
+
+replace github.com/goravel/framework => ../goravel/framework
