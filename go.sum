@@ -186,6 +186,8 @@ github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWR
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
+github.com/cloudflare/tableflip v1.2.3 h1:8I+B99QnnEWPHOY3fWipwVKxS70LGgUsslG7CSfmHMw=
+github.com/cloudflare/tableflip v1.2.3/go.mod h1:P4gRehmV6Z2bY5ao5ml9Pd8u6kuEnlB37pUFMmv7j2E=
 github.com/cloudwego/base64x v0.1.4 h1:jwCgWpFanWmN8xoIUHa2rtzmkd5J2plF/dnLS6Xd/0Y=
 github.com/cloudwego/base64x v0.1.4/go.mod h1:0zlkT4Wn5C6NdauXdJRhSKRlJvmclQ1hhJgA0rcu/8w=
 github.com/cloudwego/iasm v0.2.0 h1:1KNIy1I1H9hNNFEEH3DVnI4UujN+1zjpuk6gwHLTssg=
@@ -451,6 +453,8 @@ github.com/goravel/framework v1.14.1-0.20241214083012-9527d29ad584 h1:fQAK2exHkh
 github.com/goravel/framework v1.14.1-0.20241214083012-9527d29ad584/go.mod h1:CNeStutJe+vR9tmCCuV09XicIPusG5lQCC1TVFuH+jA=
 github.com/goravel/gin v1.2.3-0.20241214132038-edd926c63c22 h1:QLXzkp/1urvobJzB3CxbAVDHRtY+HbQfaT6saote6uw=
 github.com/goravel/gin v1.2.3-0.20241214132038-edd926c63c22/go.mod h1:ZbBJ6MgohWB8kKC1k8l/9c5Sha1uc67fjKdFDkDcRag=
+github.com/goravel/gin v1.2.3-0.20241216095805-a5bbecfaefe0 h1:8nhZzIl+n1cVR7ha8cVY1Xe/bgrRFyVSoCsnbmMveaM=
+github.com/goravel/gin v1.2.3-0.20241216095805-a5bbecfaefe0/go.mod h1:3FGNgpt0Fdc81ZIHkqeykn/2RzRkjsq0W/Fea8q1MBM=
 github.com/gorilla/securecookie v1.1.1/go.mod h1:ra0sb63/xPlUeL+yeDciTfxMRAA+MP+HVt/4epWDjd4=
 github.com/gorilla/sessions v1.2.1/go.mod h1:dk2InVEVJ0sfLlnXv9EAgkf6ecYs/i80K/zI+bUmuGM=
 github.com/gorilla/websocket v1.5.0 h1:PPwGk2jz7EePpoHN/+ClbZu8SPxiqlu12wZP/3sWmnc=

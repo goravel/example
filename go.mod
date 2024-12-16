@@ -12,7 +12,7 @@ require (
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.2.3-0.20241214132050-52ad9b98c3fb
 	github.com/goravel/framework v1.14.1-0.20241214083012-9527d29ad584
-	github.com/goravel/gin v1.2.3-0.20241214132038-edd926c63c22
+	github.com/goravel/gin v1.2.3-0.20241216095805-a5bbecfaefe0
 	github.com/gorilla/websocket v1.5.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
@@ -62,6 +62,7 @@ require (
 	github.com/charmbracelet/x/ansi v0.6.0 // indirect
 	github.com/charmbracelet/x/exp/strings v0.0.0-20241212203040-20117e9c8cd5 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
+	github.com/cloudflare/tableflip v1.2.3 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/containerd/console v1.0.4 // indirect
