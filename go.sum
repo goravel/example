@@ -447,6 +447,8 @@ github.com/goravel/fiber v1.2.3-0.20241220073908-b88ec075c91f h1:AVP2ToWduGOnWIR
 github.com/goravel/fiber v1.2.3-0.20241220073908-b88ec075c91f/go.mod h1:0rGgHvoZaPpc8UMEOlmRBte6kmHklnILVf/oYlo48PQ=
 github.com/goravel/file-rotatelogs/v2 v2.4.2 h1:g68AzbePXcm0V2CpUMc9j4qVzcDn7+7aoWSjZ51C0m4=
 github.com/goravel/file-rotatelogs/v2 v2.4.2/go.mod h1:23VuSW8cBS4ax5cmbV+5AaiLpq25b8UJ96IhbAkdo8I=
+github.com/goravel/framework v1.14.1-0.20241220074447-8e5426fbf0ba h1:AXHlLd61+QblSYa6EHtRu4GawBpez+2Xm+/9R2DAvHw=
+github.com/goravel/framework v1.14.1-0.20241220074447-8e5426fbf0ba/go.mod h1:9saug/7ORKnkeoPXxB7/QH3tVx4c9Z8y7uH4INUQX1E=
 github.com/goravel/gin v1.2.3-0.20241220072813-0241d982e47d h1:LU8CSEVFfDvzNPGzw0Gd8Z48nBsu8yxi5fNdez+i5NQ=
 github.com/goravel/gin v1.2.3-0.20241220072813-0241d982e47d/go.mod h1:GOwFYg3KV3PG8trkrI9ZMyx1f8TDBW+E9F5CybzOZQs=
 github.com/gorilla/securecookie v1.1.1/go.mod h1:ra0sb63/xPlUeL+yeDciTfxMRAA+MP+HVt/4epWDjd4=
