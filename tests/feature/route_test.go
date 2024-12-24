@@ -2,12 +2,11 @@ package feature
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 	"testing"
 
-	"github.com/go-resty/resty/v2"
-	"github.com/goravel/framework/facades"
+	contractstesting "github.com/goravel/framework/contracts/testing"
+	"github.com/goravel/framework/support/http"
 	"github.com/stretchr/testify/suite"
 
 	"goravel/app/models"
@@ -17,17 +16,10 @@ import (
 type RouteTestSuite struct {
 	suite.Suite
 	tests.TestCase
-	http *resty.Client
 }
 
 func TestRouteTestSuite(t *testing.T) {
-	suite.Run(t, &RouteTestSuite{
-		http: resty.New().
-			SetBaseURL(fmt.Sprintf("http://%s:%s",
-				facades.Config().GetString("APP_HOST"),
-				facades.Config().GetString("APP_PORT"))).
-			SetHeader("Content-Type", "application/json"),
-	})
+	suite.Run(t, &RouteTestSuite{})
 }
 
 // SetupTest will run before each test in the suite.
@@ -60,36 +52,32 @@ func (s *RouteTestSuite) TestAuth() {
 	for _, test := range tests {
 		s.Run(test.name, func() {
 			// Unauthorized
-			resp, err := s.http.R().Get("auth/info")
+			resp, err := s.Http(s.T()).Get("auth/info")
 
 			s.Require().NoError(err)
-			s.Require().Equal(http.StatusUnauthorized, resp.StatusCode())
+			resp.AssertUnauthorized()
 
 			// Login
 			var authLogin Response
-			resp, err = s.http.R().SetResult(&authLogin).
-				SetHeader("Guard", test.guard).
-				SetBody(map[string]string{
-					"name": test.name,
-				}).Post("auth/login")
+			body, err := http.NewBody().SetField("name", test.name).Build()
+			s.Require().NoError(err)
+			resp, err = s.Http(s.T()).WithHeader("Guard", test.guard).Post("auth/login", body.Reader())
 
 			s.Require().NoError(err)
-			s.Require().Equal(http.StatusOK, resp.StatusCode())
+			resp.AssertSuccessful()
+
 			s.True(authLogin.User.ID > 0)
 			s.Equal(test.name, authLogin.User.Name)
 
-			token := resp.Header().Get("Authorization")
+			token := resp.Headers().Get("Authorization")
 			s.Require().NotEmpty(token)
 
 			// Get User
 			var authUser Response
-			resp, err = s.http.R().SetResult(&authUser).SetHeaders(map[string]string{
-				"Authorization": token,
-				"Guard":         test.guard,
-			}).Get("auth/info")
+			resp, err = s.Http(s.T()).WithHeader("Authorization", token).WithHeader("Guard", test.guard).Get("auth/info")
 
 			s.Require().NoError(err)
-			s.Require().Equal(http.StatusOK, resp.StatusCode())
+			resp.AssertSuccessful()
 			s.Equal(authLogin.User.ID, authUser.User.ID)
 			s.Equal(authLogin.User.Name, authUser.User.Name)
 		})
@@ -115,11 +103,11 @@ func (s *RouteTestSuite) TestLang() {
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			resp, err := s.http.R().Get(fmt.Sprintf("/lang?lang=%s", test.lang))
+			resp, err := s.Http(s.T()).Get(fmt.Sprintf("/lang?lang=%s", test.lang))
 
 			s.NoError(err)
-			s.Equal(http.StatusOK, resp.StatusCode())
-			s.Equal(test.expectResponse, resp.String())
+			resp.AssertSuccessful()
+			resp.AssertSee([]string{test.expectResponse})
 		})
 	}
 }
@@ -141,13 +129,13 @@ func (s *RouteTestSuite) TestThrottle() {
 
 	for _, test := range tests {
 		s.Run(test.name, func() {
-			var resp *resty.Response
+			var resp contractstesting.TestResponse
 			var err error
 			for i := 0; i < 5; i++ {
-				resp, err = s.http.R().Get("/jwt/login")
+				resp, err = s.Http(s.T()).Get("/jwt/login")
 				s.Require().NoError(err)
 			}
-			s.Equal(test.expectStatusCode, resp.StatusCode())
+			resp.AssertStatus(test.expectStatusCode)
 		})
 	}
 }
@@ -158,13 +146,12 @@ func (s *RouteTestSuite) TestUsers() {
 		User models.User
 	}
 
-	resp, err := s.http.R().SetResult(&createdUser).SetBody(map[string]string{
-		"name":   "Goravel",
-		"avatar": "https://goravel.dev/avatar.png",
-	}).Post("users")
+	body, err := http.NewBody().SetField("name", "Goravel").SetField("avatar", "https://goravel.dev/avatar.png").Build()
+	s.Require().NoError(err)
+	resp, err := s.Http(s.T()).Post("users", body.Reader())
 
 	s.Require().NoError(err)
-	s.Require().Equal(http.StatusOK, resp.StatusCode())
+	resp.AssertSuccessful()
 	s.True(createdUser.User.ID > 0)
 	s.Equal("Goravel", createdUser.User.Name)
 	s.Equal("https://goravel.dev/avatar.png", createdUser.User.Avatar)
