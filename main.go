@@ -29,11 +29,7 @@ func main() {
 	go func() {
 		<-quit
 		if err := facades.Route().Shutdown(); err != nil {
-<<<<<<< HEAD
-			facades.Log().Errorf("Route Rhutdown error: %v", err)
-=======
 			facades.Log().Errorf("Route Shutdown error: %v", err)
->>>>>>> 1cb0bd3 (rename postgresql)
 		}
 
 		os.Exit(0)

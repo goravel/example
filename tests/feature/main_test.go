@@ -39,7 +39,7 @@ func TestMain(m *testing.M) {
 	if err := file.Remove("storage"); err != nil {
 		panic(err)
 	}
-	if err := database.Stop(); err != nil {
+	if err := database.Shutdown(); err != nil {
 		panic(err)
 	}
 
