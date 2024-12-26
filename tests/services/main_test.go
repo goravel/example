@@ -8,7 +8,9 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	facades.Artisan().Call("migrate")
+	if err := facades.Artisan().Call("migrate"); err != nil {
+		panic(err)
+	}
 
 	m.Run()
 

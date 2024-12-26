@@ -445,7 +445,6 @@ github.com/goravel/fiber v1.2.3-0.20241223085554-7ce6cfc651a4 h1:spc4sjxiQJf20x2
 github.com/goravel/fiber v1.2.3-0.20241223085554-7ce6cfc651a4/go.mod h1:Bz164ScN/tUtjJR/w5g+eiL+PT9MFVU2JPBTY3DkW+4=
 github.com/goravel/file-rotatelogs/v2 v2.4.2 h1:g68AzbePXcm0V2CpUMc9j4qVzcDn7+7aoWSjZ51C0m4=
 github.com/goravel/file-rotatelogs/v2 v2.4.2/go.mod h1:23VuSW8cBS4ax5cmbV+5AaiLpq25b8UJ96IhbAkdo8I=
-github.com/goravel/framework v1.14.1-0.20241224035743-6b30537a80ea/go.mod h1:Qo5Xlf+slrosyMxBKbNoxpEmzB6y2C5FI4BHNdVOSyI=
 github.com/goravel/framework v1.14.1-0.20241225031759-b261a622ba52 h1:H9qpVdZUl1Jso6arYKfLylMYWR1J3ePOlBAwzIDfNs4=
 github.com/goravel/framework v1.14.1-0.20241225031759-b261a622ba52/go.mod h1:Qo5Xlf+slrosyMxBKbNoxpEmzB6y2C5FI4BHNdVOSyI=
 github.com/goravel/gin v1.2.3-0.20241223085040-c46775c141d8 h1:J5R2rmeDKacNr4tooDBBogx9QzPgli1A38sbWTB9AYo=
