@@ -61,17 +61,17 @@ Laravel！
 
 [routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L33)
 
-### 本地化
-
-[routes/api.go](https://github.com/goravel/example/blob/master/routes/api.go#L40)
-
 ### Session
 
-[routes/api.go](https://github.com/goravel/example/blob/master/routes/api.go#L44)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L42)
 
 ### Cookie
 
-[routes/api.go](https://github.com/goravel/example/blob/master/routes/api.go#L60)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L58)
+
+### 本地化
+
+[routes/api.go](https://github.com/goravel/example/blob/master/routes/api.go#L37)
 
 ### GraphQL
 

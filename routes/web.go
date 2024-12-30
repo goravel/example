@@ -2,8 +2,10 @@ package routes
 
 import (
 	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support"
+	"github.com/spf13/cast"
 
 	"goravel/app/http/controllers"
 )
@@ -33,6 +35,39 @@ func Web() {
 	facades.Route().Get("view", func(ctx http.Context) http.Response {
 		return ctx.Response().View().Make("admin/index.tmpl", map[string]any{
 			"name": "Goravel",
+		})
+	})
+
+	// Session
+	facades.Route().Prefix("session").Group(func(router route.Router) {
+		router.Get("put", func(ctx http.Context) http.Response {
+			ctx.Request().Session().Put("name", "Goravel")
+
+			return ctx.Response().Success().Json(http.Json{
+				"name": cast.ToString(ctx.Request().Session().Get("name")),
+			})
+		})
+		router.Get("get", func(ctx http.Context) http.Response {
+			return ctx.Response().Success().Json(http.Json{
+				"name": ctx.Request().Session().Get("name"),
+			})
+		})
+	})
+
+	// Cookie
+	facades.Route().Prefix("cookie").Group(func(router route.Router) {
+		router.Get("put", func(ctx http.Context) http.Response {
+			ctx.Response().Cookie(http.Cookie{
+				Name:  "name",
+				Value: "Goravel",
+			})
+
+			return ctx.Response().Success().String("Set cookie: name=Goravel")
+		})
+		router.Get("get", func(ctx http.Context) http.Response {
+			return ctx.Response().Success().Json(http.Json{
+				"name": ctx.Request().Cookie("name"),
+			})
 		})
 	})
 }

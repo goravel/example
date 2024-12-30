@@ -58,17 +58,17 @@ Welcome to star, PR and issues！
 
 [routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L33)
 
-### Localization
-
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L40)
-
 ### Session
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L44)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L42)
 
 ### Cookie
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L60)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L58)
+
+### Localization
+
+[routes/api.go](https://github.com/goravel/example/blob/master/routes/api.go#L37)
 
 ### GraphQL
 
