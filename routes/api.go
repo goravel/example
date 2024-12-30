@@ -1,8 +1,6 @@
 package routes
 
 import (
-	"time"
-
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/facades"
@@ -72,28 +70,6 @@ func Api() {
 			return ctx.Response().Success().Json(http.Json{
 				"name": ctx.Request().Cookie("name"),
 			})
-		})
-	})
-
-	// For test
-	facades.Route().Resource("users", controllers.NewUserController())
-
-	facades.Route().Get("stream", func(ctx http.Context) http.Response {
-		return ctx.Response().Stream(http.StatusCreated, func(w http.StreamWriter) error {
-			data := []string{"a", "b", "c"}
-			for _, item := range data {
-				if _, err := w.Write([]byte(item + "\n")); err != nil {
-					return err
-				}
-
-				if err := w.Flush(); err != nil {
-					return err
-				}
-
-				time.Sleep(1 * time.Second)
-			}
-
-			return nil
 		})
 	})
 }

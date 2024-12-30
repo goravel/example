@@ -9,9 +9,9 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/gofiber/template/html/v2 v2.1.2
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.2.3-0.20241223085554-7ce6cfc651a4
-	github.com/goravel/framework v1.14.1-0.20241225031759-b261a622ba52
-	github.com/goravel/gin v1.2.3-0.20241223085040-c46775c141d8
+	github.com/goravel/fiber v1.2.3-0.20241230080004-45db67e182b3
+	github.com/goravel/framework v1.14.1-0.20241230074406-15bcb208658a
+	github.com/goravel/gin v1.2.3-0.20241230080008-9d244a75eecb
 	github.com/gorilla/websocket v1.5.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
@@ -220,7 +220,7 @@ require (
 	gorm.io/gorm v1.25.12 // indirect
 	gorm.io/plugin/dbresolver v1.5.3 // indirect
 	modernc.org/libc v1.61.5 // indirect
-	modernc.org/mathutil v1.7.0 // indirect
+	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.8.0 // indirect
 	modernc.org/sqlite v1.34.4 // indirect
 )

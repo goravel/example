@@ -17,7 +17,7 @@ func Auth() http.Middleware {
 
 		token := ctx.Request().Header("Authorization", "")
 		if token == "" {
-			ctx.Request().AbortWithStatus(http.StatusUnauthorized)
+			ctx.Response().String(http.StatusUnauthorized, "Unauthorized").Abort()
 			return
 		}
 
@@ -27,14 +27,14 @@ func Auth() http.Middleware {
 				token, err = facades.Auth(ctx).Guard(guard).Refresh()
 				if err != nil {
 					// Refresh time exceeded
-					ctx.Request().AbortWithStatus(http.StatusUnauthorized)
+					ctx.Request().Abort(http.StatusUnauthorized)
 					return
 				}
 
 				token = "Bearer " + token
 			} else {
 				// Token is invalid
-				ctx.Request().AbortWithStatus(http.StatusUnauthorized)
+				ctx.Request().Abort(http.StatusUnauthorized)
 				return
 			}
 		}
