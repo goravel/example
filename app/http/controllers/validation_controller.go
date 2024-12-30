@@ -93,6 +93,7 @@ func (r *ValidationController) Request(ctx http.Context) http.Response {
 		"tags":   userCreate.Tags,
 		"scores": userCreate.Scores,
 		"date":   userCreate.Date.ToDateTimeString(),
+		"code":   userCreate.Code,
 	})
 }
 

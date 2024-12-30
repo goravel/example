@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
+	"github.com/spf13/cast"
 
 	"goravel/app/models"
 )
@@ -52,19 +53,31 @@ func (r *AuthController) Login(ctx http.Context) http.Response {
 }
 
 func (r *AuthController) Info(ctx http.Context) http.Response {
-	var user models.User
+	var (
+		id   string
+		user models.User
+		err  error
+	)
 
 	if guard := ctx.Request().Header("Guard"); guard == "" {
 		if err := facades.Auth(ctx).User(&user); err != nil {
 			return ctx.Response().String(http.StatusInternalServerError, err.Error())
 		}
+		id, err = facades.Auth(ctx).ID()
+
 	} else {
 		if err := facades.Auth(ctx).Guard(guard).User(&user); err != nil {
 			return ctx.Response().String(http.StatusInternalServerError, err.Error())
 		}
+		id, err = facades.Auth(ctx).Guard(guard).ID()
+	}
+
+	if err != nil {
+		return ctx.Response().String(http.StatusInternalServerError, err.Error())
 	}
 
 	return ctx.Response().Success().Json(http.Json{
+		"id":   cast.ToUint(id),
 		"user": user,
 	})
 }

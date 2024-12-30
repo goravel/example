@@ -55,23 +55,23 @@ Laravel！
 
 ### 单页面前端应用集成到框架
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L44)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L26)
 
 ### 视图嵌套
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L53)
-
-### 本地化
-
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L61)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L33)
 
 ### Session
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L65)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L42)
 
 ### Cookie
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L81)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L58)
+
+### 本地化
+
+[routes/api.go](https://github.com/goravel/example/blob/master/routes/api.go#L37)
 
 ### GraphQL
 

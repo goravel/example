@@ -12,6 +12,7 @@ type UserCreate struct {
 	Tags   []string      `form:"tags" json:"tags"`
 	Scores []int         `form:"scores" json:"scores"`
 	Date   carbon.Carbon `form:"date" json:"date"`
+	Code   int           `form:"code" json:"code"`
 }
 
 func (r *UserCreate) Authorize(ctx http.Context) error {
@@ -24,6 +25,7 @@ func (r *UserCreate) Rules(ctx http.Context) map[string]string {
 		"tags.*":   "required|string",
 		"scores.*": "required|int",
 		"date":     "required|date",
+		"code":     `required|regex:^\d{4,6}$`,
 	}
 }
 
@@ -44,5 +46,7 @@ func (r *UserCreate) PrepareForValidation(ctx http.Context, data validation.Data
 }
 
 func (r *UserCreate) Filters(ctx http.Context) map[string]string {
-	return map[string]string{}
+	return map[string]string{
+		"name": "trim",
+	}
 }

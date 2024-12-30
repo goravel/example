@@ -4,38 +4,18 @@ import (
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/facades"
-	httpmiddleware "github.com/goravel/framework/http/middleware"
+	"github.com/goravel/framework/support"
 	"github.com/spf13/cast"
 
 	"goravel/app/http/controllers"
-	"goravel/app/http/middleware"
 )
 
 func Web() {
 	facades.Route().Get("/", func(ctx http.Context) http.Response {
-		return ctx.Response().Json(200, http.Json{
-			"Hello": "Goravel",
+		return ctx.Response().View().Make("welcome.tmpl", map[string]any{
+			"version": support.Version,
 		})
 	})
-
-	// DB
-	dbController := controllers.NewDBController()
-	facades.Route().Get("/db", dbController.Index)
-
-	// Websocket
-	websocketController := controllers.NewWebsocketController()
-	facades.Route().Get("/ws", websocketController.Server)
-
-	// Validation
-	validationController := controllers.NewValidationController()
-	facades.Route().Post("/validation/json", validationController.Json)
-	facades.Route().Post("/validation/request", validationController.Request)
-	facades.Route().Post("/validation/form", validationController.Form)
-
-	// JWT
-	jwtController := controllers.NewJwtController()
-	facades.Route().Middleware(httpmiddleware.Throttle("login")).Get("/jwt/login", jwtController.Login)
-	facades.Route().Middleware(middleware.Jwt()).Get("/jwt", jwtController.Index)
 
 	// Swagger
 	swaggerController := controllers.NewSwaggerController()
@@ -57,10 +37,6 @@ func Web() {
 			"name": "Goravel",
 		})
 	})
-
-	// Localization
-	langController := controllers.NewLangController()
-	facades.Route().Middleware(middleware.Lang()).Get("lang", langController.Index)
 
 	// Session
 	facades.Route().Prefix("session").Group(func(router route.Router) {
@@ -94,6 +70,4 @@ func Web() {
 			})
 		})
 	})
-
-	facades.Route().Resource("users", controllers.NewUserController())
 }

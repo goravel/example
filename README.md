@@ -52,23 +52,23 @@ Welcome to star, PR and issues！
 
 ### Integration of single page application into the framework
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L44)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L26)
 
 ### View nesting
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L53)
-
-### Localization
-
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L61)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L33)
 
 ### Session
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L65)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L42)
 
 ### Cookie
 
-[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L81)
+[routes/web.go](https://github.com/goravel/example/blob/master/routes/web.go#L58)
+
+### Localization
+
+[routes/api.go](https://github.com/goravel/example/blob/master/routes/api.go#L37)
 
 ### GraphQL
 

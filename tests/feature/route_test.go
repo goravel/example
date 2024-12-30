@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	contractshttp "github.com/goravel/framework/contracts/http"
 	contractstesting "github.com/goravel/framework/contracts/testing"
 	"github.com/goravel/framework/support/http"
 	"github.com/stretchr/testify/suite"
@@ -33,6 +34,7 @@ func (s *RouteTestSuite) TearDownTest() {
 
 func (s *RouteTestSuite) TestAuth() {
 	type Response struct {
+		ID   uint
 		User models.User
 	}
 
@@ -56,6 +58,9 @@ func (s *RouteTestSuite) TestAuth() {
 
 			s.Require().NoError(err)
 			resp.AssertUnauthorized()
+			content, err := resp.Content()
+			s.Require().NoError(err)
+			s.Equal("Unauthorized", content)
 
 			// Login
 			var authLogin Response
@@ -80,8 +85,20 @@ func (s *RouteTestSuite) TestAuth() {
 			resp.AssertSuccessful()
 			s.Equal(authLogin.User.ID, authUser.User.ID)
 			s.Equal(authLogin.User.Name, authUser.User.Name)
+			s.Equal(authLogin.User.ID, authUser.ID)
 		})
 	}
+}
+
+func (s *RouteTestSuite) TestBindQuery() {
+	resp, err := s.Http(s.T()).Get("/bind-query?name=Goravel")
+
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	content, err := resp.Content()
+	s.Require().NoError(err)
+	s.Equal("{\"name\":\"Goravel\"}", content)
 }
 
 func (s *RouteTestSuite) TestLang() {
@@ -112,6 +129,28 @@ func (s *RouteTestSuite) TestLang() {
 	}
 }
 
+func (s *RouteTestSuite) TestPanic() {
+	resp, err := s.Http(s.T()).Get("/panic")
+
+	s.Require().NoError(err)
+	resp.AssertInternalServerError()
+
+	content, err := resp.Content()
+	s.Require().NoError(err)
+	s.Empty(content)
+}
+
+func (s *RouteTestSuite) TestStream() {
+	resp, err := s.Http(s.T()).Get("/stream")
+
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	content, err := resp.Content()
+	s.Require().NoError(err)
+	s.Equal("a\nb\nc\n", content)
+}
+
 func (s *RouteTestSuite) TestThrottle() {
 	tests := []struct {
 		name             string
@@ -138,6 +177,13 @@ func (s *RouteTestSuite) TestThrottle() {
 			resp.AssertStatus(test.expectStatusCode)
 		})
 	}
+}
+
+func (s *RouteTestSuite) TestTimeout() {
+	resp, err := s.Http(s.T()).Get("/timeout")
+
+	s.Require().NoError(err)
+	resp.AssertStatus(contractshttp.StatusRequestTimeout)
 }
 
 func (s *RouteTestSuite) TestUsers() {
@@ -231,18 +277,39 @@ func (s *RouteTestSuite) TestValidationJson() {
 }
 
 func (s *RouteTestSuite) TestValidationRequest() {
-	payload := strings.NewReader(`{
-		"name": "Goravel",
-		"date": "2024-07-08 18:33:32",
-		"tags": ["tag1", "tag2"],
-		"scores": [1, 2]
-	}`)
+	s.Run("success", func() {
+		payload := strings.NewReader(`{
+			"name": " Goravel ",
+			"date": "2024-07-08 18:33:32",
+			"tags": ["tag1", "tag2"],
+			"scores": [1, 2],
+			"code": 123456
+		}`)
 
-	resp, err := s.Http(s.T()).Post("/validation/request", payload)
+		resp, err := s.Http(s.T()).Post("/validation/request", payload)
 
-	s.NoError(err)
-	resp.AssertSuccessful()
-	context, err := resp.Content()
-	s.Require().NoError(err)
-	s.Equal("{\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\",\"scores\":[1,2],\"tags\":[\"tag1\",\"tag2\"]}", context)
+		s.NoError(err)
+		resp.AssertSuccessful()
+		context, err := resp.Content()
+		s.Require().NoError(err)
+		s.Equal("{\"code\":123456,\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\",\"scores\":[1,2],\"tags\":[\"tag1\",\"tag2\"]}", context)
+	})
+
+	s.Run("failed", func() {
+		payload := strings.NewReader(`{
+			"date": "1",
+			"tags": "tag1",
+			"scores": 1,
+			"code": 1234567
+		}`)
+
+		resp, err := s.Http(s.T()).Post("/validation/request", payload)
+
+		s.NoError(err)
+		resp.AssertBadRequest()
+
+		content, err := resp.Content()
+		s.Require().NoError(err)
+		s.Equal("{\"message\":{\"code\":{\"regex\":\"code value does not pass the regex check\"},\"date\":{\"date\":\"date value should be a date string\"},\"name\":{\"required\":\"name is required to not be empty\"}}}", content)
+	})
 }

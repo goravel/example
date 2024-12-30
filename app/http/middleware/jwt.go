@@ -13,7 +13,7 @@ func Jwt() httpcontract.Middleware {
 	return func(ctx httpcontract.Context) {
 		token := ctx.Request().Header("Authorization", "")
 		if token == "" {
-			ctx.Request().AbortWithStatus(http.StatusUnauthorized)
+			ctx.Request().Abort(http.StatusUnauthorized)
 			return
 		}
 
@@ -22,13 +22,13 @@ func Jwt() httpcontract.Middleware {
 				token, err = facades.Auth(ctx).Refresh()
 				if err != nil {
 					// Refresh time exceeded
-					ctx.Request().AbortWithStatus(http.StatusUnauthorized)
+					ctx.Request().Abort(http.StatusUnauthorized)
 					return
 				}
 
 				token = "Bearer " + token
 			} else {
-				ctx.Request().AbortWithStatus(http.StatusUnauthorized)
+				ctx.Request().Abort(http.StatusUnauthorized)
 				return
 			}
 		}
