@@ -17,7 +17,7 @@ func Auth() http.Middleware {
 
 		token := ctx.Request().Header("Authorization", "")
 		if token == "" {
-			ctx.Response().String(http.StatusUnauthorized, "Unauthorized").Abort()
+			_ = ctx.Response().String(http.StatusUnauthorized, "Unauthorized").Abort()
 			return
 		}
 

@@ -14,5 +14,5 @@ func TestMain(m *testing.M) {
 
 	m.Run()
 
-	file.Remove("goravel")
+	_ = file.Remove("goravel")
 }
