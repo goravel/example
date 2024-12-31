@@ -46,7 +46,11 @@ func Test() {
 		}
 
 		var query Query
-		ctx.Request().BindQuery(&query)
+		if err := ctx.Request().BindQuery(&query); err != nil {
+			return ctx.Response().Json(http.StatusBadRequest, http.Json{
+				"error": err.Error(),
+			})
+		}
 
 		return ctx.Response().Json(http.StatusOK, http.Json{
 			"name": query.Name,
