@@ -5,7 +5,7 @@ go 1.22.7
 toolchain go1.23.3
 
 require (
-	github.com/99designs/gqlgen v0.17.57
+	github.com/99designs/gqlgen v0.17.62
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/gofiber/template/html/v2 v2.1.2
 	github.com/goravel/example-proto v0.0.1
@@ -20,7 +20,7 @@ require (
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.2
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
-	github.com/vektah/gqlparser/v2 v2.5.19
+	github.com/vektah/gqlparser/v2 v2.5.21
 	google.golang.org/grpc v1.69.2
 )
 
@@ -44,7 +44,7 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/RichardKnop/logging v0.0.0-20190827224416-1a693bdd4fae // indirect
 	github.com/RichardKnop/machinery/v2 v2.0.13 // indirect
-	github.com/agnivade/levenshtein v1.1.1 // indirect
+	github.com/agnivade/levenshtein v1.2.0 // indirect
 	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aws/aws-sdk-go v1.55.5 // indirect
