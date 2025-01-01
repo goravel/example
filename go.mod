@@ -2,7 +2,7 @@ module goravel
 
 go 1.22.7
 
-toolchain go1.23.3
+toolchain go1.23.4
 
 require (
 	github.com/99designs/gqlgen v0.17.57
