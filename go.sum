@@ -320,8 +320,8 @@ github.com/gobuffalo/packr/v2 v2.2.0/go.mod h1:CaAwI0GPIAv+5wKLtv8Afwl+Cm78K/I/V
 github.com/gobuffalo/syncx v0.0.0-20190224160051-33c29581e754/go.mod h1:HhnNqWY95UYwwW3uSASeV7vtgYkT2t16hJgV3AEPUpw=
 github.com/goccy/go-json v0.10.4 h1:JSwxQzIqKfmFX1swYPpUThQZp/Ka4wzJdK0LWVytLPM=
 github.com/goccy/go-json v0.10.4/go.mod h1:oq7eo15ShAhp70Anwd5lgX2pLfOS3QCiwU/PULtXL6M=
-github.com/gofiber/fiber/v2 v2.52.5 h1:tWoP1MJQjGEe4GB5TUGOi7P2E0ZMMRx5ZTG4rT+yGMo=
-github.com/gofiber/fiber/v2 v2.52.5/go.mod h1:KEOE+cXMhXG0zHc9d8+E38hoX+ZN7bhOtgeF2oT6jrQ=
+github.com/gofiber/fiber/v2 v2.52.6 h1:Rfp+ILPiYSvvVuIPvxrBns+HJp8qGLDnLJawAu27XVI=
+github.com/gofiber/fiber/v2 v2.52.6/go.mod h1:YEcBbO/FB+5M1IZNBP9FO3J9281zgPAreiI1oqg8nDw=
 github.com/gofiber/template v1.8.3 h1:hzHdvMwMo/T2kouz2pPCA0zGiLCeMnoGsQZBTSYgZxc=
 github.com/gofiber/template v1.8.3/go.mod h1:bs/2n0pSNPOkRa5VJ8zTIvedcI/lEYxzV3+YPXdBvq8=
 github.com/gofiber/template/html/v2 v2.1.2 h1:wkK/mYJ3nIhongTkG3t0QgV4ADdgOYJYVSAF2AHnh8Y=
@@ -441,6 +441,7 @@ github.com/gookit/validate v1.5.4 h1:nwBo6vULnVUeNFCOde6RKFRbOCKJXVMnWR0ghedacLg
 github.com/gookit/validate v1.5.4/go.mod h1:p9sRPfpvYB4vXICBpEPzv8FoAky+XhUOhWQghgmmat4=
 github.com/goravel/example-proto v0.0.1 h1:ZxETeKREQWjuJ49bX/Hqj1NLR5Vyj489Ks6dRxYeQsk=
 github.com/goravel/example-proto v0.0.1/go.mod h1:I8IPsHr4Ndf7KxmdsRpBR2LQ0Geo48+pjv9IIWf3mZg=
+<<<<<<< HEAD
 github.com/goravel/fiber v1.3.3 h1:KSTUAru7+bJFQjqL9hIOTmuiCRAsOpxffi9e8FO+lMw=
 github.com/goravel/fiber v1.3.3/go.mod h1:4Pu2NQxW6yBZqsBBeKLvh72HwMtjUmQTDIXDeVu2GYo=
 github.com/goravel/file-rotatelogs/v2 v2.4.2 h1:g68AzbePXcm0V2CpUMc9j4qVzcDn7+7aoWSjZ51C0m4=
@@ -451,6 +452,16 @@ github.com/goravel/gin v1.3.3 h1:MoxWNoWGchgqbliiDL2Fxy3xMYGBehf2xNEUwgT78p8=
 github.com/goravel/gin v1.3.3/go.mod h1:pZiHBgazC8CU1h12tzUNkN1yJY8Y0kA5B8yU8fntrYU=
 github.com/goravel/redis v1.3.1 h1:eYEMpKaHSl3ghdQAhAaWC8NIVwpkILzyl2Dvyrv2fdk=
 github.com/goravel/redis v1.3.1/go.mod h1:rzpm3fIXZgvIlU3xtNmzwTV3uR4IK+FB09vT5tmTNQ0=
+=======
+github.com/goravel/fiber v1.3.2 h1:iJeL9rg2cOEmijBgQwMURgb5/dzj5PyH2nSBtW6t3Rg=
+github.com/goravel/fiber v1.3.2/go.mod h1:sNbWZILT05fdrYNlxnIq/4bOxeZToR1jfg8wND+tXRU=
+github.com/goravel/file-rotatelogs/v2 v2.4.2 h1:g68AzbePXcm0V2CpUMc9j4qVzcDn7+7aoWSjZ51C0m4=
+github.com/goravel/file-rotatelogs/v2 v2.4.2/go.mod h1:23VuSW8cBS4ax5cmbV+5AaiLpq25b8UJ96IhbAkdo8I=
+github.com/goravel/framework v1.15.2 h1:wC76iwXWpYz3Oj+WQKw/kC4yGluDIeRdmPFKQW3t47M=
+github.com/goravel/framework v1.15.2/go.mod h1:Qo5Xlf+slrosyMxBKbNoxpEmzB6y2C5FI4BHNdVOSyI=
+github.com/goravel/gin v1.3.2 h1:ybpGeH5W0ZOq9T03ywIhgmwoQTbvbcl8DcNZF9gUSdQ=
+github.com/goravel/gin v1.3.2/go.mod h1:Kd7zSqF4WV7wZn+k5+ihlmmQmtLbKFmH4lVhZ0wBWAk=
+>>>>>>> df22e6f (upgrade)
 github.com/gorilla/securecookie v1.1.1/go.mod h1:ra0sb63/xPlUeL+yeDciTfxMRAA+MP+HVt/4epWDjd4=
 github.com/gorilla/sessions v1.2.1/go.mod h1:dk2InVEVJ0sfLlnXv9EAgkf6ecYs/i80K/zI+bUmuGM=
 github.com/gorilla/websocket v1.5.0 h1:PPwGk2jz7EePpoHN/+ClbZu8SPxiqlu12wZP/3sWmnc=
@@ -658,8 +669,13 @@ github.com/sagikazarmark/locafero v0.6.0 h1:ON7AQg37yzcRPU69mt7gwhFEBwxI6P9T4Qu3
 github.com/sagikazarmark/locafero v0.6.0/go.mod h1:77OmuIc6VTraTXKXIs/uvUxKGUXjE1GbemJYHqdNjX0=
 github.com/sagikazarmark/slog-shim v0.1.0 h1:diDBnUNK9N/354PgrxMywXnAwEr1QZcOr6gto+ugjYE=
 github.com/sagikazarmark/slog-shim v0.1.0/go.mod h1:SrcSrq8aKtyuqEI1uvTDTK1arOWRIczQRv+GVI1AkeQ=
+<<<<<<< HEAD
 github.com/samber/lo v1.48.0 h1:ELOfcaM7vdYPe0egBS2Nxa8LxkY4lR+9LBzj0l6cHJ0=
 github.com/samber/lo v1.48.0/go.mod h1:dO6KHFzUKXgP8LDhU0oI8d2hekjXnGOu0DB8Jecxd6o=
+=======
+github.com/samber/lo v1.47.0 h1:z7RynLwP5nbyRscyvcD043DWYoOcYRv3mV8lBeqOCLc=
+github.com/samber/lo v1.47.0/go.mod h1:RmDH9Ct32Qy3gduHQuKJ3gW1fMHAnE/fAzQuf6He5cU=
+>>>>>>> df22e6f (upgrade)
 github.com/sergi/go-diff v1.2.0/go.mod h1:STckp+ISIX8hZLjrqAeVduY0gWCT9IjLuqbuNXdaHfM=
 github.com/sergi/go-diff v1.3.1 h1:xkr+Oxo4BOQKmkn/B9eMK0g5Kg/983T9DqqPHwYqD+8=
 github.com/sergi/go-diff v1.3.1/go.mod h1:aMJSSKb2lpPvRNec0+w3fl7LP9IOFzdc9Pa4NFbPK1I=
