@@ -8,11 +8,12 @@ import (
 )
 
 type UserCreate struct {
-	Name   string        `form:"name" json:"name"`
-	Tags   []string      `form:"tags" json:"tags"`
-	Scores []int         `form:"scores" json:"scores"`
-	Date   carbon.Carbon `form:"date" json:"date"`
-	Code   int           `form:"code" json:"code"`
+	Name    string        `form:"name" json:"name"`
+	AgentID []string      `form:"agent_id" json:"agent_id"`
+	Tags    []string      `form:"tags" json:"tags"`
+	Scores  []int         `form:"scores" json:"scores"`
+	Date    carbon.Carbon `form:"date" json:"date"`
+	Code    int           `form:"code" json:"code"`
 }
 
 func (r *UserCreate) Authorize(ctx http.Context) error {
@@ -22,6 +23,7 @@ func (r *UserCreate) Authorize(ctx http.Context) error {
 func (r *UserCreate) Rules(ctx http.Context) map[string]string {
 	return map[string]string{
 		"name":     "required",
+		"agent_id": "required",
 		"tags.*":   "required|string",
 		"scores.*": "required|int",
 		"date":     "required|date",
