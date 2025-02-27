@@ -6,13 +6,12 @@ toolchain go1.23.3
 
 require (
 	github.com/99designs/gqlgen v0.17.57
-	github.com/cloudflare/tableflip v1.2.3
-	github.com/gofiber/fiber/v2 v2.52.5
+	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/gofiber/template/html/v2 v2.1.2
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.3.1
-	github.com/goravel/framework v1.15.1
-	github.com/goravel/gin v1.3.1
+	github.com/goravel/fiber v1.3.2
+	github.com/goravel/framework v1.15.2
+	github.com/goravel/gin v1.3.2
 	github.com/gorilla/websocket v1.5.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
@@ -162,7 +161,6 @@ require (
 	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/samber/lo v1.47.0 // indirect
-	github.com/savioxavier/termlink v1.4.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
