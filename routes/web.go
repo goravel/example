@@ -70,4 +70,11 @@ func Web() {
 			})
 		})
 	})
+
+	facades.Route().Fallback(func(ctx http.Context) http.Response {
+		return ctx.Response().Status(404).Json(http.Json{
+			"code":    404,
+			"message": "Not Found",
+		})
+	})
 }
