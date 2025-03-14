@@ -20,6 +20,7 @@ func (receiver *RouteServiceProvider) Boot(app foundation.Application) {
 	// Add HTTP middleware
 	facades.Route().GlobalMiddleware(http.Kernel{}.Middleware()...)
 	facades.Route().Recover(func(ctx contractshttp.Context, err any) {
+		facades.Log().Error(err)
 		ctx.Request().AbortWithStatus(contractshttp.StatusInternalServerError)
 	})
 
@@ -30,6 +31,7 @@ func (receiver *RouteServiceProvider) Boot(app foundation.Application) {
 	routes.Api()
 	routes.Graphql()
 	routes.Test()
+
 }
 
 func (receiver *RouteServiceProvider) configureRateLimiting() {

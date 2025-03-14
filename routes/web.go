@@ -26,7 +26,7 @@ func Web() {
 	// 2. Add route to `/route/web.go`, needs to contain your home page and static routes
 	// 3. Configure nginx based on the /nginx.conf file
 	facades.Route().Get("web", func(ctx http.Context) http.Response {
-		return ctx.Response().View().Make("index.html")
+		return ctx.Response().View().Make("index.tmpl")
 	})
 	facades.Route().Static("css", "./resources/views/css")
 
@@ -69,5 +69,9 @@ func Web() {
 				"name": ctx.Request().Cookie("name"),
 			})
 		})
+	})
+
+	facades.Route().Fallback(func(ctx http.Context) http.Response {
+		return ctx.Response().Success().String("404")
 	})
 }

@@ -1,8 +1,6 @@
 package config
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/template/html/v2"
 	fiberfacades "github.com/goravel/fiber/facades"
 	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/facades"
@@ -13,7 +11,7 @@ func init() {
 	config := facades.Config()
 	config.Add("http", map[string]any{
 		// HTTP Driver
-		"default": "gin",
+		"default": "fiber",
 		// HTTP Drivers
 		"drivers": map[string]any{
 			"gin": map[string]any{
@@ -33,10 +31,6 @@ func init() {
 				"route": func() (route.Route, error) {
 					return fiberfacades.Route("fiber"), nil
 				},
-				// Optional, default is "html/template"
-				"template": func() (fiber.Views, error) {
-					return html.New("./resources/views", ".tmpl"), nil
-				},
 			},
 		},
 		// HTTP URL
@@ -46,7 +40,7 @@ func init() {
 		// HTTP Port
 		"port": config.Env("APP_PORT", "3000"),
 		// HTTP Timeout, default is 3 seconds
-		"request_timeout": 3,
+		"request_timeout": 3000,
 		// HTTPS Configuration
 		"tls": map[string]any{
 			// HTTPS Host

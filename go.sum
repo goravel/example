@@ -441,8 +441,16 @@ github.com/gookit/validate v1.5.4 h1:nwBo6vULnVUeNFCOde6RKFRbOCKJXVMnWR0ghedacLg
 github.com/gookit/validate v1.5.4/go.mod h1:p9sRPfpvYB4vXICBpEPzv8FoAky+XhUOhWQghgmmat4=
 github.com/goravel/example-proto v0.0.1 h1:ZxETeKREQWjuJ49bX/Hqj1NLR5Vyj489Ks6dRxYeQsk=
 github.com/goravel/example-proto v0.0.1/go.mod h1:I8IPsHr4Ndf7KxmdsRpBR2LQ0Geo48+pjv9IIWf3mZg=
+<<<<<<< HEAD
 github.com/goravel/fiber v1.3.3 h1:KSTUAru7+bJFQjqL9hIOTmuiCRAsOpxffi9e8FO+lMw=
 github.com/goravel/fiber v1.3.3/go.mod h1:4Pu2NQxW6yBZqsBBeKLvh72HwMtjUmQTDIXDeVu2GYo=
+=======
+<<<<<<< HEAD
+github.com/goravel/fiber v1.3.2 h1:iJeL9rg2cOEmijBgQwMURgb5/dzj5PyH2nSBtW6t3Rg=
+github.com/goravel/fiber v1.3.2/go.mod h1:sNbWZILT05fdrYNlxnIq/4bOxeZToR1jfg8wND+tXRU=
+=======
+>>>>>>> ac0b06c (fix: [#624] Fallback doesn't work)
+>>>>>>> 74fb769 (fix: [#624] Fallback doesn't work)
 github.com/goravel/file-rotatelogs/v2 v2.4.2 h1:g68AzbePXcm0V2CpUMc9j4qVzcDn7+7aoWSjZ51C0m4=
 github.com/goravel/file-rotatelogs/v2 v2.4.2/go.mod h1:23VuSW8cBS4ax5cmbV+5AaiLpq25b8UJ96IhbAkdo8I=
 github.com/goravel/framework v1.15.5 h1:EHYPxomXkxIlG3ptbIZWBuxtJbXab1+2tP4ZK8NC5G8=
