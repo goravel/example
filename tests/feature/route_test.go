@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	contractshttp "github.com/goravel/framework/contracts/http"
-	contractstesting "github.com/goravel/framework/contracts/testing"
 	"github.com/goravel/framework/support/http"
 	"github.com/stretchr/testify/suite"
 
@@ -152,31 +151,17 @@ func (s *RouteTestSuite) TestStream() {
 }
 
 func (s *RouteTestSuite) TestThrottle() {
-	tests := []struct {
-		name             string
-		expectStatusCode int
-	}{
-		{
-			name:             "no throttle",
-			expectStatusCode: 200,
-		},
-		{
-			name:             "throttle",
-			expectStatusCode: 429,
-		},
-	}
+	resp, err := s.Http(s.T()).Get("/throttle")
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
 
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			var resp contractstesting.TestResponse
-			var err error
-			for i := 0; i < 5; i++ {
-				resp, err = s.Http(s.T()).Get("/jwt/login")
-				s.Require().NoError(err)
-			}
-			resp.AssertStatus(test.expectStatusCode)
-		})
-	}
+	resp, err = s.Http(s.T()).Get("/throttle")
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	resp, err = s.Http(s.T()).Get("/throttle")
+	s.Require().NoError(err)
+	resp.AssertTooManyRequests()
 }
 
 func (s *RouteTestSuite) TestTimeout() {
