@@ -36,10 +36,10 @@ func (receiver *RouteServiceProvider) configureRateLimiting() {
 	facades.RateLimiter().For("global", func(ctx contractshttp.Context) contractshttp.Limit {
 		return limit.PerMinute(1000)
 	})
-	facades.RateLimiter().ForWithLimits("login", func(ctx contractshttp.Context) []contractshttp.Limit {
+	facades.RateLimiter().ForWithLimits("ip", func(ctx contractshttp.Context) []contractshttp.Limit {
 		return []contractshttp.Limit{
 			limit.PerDay(1000),
-			limit.PerMinute(5).By(ctx.Request().Ip()),
+			limit.PerMinute(2).By(ctx.Request().Ip()),
 		}
 	})
 }
