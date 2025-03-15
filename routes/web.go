@@ -25,9 +25,7 @@ func Web() {
 	// 1. Add your single page application to `resources/views/*`
 	// 2. Add route to `/route/web.go`, needs to contain your home page and static routes
 	// 3. Configure nginx based on the /nginx.conf file
-	facades.Route().Get("web", func(ctx http.Context) http.Response {
-		return ctx.Response().View().Make("index.html")
-	})
+	facades.Route().StaticFile("index.html", "./resources/views/index.html")
 	facades.Route().Static("css", "./resources/views/css")
 
 	// View Nesting
@@ -69,5 +67,9 @@ func Web() {
 				"name": ctx.Request().Cookie("name"),
 			})
 		})
+	})
+
+	facades.Route().Fallback(func(ctx http.Context) http.Response {
+		return ctx.Response().String(http.StatusNotFound, "fallback")
 	})
 }
