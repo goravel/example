@@ -11,7 +11,7 @@ func init() {
 	config := facades.Config()
 	config.Add("http", map[string]any{
 		// HTTP Driver
-		"default": "fiber",
+		"default": "gin",
 		// HTTP Drivers
 		"drivers": map[string]any{
 			"gin": map[string]any{
@@ -40,7 +40,7 @@ func init() {
 		// HTTP Port
 		"port": config.Env("APP_PORT", "3000"),
 		// HTTP Timeout, default is 3 seconds
-		"request_timeout": 3000,
+		"request_timeout": 3,
 		// HTTPS Configuration
 		"tls": map[string]any{
 			// HTTPS Host

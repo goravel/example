@@ -70,6 +70,6 @@ func Web() {
 	})
 
 	facades.Route().Fallback(func(ctx http.Context) http.Response {
-		return ctx.Response().Success().String("404")
+		return ctx.Response().String(http.StatusNotFound, "fallback")
 	})
 }
