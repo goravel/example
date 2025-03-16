@@ -10,9 +10,9 @@ require (
 	github.com/gofiber/template/html/v2 v2.1.2
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.3.3
-	github.com/goravel/framework v1.15.4
+	github.com/goravel/framework v1.15.5
 	github.com/goravel/gin v1.3.3
-	github.com/goravel/redis v1.3.0
+	github.com/goravel/redis v1.3.1
 	github.com/gorilla/websocket v1.5.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
@@ -222,9 +222,4 @@ require (
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.8.1 // indirect
 	modernc.org/sqlite v1.34.4 // indirect
-)
-
-replace (
-	github.com/goravel/framework => ../goravel/framework
-	github.com/goravel/redis => ../goravel/redis
 )
