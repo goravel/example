@@ -21,7 +21,7 @@ func (receiver *RouteServiceProvider) Boot(app foundation.Application) {
 	facades.Route().GlobalMiddleware(http.Kernel{}.Middleware()...)
 	facades.Route().Recover(func(ctx contractshttp.Context, err any) {
 		facades.Log().Error(err)
-		ctx.Response().String(contractshttp.StatusInternalServerError, "recover").Abort()
+		_ = ctx.Response().String(contractshttp.StatusInternalServerError, "recover").Abort()
 	})
 
 	receiver.configureRateLimiting()
