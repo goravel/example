@@ -103,6 +103,20 @@ func (s *RouteTestSuite) TestBindQuery() {
 	s.Equal("{\"name\":\"Goravel\"}", content)
 }
 
+func (s *RouteTestSuite) TestFallback() {
+	resp, err := s.Http(s.T()).Get("/lang")
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	resp, err = s.Http(s.T()).Get("/not-found")
+	s.Require().NoError(err)
+	resp.AssertNotFound()
+
+	content, err := resp.Content()
+	s.Require().NoError(err)
+	s.Equal("fallback", content)
+}
+
 func (s *RouteTestSuite) TestLang() {
 	tests := []struct {
 		name           string
@@ -139,7 +153,7 @@ func (s *RouteTestSuite) TestPanic() {
 
 	content, err := resp.Content()
 	s.Require().NoError(err)
-	s.Empty(content)
+	s.Equal("recover", content)
 }
 
 func (s *RouteTestSuite) TestStream() {
