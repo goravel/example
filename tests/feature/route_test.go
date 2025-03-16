@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	contractshttp "github.com/goravel/framework/contracts/http"
-	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support/http"
 	"github.com/stretchr/testify/suite"
 
@@ -24,7 +23,6 @@ func TestRouteTestSuite(t *testing.T) {
 }
 
 func (s *RouteTestSuite) SetupSuite() {
-	fmt.Println("RouteTestSuite", facades.Config().GetString("cache.default"))
 }
 
 // SetupTest will run before each test in the suite.
