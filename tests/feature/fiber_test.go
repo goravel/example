@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-func TestFiberTestSuite(t *testing.T) {
+func TestFiberDriver(t *testing.T) {
 	facades.Config().Add("http.default", "fiber")
 	facades.App().Refresh()
 	facades.App().Boot()
