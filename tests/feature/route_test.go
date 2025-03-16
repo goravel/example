@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	contractshttp "github.com/goravel/framework/contracts/http"
-	contractstesting "github.com/goravel/framework/contracts/testing"
 	"github.com/goravel/framework/support/http"
 	"github.com/stretchr/testify/suite"
 
@@ -21,6 +20,9 @@ type RouteTestSuite struct {
 
 func TestRouteTestSuite(t *testing.T) {
 	suite.Run(t, &RouteTestSuite{})
+}
+
+func (s *RouteTestSuite) SetupSuite() {
 }
 
 // SetupTest will run before each test in the suite.
@@ -101,6 +103,20 @@ func (s *RouteTestSuite) TestBindQuery() {
 	s.Equal("{\"name\":\"Goravel\"}", content)
 }
 
+func (s *RouteTestSuite) TestFallback() {
+	resp, err := s.Http(s.T()).Get("/lang")
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	resp, err = s.Http(s.T()).Get("/not-found")
+	s.Require().NoError(err)
+	resp.AssertNotFound()
+
+	content, err := resp.Content()
+	s.Require().NoError(err)
+	s.Equal("fallback", content)
+}
+
 func (s *RouteTestSuite) TestLang() {
 	tests := []struct {
 		name           string
@@ -137,7 +153,7 @@ func (s *RouteTestSuite) TestPanic() {
 
 	content, err := resp.Content()
 	s.Require().NoError(err)
-	s.Empty(content)
+	s.Equal("recover", content)
 }
 
 func (s *RouteTestSuite) TestStream() {
@@ -152,31 +168,17 @@ func (s *RouteTestSuite) TestStream() {
 }
 
 func (s *RouteTestSuite) TestThrottle() {
-	tests := []struct {
-		name             string
-		expectStatusCode int
-	}{
-		{
-			name:             "no throttle",
-			expectStatusCode: 200,
-		},
-		{
-			name:             "throttle",
-			expectStatusCode: 429,
-		},
-	}
+	resp, err := s.Http(s.T()).Get("/throttle")
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
 
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			var resp contractstesting.TestResponse
-			var err error
-			for i := 0; i < 5; i++ {
-				resp, err = s.Http(s.T()).Get("/jwt/login")
-				s.Require().NoError(err)
-			}
-			resp.AssertStatus(test.expectStatusCode)
-		})
-	}
+	resp, err = s.Http(s.T()).Get("/throttle")
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	resp, err = s.Http(s.T()).Get("/throttle")
+	s.Require().NoError(err)
+	resp.AssertTooManyRequests()
 }
 
 func (s *RouteTestSuite) TestTimeout() {

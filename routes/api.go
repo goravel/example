@@ -36,4 +36,8 @@ func Api() {
 	// Localization
 	langController := controllers.NewLangController()
 	facades.Route().Middleware(middleware.Lang()).Get("lang", langController.Index)
+
+	// Test Rate Limiter
+	routeController := controllers.NewRouteController()
+	facades.Route().Middleware(httpmiddleware.Throttle("ip")).Get("/throttle", routeController.Throttle)
 }
