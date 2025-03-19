@@ -26,6 +26,7 @@ import (
 	"github.com/goravel/framework/validation"
 	"github.com/goravel/gin"
 	"github.com/goravel/redis"
+	"github.com/goravel/sqlite"
 
 	"goravel/app/providers"
 )
@@ -123,6 +124,7 @@ func init() {
 			&providers.DatabaseServiceProvider{},
 			&gin.ServiceProvider{},
 			&fiber.ServiceProvider{},
+			&sqlite.ServiceProvider{},
 		},
 	})
 }
