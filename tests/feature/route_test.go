@@ -51,6 +51,10 @@ func (s *RouteTestSuite) TestAuth() {
 			name:  "admin guard",
 			guard: "admin",
 		},
+		{
+			name:  "agent guard",
+			guard: "agent",
+		},
 	}
 
 	for _, test := range tests {
