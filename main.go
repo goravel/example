@@ -45,6 +45,9 @@ func main() {
 		if err := facades.Route().Shutdown(); err != nil {
 			facades.Log().Errorf("Route Shutdown error: %v", err)
 		}
+		if err := facades.Grpc().Shutdown(); err != nil {
+			facades.Log().Errorf("Grpc Shutdown error: %v", err)
+		}
 
 		os.Exit(0)
 	}()
