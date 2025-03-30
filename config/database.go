@@ -35,7 +35,6 @@ func init() {
 				"timezone": "UTC", // Asia/Shanghai
 				"singular": false,
 				"prefix":   "",
-				"schema":   "",
 				"via": func() (driver.Driver, error) {
 					return postgresfacades.Postgres("postgres")
 				},

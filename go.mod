@@ -10,8 +10,11 @@ require (
 	github.com/goravel/fiber v1.3.4
 	github.com/goravel/framework v1.15.6
 	github.com/goravel/gin v1.3.3
+	github.com/goravel/mysql v0.0.0-20250319075542-87a68d535125
+	github.com/goravel/postgres v0.0.2-0.20250319075525-0a0ea3bfa69a
 	github.com/goravel/redis v1.3.1
 	github.com/goravel/sqlite v0.0.0-20250319075628-124c135617fd
+	github.com/goravel/sqlserver v0.0.0-20250330044523-bf0931bdcdff
 	github.com/gorilla/websocket v1.5.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
@@ -90,9 +93,6 @@ require (
 	github.com/gookit/goutil v0.6.18 // indirect
 	github.com/gookit/validate v1.5.4 // indirect
 	github.com/goravel/file-rotatelogs/v2 v2.4.2 // indirect
-	github.com/goravel/mysql v0.0.0-20250319075542-87a68d535125 // indirect
-	github.com/goravel/postgres v0.0.2-0.20250319075525-0a0ea3bfa69a // indirect
-	github.com/goravel/sqlserver v0.0.0-20250330044523-bf0931bdcdff // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
