@@ -13,28 +13,28 @@ import (
 	"goravel/tests"
 )
 
-type RouteTestSuite struct {
+type HttpTestSuite struct {
 	suite.Suite
 	tests.TestCase
 }
 
-func TestRouteTestSuite(t *testing.T) {
-	suite.Run(t, &RouteTestSuite{})
+func TestHttpTestSuite(t *testing.T) {
+	suite.Run(t, &HttpTestSuite{})
 }
 
-func (s *RouteTestSuite) SetupSuite() {
+func (s *HttpTestSuite) SetupSuite() {
 }
 
 // SetupTest will run before each test in the suite.
-func (s *RouteTestSuite) SetupTest() {
+func (s *HttpTestSuite) SetupTest() {
 	s.RefreshDatabase()
 }
 
 // TearDownTest will run after each test in the suite.
-func (s *RouteTestSuite) TearDownTest() {
+func (s *HttpTestSuite) TearDownTest() {
 }
 
-func (s *RouteTestSuite) TestAuth() {
+func (s *HttpTestSuite) TestAuth() {
 	type Response struct {
 		ID   uint
 		User models.User
@@ -96,7 +96,7 @@ func (s *RouteTestSuite) TestAuth() {
 	}
 }
 
-func (s *RouteTestSuite) TestBindQuery() {
+func (s *HttpTestSuite) TestBindQuery() {
 	resp, err := s.Http(s.T()).Get("/bind-query?name=Goravel")
 
 	s.Require().NoError(err)
@@ -107,7 +107,7 @@ func (s *RouteTestSuite) TestBindQuery() {
 	s.Equal("{\"name\":\"Goravel\"}", content)
 }
 
-func (s *RouteTestSuite) TestFallback() {
+func (s *HttpTestSuite) TestFallback() {
 	resp, err := s.Http(s.T()).Get("/lang")
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
@@ -121,7 +121,48 @@ func (s *RouteTestSuite) TestFallback() {
 	s.Equal("fallback", content)
 }
 
-func (s *RouteTestSuite) TestLang() {
+func (s *HttpTestSuite) TestFiles() {
+	body, err := http.NewBody().SetFiles(map[string][]string{
+		"files": []string{"lang/cn.json", "lang/en.json"},
+	}).Build()
+	s.Require().NoError(err)
+
+	resp, err := s.Http(s.T()).WithHeader("Content-Type", body.ContentType()).Post("/files", body.Reader())
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	content, err := resp.Content()
+	s.Require().NoError(err)
+	s.Equal("{\"files\":[\"cn.json\",\"en.json\"]}", content)
+}
+
+func (s *HttpTestSuite) TestInputMap() {
+	body, err := http.NewBody().SetField("test", map[string]any{"key1": "value1", "key2": "value2"}).Build()
+	s.Require().NoError(err)
+
+	resp, err := s.Http(s.T()).Post("/input-map", body.Reader())
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	content, err := resp.Content()
+	s.Require().NoError(err)
+	s.Equal("{\"test\":{\"key1\":\"value1\",\"key2\":\"value2\"}}", content)
+}
+
+func (s *HttpTestSuite) TestInputMapArray() {
+	body, err := http.NewBody().SetField("test", []map[string]any{{"key1": "value1", "key2": "value2"}, {"key3": "value3", "key4": "value4"}}).Build()
+	s.Require().NoError(err)
+
+	resp, err := s.Http(s.T()).Post("/input-map-array", body.Reader())
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	content, err := resp.Content()
+	s.Require().NoError(err)
+	s.Equal("{\"test\":[{\"key1\":\"value1\",\"key2\":\"value2\"},{\"key3\":\"value3\",\"key4\":\"value4\"}]}", content)
+}
+
+func (s *HttpTestSuite) TestLang() {
 	tests := []struct {
 		name           string
 		lang           string
@@ -149,7 +190,7 @@ func (s *RouteTestSuite) TestLang() {
 	}
 }
 
-func (s *RouteTestSuite) TestPanic() {
+func (s *HttpTestSuite) TestPanic() {
 	resp, err := s.Http(s.T()).Get("/panic")
 
 	s.Require().NoError(err)
@@ -160,7 +201,7 @@ func (s *RouteTestSuite) TestPanic() {
 	s.Equal("recover", content)
 }
 
-func (s *RouteTestSuite) TestStream() {
+func (s *HttpTestSuite) TestStream() {
 	resp, err := s.Http(s.T()).Get("/stream")
 
 	s.Require().NoError(err)
@@ -171,7 +212,7 @@ func (s *RouteTestSuite) TestStream() {
 	s.Equal("a\nb\nc\n", content)
 }
 
-func (s *RouteTestSuite) TestThrottle() {
+func (s *HttpTestSuite) TestThrottle() {
 	resp, err := s.Http(s.T()).Get("/throttle")
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
@@ -185,14 +226,14 @@ func (s *RouteTestSuite) TestThrottle() {
 	resp.AssertTooManyRequests()
 }
 
-func (s *RouteTestSuite) TestTimeout() {
+func (s *HttpTestSuite) TestTimeout() {
 	resp, err := s.Http(s.T()).Get("/timeout")
 
 	s.Require().NoError(err)
 	resp.AssertStatus(contractshttp.StatusRequestTimeout)
 }
 
-func (s *RouteTestSuite) TestUsers() {
+func (s *HttpTestSuite) TestUsers() {
 	// Add a user
 	var createdUser struct {
 		User models.User
@@ -267,7 +308,7 @@ func (s *RouteTestSuite) TestUsers() {
 	s.Equal("{\"users\":[]}", context)
 }
 
-func (s *RouteTestSuite) TestValidationJson() {
+func (s *HttpTestSuite) TestValidationJson() {
 	payload := strings.NewReader(`{
 		"name": "Goravel",
 		"date": "2024-07-08 18:33:32"
@@ -282,7 +323,7 @@ func (s *RouteTestSuite) TestValidationJson() {
 	s.Equal("{\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\"}", context)
 }
 
-func (s *RouteTestSuite) TestValidationRequest() {
+func (s *HttpTestSuite) TestValidationRequest() {
 	s.Run("success", func() {
 		payload := strings.NewReader(`{
 			"name": " Goravel ",

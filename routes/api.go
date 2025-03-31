@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
 	httpmiddleware "github.com/goravel/framework/http/middleware"
 
@@ -38,6 +39,7 @@ func Api() {
 	facades.Route().Middleware(middleware.Lang()).Get("lang", langController.Index)
 
 	// Test Rate Limiter
-	routeController := controllers.NewRouteController()
-	facades.Route().Middleware(httpmiddleware.Throttle("ip")).Get("/throttle", routeController.Throttle)
+	facades.Route().Middleware(httpmiddleware.Throttle("ip")).Get("/throttle", func(ctx http.Context) http.Response {
+		return ctx.Response().Success().String("success")
+	})
 }

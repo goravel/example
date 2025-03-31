@@ -56,7 +56,7 @@ func init() {
 			},
 		},
 		"client": map[string]any{
-			"base_url":                config.GetString("HTTP_CLIENT_BASE_URL"),
+			"base_url":                config.GetString("HTTP_CLIENT_BASE_URL", "http://127.0.0.1:3000"),
 			"timeout":                 config.GetDuration("HTTP_CLIENT_TIMEOUT"),
 			"max_idle_conns":          config.GetInt("HTTP_CLIENT_MAX_IDLE_CONNS"),
 			"max_idle_conns_per_host": config.GetInt("HTTP_CLIENT_MAX_IDLE_CONNS_PER_HOST"),

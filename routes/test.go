@@ -56,4 +56,34 @@ func Test() {
 			"name": query.Name,
 		})
 	})
+
+	facades.Route().Post("input-map", func(ctx http.Context) http.Response {
+		return ctx.Response().Json(http.StatusOK, http.Json{
+			"test": ctx.Request().InputMap("test"),
+		})
+	})
+
+	facades.Route().Post("input-map-array", func(ctx http.Context) http.Response {
+		return ctx.Response().Json(http.StatusOK, http.Json{
+			"test": ctx.Request().InputMapArray("test"),
+		})
+	})
+
+	facades.Route().Post("files", func(ctx http.Context) http.Response {
+		files, err := ctx.Request().Files("files")
+		if err != nil {
+			return ctx.Response().Json(http.StatusBadRequest, http.Json{
+				"error": err.Error(),
+			})
+		}
+
+		var fileNames []string
+		for _, file := range files {
+			fileNames = append(fileNames, file.GetClientOriginalName())
+		}
+
+		return ctx.Response().Json(http.StatusOK, http.Json{
+			"files": fileNames,
+		})
+	})
 }

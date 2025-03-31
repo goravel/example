@@ -11,7 +11,7 @@ func TestRedisDriver(t *testing.T) {
 	facades.Config().Add("cache.default", "redis")
 	facades.App().Refresh()
 
-	suite.Run(t, &RouteTestSuite{})
+	suite.Run(t, &HttpTestSuite{})
 
 	facades.Config().Add("cache.default", "memory")
 	facades.App().Refresh()
