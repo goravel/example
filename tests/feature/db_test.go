@@ -58,6 +58,7 @@ type User struct {
 	Name      string           `db:"name"`
 	Avatar    string           `db:"avatar"`
 	Alias     string           `db:"alias"`
+	Mail      *string          `db:"mail"`
 	CreatedAt *carbon.DateTime `db:"created_at"`
 	UpdatedAt *carbon.DateTime `db:"updated_at"`
 	DeletedAt *carbon.DateTime `db:"deleted_at"`

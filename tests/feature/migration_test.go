@@ -41,9 +41,16 @@ func (s *MigrationTestSuite) TestChange() {
 
 	s.Require().NoError(err)
 
+	var mailExists bool
 	for _, column := range columns {
 		if column.Name == "alias" {
 			s.Contains(column.Default, "test")
 		}
+
+		if column.Name == "mail" {
+			mailExists = true
+		}
 	}
+
+	s.True(mailExists)
 }

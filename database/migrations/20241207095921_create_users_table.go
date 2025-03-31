@@ -21,6 +21,7 @@ func (r *M20241207095921CreateUsersTable) Up() error {
 			table.String("name").Default("")
 			table.String("avatar").Default("")
 			table.String("alias").Default("")
+			table.String("email").Nullable()
 			table.Timestamps()
 			table.SoftDeletes()
 		})
