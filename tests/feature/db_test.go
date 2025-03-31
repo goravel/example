@@ -1,3 +1,5 @@
+//go:debug x509negativeserial=1
+
 package feature
 
 import (
@@ -55,6 +57,7 @@ type User struct {
 	ID        uint             `db:"id"`
 	Name      string           `db:"name"`
 	Avatar    string           `db:"avatar"`
+	Alias     string           `db:"alias"`
 	CreatedAt *carbon.DateTime `db:"created_at"`
 	UpdatedAt *carbon.DateTime `db:"updated_at"`
 	DeletedAt *carbon.DateTime `db:"deleted_at"`

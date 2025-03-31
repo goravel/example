@@ -29,12 +29,9 @@ func TestDBDrivers(t *testing.T) {
 
 		facades.App().Refresh()
 
-		if err := database.Migrate(); err != nil {
-			panic(err)
-		}
-
 		suite.Run(t, &DBTestSuite{})
 		suite.Run(t, &OrmTestSuite{})
+		suite.Run(t, &MigrationTestSuite{})
 
 		facades.Config().Add("database.default", "sqlite")
 		facades.App().Refresh()
