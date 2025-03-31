@@ -5,6 +5,7 @@ import (
 
 	"github.com/goravel/framework/facades"
 	"github.com/goravel/sqlite"
+	"github.com/goravel/sqlserver"
 	"github.com/stretchr/testify/suite"
 
 	"goravel/tests"
@@ -28,10 +29,6 @@ func (s *MigrationTestSuite) SetupTest() {
 func (s *MigrationTestSuite) TearDownTest() {
 }
 
-func (s *MigrationTestSuite) TestMigrate() {
-	s.True(facades.Schema().HasTable("users"))
-}
-
 func (s *MigrationTestSuite) TestChange() {
 	if facades.Schema().Orm().Config().Driver == sqlite.Name {
 		s.T().Skip("sqlite does not support change column")
@@ -53,4 +50,23 @@ func (s *MigrationTestSuite) TestChange() {
 	}
 
 	s.True(mailExists)
+}
+
+func (s *MigrationTestSuite) TestMigrate() {
+	s.True(facades.Schema().HasTable("users"))
+}
+
+func (s *MigrationTestSuite) TestTableComment() {
+	if facades.Schema().Orm().Config().Driver == sqlite.Name || facades.Schema().Orm().Config().Driver == sqlserver.Name {
+		s.T().Skip("sqlite and sqlserver does not support table comment")
+	}
+
+	tables, err := facades.Schema().GetTables()
+	s.Require().NoError(err)
+
+	for _, table := range tables {
+		if table.Name == "users" {
+			s.Equal("user table", table.Comment)
+		}
+	}
 }

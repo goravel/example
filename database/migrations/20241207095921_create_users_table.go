@@ -24,6 +24,7 @@ func (r *M20241207095921CreateUsersTable) Up() error {
 			table.String("email").Nullable()
 			table.Timestamps()
 			table.SoftDeletes()
+			table.Comment("user table")
 		})
 	}
 
