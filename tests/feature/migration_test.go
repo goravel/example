@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/goravel/framework/facades"
+	"github.com/goravel/mysql"
 	"github.com/goravel/sqlite"
 	"github.com/goravel/sqlserver"
 	"github.com/stretchr/testify/suite"
@@ -52,6 +53,17 @@ func (s *MigrationTestSuite) TestChange() {
 	s.True(mailExists)
 }
 
+func (s *MigrationTestSuite) TestFirst_After() {
+	if facades.Schema().Orm().Config().Driver != mysql.Name {
+		s.T().Skip("only mysql supports first and after")
+	}
+
+	columns, err := facades.Schema().GetColumns("users")
+	s.Require().NoError(err)
+
+	s.Equal("mail", columns[0].Name)
+	s.Equal("alias", columns[3].Name)
+}
 func (s *MigrationTestSuite) TestMigrate() {
 	s.True(facades.Schema().HasTable("users"))
 }
