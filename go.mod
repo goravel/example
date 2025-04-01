@@ -8,7 +8,7 @@ require (
 	github.com/99designs/gqlgen v0.17.57
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.3.4
-	github.com/goravel/framework v1.15.6
+	github.com/goravel/framework v1.15.2-0.20250401041811-47e6f78170cd
 	github.com/goravel/gin v1.3.3
 	github.com/goravel/mysql v0.0.0-20250319075542-87a68d535125
 	github.com/goravel/postgres v0.0.2-0.20250319075525-0a0ea3bfa69a
@@ -134,14 +134,14 @@ require (
 	github.com/rotisserie/eris v0.5.4 // indirect
 	github.com/rs/cors v1.11.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/sagikazarmark/locafero v0.8.0 // indirect
+	github.com/sagikazarmark/locafero v0.9.0 // indirect
 	github.com/samber/lo v1.49.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.14.0 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
-	github.com/spf13/viper v1.20.0 // indirect
+	github.com/spf13/viper v1.20.1 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/swaggo/files/v2 v2.0.0 // indirect
