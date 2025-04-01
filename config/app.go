@@ -25,6 +25,7 @@ import (
 	"github.com/goravel/framework/translation"
 	"github.com/goravel/framework/validation"
 	"github.com/goravel/gin"
+	"github.com/goravel/machinery"
 	"github.com/goravel/mysql"
 	"github.com/goravel/postgres"
 	"github.com/goravel/redis"
@@ -100,6 +101,7 @@ func init() {
 			&console.ServiceProvider{},
 			&database.ServiceProvider{},
 			&redis.ServiceProvider{},
+			&machinery.ServiceProvider{},
 			&cache.ServiceProvider{},
 			&http.ServiceProvider{},
 			&route.ServiceProvider{},

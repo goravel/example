@@ -8,10 +8,18 @@ import (
 	"github.com/spf13/cast"
 
 	"goravel/app/http/controllers"
+	"goravel/app/jobs"
 )
 
 func Web() {
 	facades.Route().Get("/", func(ctx http.Context) http.Response {
+		err := facades.Queue().Job(&jobs.Test{}, []any{
+			"test", 1,
+		}).Dispatch()
+		if err != nil {
+			facades.Log().Error("Queue job error: %v", err)
+		}
+
 		return ctx.Response().View().Make("welcome.tmpl", map[string]any{
 			"version": support.Version,
 		})
