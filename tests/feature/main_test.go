@@ -3,6 +3,7 @@ package feature
 import (
 	"os"
 	"testing"
+	"time"
 
 	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support/file"
@@ -21,6 +22,14 @@ func TestMain(m *testing.M) {
 	if err := database.Migrate(); err != nil {
 		panic(err)
 	}
+
+	go func() {
+		if err := facades.Route().Run(); err != nil {
+			facades.Log().Errorf("Route run error: %v", err)
+		}
+	}()
+
+	time.Sleep(1 * time.Second)
 
 	exit := m.Run()
 

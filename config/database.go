@@ -1,31 +1,31 @@
 package config
 
 import (
+	"github.com/goravel/framework/contracts/database/driver"
 	"github.com/goravel/framework/facades"
+	mysqlfacades "github.com/goravel/mysql/facades"
+	postgresfacades "github.com/goravel/postgres/facades"
+	sqlitefacades "github.com/goravel/sqlite/facades"
+	sqlserverfacades "github.com/goravel/sqlserver/facades"
 )
 
 func init() {
 	config := facades.Config()
 	config.Add("database", map[string]any{
 		// Default database connection name
-		"default": config.Env("DB_CONNECTION", "mysql"),
+		"default": config.Env("DB_CONNECTION", "sqlite"),
 
 		// Database connections
 		"connections": map[string]any{
-			"mysql": map[string]any{
-				"driver":   "mysql",
-				"host":     config.Env("DB_HOST", "127.0.0.1"),
-				"port":     config.Env("DB_PORT", 3306),
+			"sqlite": map[string]any{
 				"database": config.Env("DB_DATABASE", "forge"),
-				"username": config.Env("DB_USERNAME", ""),
-				"password": config.Env("DB_PASSWORD", ""),
-				"charset":  "utf8mb4",
-				"loc":      "Local",
 				"prefix":   "",
 				"singular": false, // Table name is singular
+				"via": func() (driver.Driver, error) {
+					return sqlitefacades.Sqlite("sqlite")
+				},
 			},
 			"postgres": map[string]any{
-				"driver":   "postgres",
 				"host":     config.Env("DB_HOST", "127.0.0.1"),
 				"port":     config.Env("DB_PORT", 5432),
 				"database": config.Env("DB_DATABASE", "forge"),
@@ -33,25 +33,38 @@ func init() {
 				"password": config.Env("DB_PASSWORD", ""),
 				"sslmode":  "disable",
 				"timezone": "UTC", // Asia/Shanghai
+				"singular": false,
 				"prefix":   "",
-				"singular": false, // Table name is singular
-			},
-			"sqlite": map[string]any{
-				"driver":   "sqlite",
-				"database": config.Env("DB_DATABASE", "forge"),
-				"prefix":   "",
-				"singular": false, // Table name is singular
+				"via": func() (driver.Driver, error) {
+					return postgresfacades.Postgres("postgres")
+				},
 			},
 			"sqlserver": map[string]any{
-				"driver":   "sqlserver",
 				"host":     config.Env("DB_HOST", "127.0.0.1"),
-				"port":     config.Env("DB_PORT", 1433),
+				"port":     config.Env("DB_PORT", 3306),
 				"database": config.Env("DB_DATABASE", "forge"),
 				"username": config.Env("DB_USERNAME", ""),
 				"password": config.Env("DB_PASSWORD", ""),
 				"charset":  "utf8mb4",
 				"prefix":   "",
-				"singular": false, // Table name is singular
+				"singular": false,
+				"via": func() (driver.Driver, error) {
+					return sqlserverfacades.Sqlserver("sqlserver")
+				},
+			},
+			"mysql": map[string]any{
+				"host":     config.Env("DB_HOST", "127.0.0.1"),
+				"port":     config.Env("DB_PORT", 3306),
+				"database": config.Env("DB_DATABASE", "forge"),
+				"username": config.Env("DB_USERNAME", ""),
+				"password": config.Env("DB_PASSWORD", ""),
+				"charset":  "utf8mb4",
+				"loc":      "UTC", // Asia/Shanghai
+				"prefix":   "",
+				"singular": false,
+				"via": func() (driver.Driver, error) {
+					return mysqlfacades.Mysql("mysql")
+				},
 			},
 		},
 
