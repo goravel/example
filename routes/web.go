@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/queue"
 	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support"
@@ -13,8 +14,11 @@ import (
 
 func Web() {
 	facades.Route().Get("/", func(ctx http.Context) http.Response {
-		err := facades.Queue().Job(&jobs.Test{}, []any{
-			"test", 1,
+		err := facades.Queue().Job(&jobs.Test{}, []queue.Arg{
+			{
+				Type:  "string",
+				Value: "test",
+			},
 		}).Dispatch()
 		if err != nil {
 			facades.Log().Error("Queue job error: %v", err)

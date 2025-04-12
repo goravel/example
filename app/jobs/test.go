@@ -1,6 +1,6 @@
 package jobs
 
-var TestResult [][]any
+var TestResult []any
 
 type Test struct {
 }
@@ -13,7 +13,7 @@ func (receiver *Test) Signature() string {
 // Handle Execute the job.
 func (receiver *Test) Handle(args ...any) error {
 	if len(args) > 0 {
-		TestResult = append(TestResult, args)
+		TestResult = append(TestResult, args...)
 	}
 	return nil
 }

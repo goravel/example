@@ -29,12 +29,6 @@ func TestMain(m *testing.M) {
 		}
 	}()
 
-	go func() {
-		if err := facades.Queue().Worker().Run(); err != nil {
-			facades.Log().Errorf("Queue run error: %v", err)
-		}
-	}()
-
 	time.Sleep(1 * time.Second)
 
 	exit := m.Run()

@@ -20,11 +20,6 @@ func init() {
 			"sync": map[string]any{
 				"driver": "sync",
 			},
-			"async": map[string]any{
-				"driver": "async",
-				"queue":  "default",
-				"size":   100,
-			},
 			"redis": map[string]any{
 				"driver":     "custom",
 				"connection": "default",
