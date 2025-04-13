@@ -32,56 +32,30 @@ func (s *QueueTestSuite) TearDownTest() {
 }
 
 func (s *QueueTestSuite) TestDispatch() {
-	facades.Queue().Job(&jobs.Test{}, mockQueueArgs).Dispatch()
+	facades.Queue().Job(&jobs.Test{}, testQueueArgs).Dispatch()
 
 	time.Sleep(1 * time.Second)
 
-	var args []any
-	for _, arg := range mockQueueArgs {
-		if arg.Type == "[]uint8" {
-			var uint8Slice []uint8
-			for _, v := range cast.ToIntSlice(arg.Value) {
-				uint8Slice = append(uint8Slice, uint8(v))
-			}
-			args = append(args, uint8Slice)
-		} else {
-			args = append(args, arg.Value)
-		}
-	}
-
-	s.Equal(args, jobs.TestResult)
+	s.Equal(convertTestQueueArgs(), jobs.TestResult)
 }
 
 func (s *QueueTestSuite) TestDispatchWithDelay() {
-	facades.Queue().Job(&jobs.Test{}, mockQueueArgs).Delay(time.Now().Add(1 * time.Second)).Dispatch()
+	facades.Queue().Job(&jobs.Test{}, testQueueArgs).Delay(time.Now().Add(1 * time.Second)).Dispatch()
 
 	time.Sleep(2 * time.Second)
 
-	var args []any
-	for _, arg := range mockQueueArgs {
-		if arg.Type == "[]uint8" {
-			var uint8Slice []uint8
-			for _, v := range cast.ToIntSlice(arg.Value) {
-				uint8Slice = append(uint8Slice, uint8(v))
-			}
-			args = append(args, uint8Slice)
-		} else {
-			args = append(args, arg.Value)
-		}
-	}
-
-	s.Equal(args, jobs.TestResult)
+	s.Equal(convertTestQueueArgs(), jobs.TestResult)
 }
 
 func (s *QueueTestSuite) TestChainDispatch() {
 	facades.Queue().Chain([]queue.Jobs{
 		{
 			Job:  &jobs.Test{},
-			Args: mockQueueArgs,
+			Args: testQueueArgs,
 		},
 		{
 			Job:  &jobs.Test{},
-			Args: mockQueueArgs,
+			Args: testQueueArgs,
 		},
 	}).Dispatch()
 
@@ -89,17 +63,7 @@ func (s *QueueTestSuite) TestChainDispatch() {
 
 	var args []any
 	for i := 0; i < 2; i++ {
-		for _, arg := range mockQueueArgs {
-			if arg.Type == "[]uint8" {
-				var uint8Slice []uint8
-				for _, v := range cast.ToIntSlice(arg.Value) {
-					uint8Slice = append(uint8Slice, uint8(v))
-				}
-				args = append(args, uint8Slice)
-			} else {
-				args = append(args, arg.Value)
-			}
-		}
+		args = append(args, convertTestQueueArgs()...)
 	}
 
 	s.Equal(args, jobs.TestResult)
@@ -110,7 +74,7 @@ func (s *QueueTestSuite) TestMachinery() {
 }
 
 var (
-	mockQueueArgs = []queue.Arg{
+	testQueueArgs = []queue.Arg{
 		{
 			Type:  "bool",
 			Value: true,
@@ -225,3 +189,20 @@ var (
 		},
 	}
 )
+
+func convertTestQueueArgs() []any {
+	var args []any
+	for _, arg := range testQueueArgs {
+		if arg.Type == "[]uint8" {
+			var uint8Slice []uint8
+			for _, v := range cast.ToIntSlice(arg.Value) {
+				uint8Slice = append(uint8Slice, uint8(v))
+			}
+			args = append(args, uint8Slice)
+		} else {
+			args = append(args, arg.Value)
+		}
+	}
+
+	return args
+}
