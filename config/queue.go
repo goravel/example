@@ -28,6 +28,14 @@ func init() {
 					return redisfacades.Queue("redis") // The `redis` value is the key of `connections`
 				},
 			},
+			"redis1": map[string]any{
+				"driver":     "custom",
+				"connection": "default",
+				"queue":      "default",
+				"via": func() (queue.Driver, error) {
+					return redisfacades.Queue("redis") // The `redis` value is the key of `connections`
+				},
+			},
 		},
 	})
 }

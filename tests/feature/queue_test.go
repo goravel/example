@@ -47,6 +47,18 @@ func (s *QueueTestSuite) TestDispatchWithDelay() {
 	s.Equal(convertTestQueueArgs(), jobs.TestResult)
 }
 
+func (s *QueueTestSuite) TestDispatchWithConnectionAndQueue() {
+	if facades.Config().GetString("queue.default") != "sync" {
+		s.T().Skip("skip test due to only for redis")
+	}
+
+	facades.Queue().Job(&jobs.Test{}, testQueueArgs).OnConnection("redis1").OnQueue("test").Dispatch()
+
+	time.Sleep(1 * time.Second)
+
+	s.Equal(convertTestQueueArgs(), jobs.TestResult)
+}
+
 func (s *QueueTestSuite) TestChainDispatch() {
 	facades.Queue().Chain([]queue.Jobs{
 		{
@@ -67,10 +79,6 @@ func (s *QueueTestSuite) TestChainDispatch() {
 	}
 
 	s.Equal(args, jobs.TestResult)
-}
-
-func (s *QueueTestSuite) TestMachinery() {
-	// TODO
 }
 
 var (
