@@ -39,7 +39,7 @@ func (s *QueueTestSuite) TestDispatch() {
 
 	time.Sleep(1 * time.Second)
 
-	s.Equal(convertTestQueueArgs(), jobs.TestResult)
+	s.Equal(convertTestQueueArgs(testQueueArgs), jobs.TestResult)
 }
 
 func (s *QueueTestSuite) TestDispatchWithDelay() {
@@ -47,7 +47,7 @@ func (s *QueueTestSuite) TestDispatchWithDelay() {
 
 	time.Sleep(2 * time.Second)
 
-	s.Equal(convertTestQueueArgs(), jobs.TestResult)
+	s.Equal(convertTestQueueArgs(testQueueArgs), jobs.TestResult)
 }
 
 func (s *QueueTestSuite) TestDispatchChain() {
@@ -66,7 +66,7 @@ func (s *QueueTestSuite) TestDispatchChain() {
 
 	var args []any
 	for i := 0; i < 2; i++ {
-		args = append(args, convertTestQueueArgs()...)
+		args = append(args, convertTestQueueArgs(testQueueArgs)...)
 	}
 
 	s.Equal(args, jobs.TestResult)
@@ -81,7 +81,7 @@ func (s *QueueTestSuite) TestDispatchWithConnectionAndQueue() {
 
 	time.Sleep(1 * time.Second)
 
-	s.Equal(convertTestQueueArgs(), jobs.TestResult)
+	s.Equal(convertTestQueueArgs(testQueueArgs), jobs.TestResult)
 }
 
 func (s *QueueTestSuite) TestMachinery() {
@@ -104,7 +104,7 @@ func (s *QueueTestSuite) TestMachinery() {
 
 		time.Sleep(1 * time.Second)
 
-		s.Equal(convertTestQueueArgs(), jobs.TestResult)
+		s.Equal(convertTestQueueArgs(testQueueArgs), jobs.TestResult)
 	})
 
 	s.Run("dispatch chain", func() {
@@ -118,7 +118,7 @@ func (s *QueueTestSuite) TestMachinery() {
 
 		var args []any
 		for i := 0; i < 2; i++ {
-			args = append(args, convertTestQueueArgs()...)
+			args = append(args, convertTestQueueArgs(testQueueArgs)...)
 		}
 
 		s.Equal(args, jobs.TestResult)
@@ -133,7 +133,7 @@ func (s *QueueTestSuite) TestMachinery() {
 
 		time.Sleep(1 * time.Second)
 
-		s.Equal(convertTestQueueArgs(), jobs.TestResult)
+		s.Equal(convertTestQueueArgs(testQueueArgs), jobs.TestResult)
 	})
 
 	s.Run("dispatch with connection and queue", func() {
@@ -145,7 +145,7 @@ func (s *QueueTestSuite) TestMachinery() {
 
 		time.Sleep(1 * time.Second)
 
-		s.Equal(convertTestQueueArgs(), jobs.TestResult)
+		s.Equal(convertTestQueueArgs(testQueueArgs), jobs.TestResult)
 	})
 }
 
@@ -266,9 +266,9 @@ var (
 	}
 )
 
-func convertTestQueueArgs() []any {
+func convertTestQueueArgs(queueArgs []queue.Arg) []any {
 	var args []any
-	for _, arg := range testQueueArgs {
+	for _, arg := range queueArgs {
 		if arg.Type == "[]uint8" {
 			var uint8Slice []uint8
 			for _, v := range cast.ToIntSlice(arg.Value) {
