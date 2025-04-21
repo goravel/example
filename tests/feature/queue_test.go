@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goravel/framework/contracts/queue"
+	contractsqueue "github.com/goravel/framework/contracts/queue"
 	"github.com/goravel/framework/facades"
+	"github.com/goravel/framework/queue"
 	"github.com/goravel/redis"
-	"github.com/spf13/cast"
 	"github.com/stretchr/testify/suite"
 
 	"goravel/app/jobs"
@@ -39,7 +39,7 @@ func (s *QueueTestSuite) TestDispatch() {
 
 	time.Sleep(1 * time.Second)
 
-	s.Equal(convertTestQueueArgs(testQueueArgs), jobs.TestResult)
+	s.Equal(queue.ConvertArgs(testQueueArgs), jobs.TestResult)
 }
 
 func (s *QueueTestSuite) TestDispatchWithDelay() {
@@ -47,11 +47,11 @@ func (s *QueueTestSuite) TestDispatchWithDelay() {
 
 	time.Sleep(2 * time.Second)
 
-	s.Equal(convertTestQueueArgs(testQueueArgs), jobs.TestResult)
+	s.Equal(queue.ConvertArgs(testQueueArgs), jobs.TestResult)
 }
 
 func (s *QueueTestSuite) TestDispatchChain() {
-	facades.Queue().Chain([]queue.Jobs{
+	facades.Queue().Chain([]contractsqueue.Jobs{
 		{
 			Job:  &jobs.Test{},
 			Args: testQueueArgs,
@@ -66,7 +66,7 @@ func (s *QueueTestSuite) TestDispatchChain() {
 
 	var args []any
 	for i := 0; i < 2; i++ {
-		args = append(args, convertTestQueueArgs(testQueueArgs)...)
+		args = append(args, queue.ConvertArgs(testQueueArgs)...)
 	}
 
 	s.Equal(args, jobs.TestResult)
@@ -81,7 +81,7 @@ func (s *QueueTestSuite) TestDispatchWithConnectionAndQueue() {
 
 	time.Sleep(1 * time.Second)
 
-	s.Equal(convertTestQueueArgs(testQueueArgs), jobs.TestResult)
+	s.Equal(queue.ConvertArgs(testQueueArgs), jobs.TestResult)
 }
 
 func (s *QueueTestSuite) TestMachinery() {
@@ -104,7 +104,7 @@ func (s *QueueTestSuite) TestMachinery() {
 
 		time.Sleep(1 * time.Second)
 
-		s.Equal(convertTestQueueArgs(testQueueArgs), jobs.TestResult)
+		s.Equal(queue.ConvertArgs(testQueueArgs), jobs.TestResult)
 	})
 
 	s.Run("dispatch chain", func() {
@@ -118,7 +118,7 @@ func (s *QueueTestSuite) TestMachinery() {
 
 		var args []any
 		for i := 0; i < 2; i++ {
-			args = append(args, convertTestQueueArgs(testQueueArgs)...)
+			args = append(args, queue.ConvertArgs(testQueueArgs)...)
 		}
 
 		s.Equal(args, jobs.TestResult)
@@ -133,7 +133,7 @@ func (s *QueueTestSuite) TestMachinery() {
 
 		time.Sleep(1 * time.Second)
 
-		s.Equal(convertTestQueueArgs(testQueueArgs), jobs.TestResult)
+		s.Equal(queue.ConvertArgs(testQueueArgs), jobs.TestResult)
 	})
 
 	s.Run("dispatch with connection and queue", func() {
@@ -145,12 +145,12 @@ func (s *QueueTestSuite) TestMachinery() {
 
 		time.Sleep(1 * time.Second)
 
-		s.Equal(convertTestQueueArgs(testQueueArgs), jobs.TestResult)
+		s.Equal(queue.ConvertArgs(testQueueArgs), jobs.TestResult)
 	})
 }
 
 var (
-	testQueueArgs = []queue.Arg{
+	testQueueArgs = []contractsqueue.Arg{
 		{
 			Type:  "bool",
 			Value: true,
@@ -265,20 +265,3 @@ var (
 		},
 	}
 )
-
-func convertTestQueueArgs(queueArgs []queue.Arg) []any {
-	var args []any
-	for _, arg := range queueArgs {
-		if arg.Type == "[]uint8" {
-			var uint8Slice []uint8
-			for _, v := range cast.ToIntSlice(arg.Value) {
-				uint8Slice = append(uint8Slice, uint8(v))
-			}
-			args = append(args, uint8Slice)
-		} else {
-			args = append(args, arg.Value)
-		}
-	}
-
-	return args
-}
