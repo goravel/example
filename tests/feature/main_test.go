@@ -55,5 +55,5 @@ func (s *TransactionsSuite) TearDownTest() {
 }
 
 func (s *TransactionsSuite) Testdb() {
-	fmt.Println("Testttt")
+	fmt.Println("Test")
 }
