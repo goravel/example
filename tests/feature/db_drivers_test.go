@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/goravel/framework/facades"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -35,5 +36,7 @@ func TestDBDrivers(t *testing.T) {
 
 		facades.Config().Add("database.default", "sqlite")
 		facades.App().Refresh()
+
+		assert.NoError(t, database.Shutdown())
 	}
 }
