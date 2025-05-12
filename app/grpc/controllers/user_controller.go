@@ -6,11 +6,9 @@ import (
 
 	proto "github.com/goravel/example-proto"
 	"github.com/goravel/framework/auth"
-	contractsauth "github.com/goravel/framework/contracts/auth"
 	contractshttp "github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
 	goravelhttp "github.com/goravel/framework/http"
-	"github.com/goravel/framework/support/debug"
 	"github.com/pkg/errors"
 
 	"goravel/app/models"
@@ -146,11 +144,7 @@ func (receiver *UserController) GetUser(ctx context.Context, req *proto.UserRequ
 }
 
 func refreshToken(ctx contractshttp.Context, token string) (string, error) {
-	var (
-		payload *contractsauth.Payload
-		err     error
-	)
-	if payload, err = facades.Auth(ctx).Parse(token); err != nil {
+	if _, err := facades.Auth(ctx).Parse(token); err != nil {
 		if errors.Is(err, auth.ErrorTokenExpired) {
 			token, err = facades.Auth(ctx).Refresh()
 			if err != nil {
@@ -162,8 +156,6 @@ func refreshToken(ctx contractshttp.Context, token string) (string, error) {
 			return "", err
 		}
 	}
-
-	debug.Dump(payload)
 
 	return token, nil
 }

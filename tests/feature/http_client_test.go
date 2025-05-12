@@ -27,7 +27,7 @@ func (s *HttpClientTestSuite) TearDownTest() {
 }
 
 func (s *HttpClientTestSuite) TestGet() {
-	response, err := facades.Http().Get("/")
+	response, err := facades.Http().Get("/users")
 	s.Require().NoError(err)
 	s.Equal(200, response.Status())
 }

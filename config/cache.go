@@ -29,6 +29,7 @@ func init() {
 			"redis": map[string]any{
 				"driver":     "custom",
 				"connection": "default",
+				"queue":      "default",
 				"via": func() (cache.Driver, error) {
 					return redisfacades.Cache("redis") // The `redis` value is the key of `stores`
 				},
