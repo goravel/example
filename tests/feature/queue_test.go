@@ -35,7 +35,7 @@ func (s *QueueTestSuite) TearDownTest() {
 }
 
 func (s *QueueTestSuite) TestDispatch() {
-	facades.Queue().Job(&jobs.Test{}, testQueueArgs).Dispatch()
+	s.NoError(facades.Queue().Job(&jobs.Test{}, testQueueArgs).Dispatch())
 
 	time.Sleep(1 * time.Second)
 
@@ -43,7 +43,7 @@ func (s *QueueTestSuite) TestDispatch() {
 }
 
 func (s *QueueTestSuite) TestDispatchWithDelay() {
-	facades.Queue().Job(&jobs.Test{}, testQueueArgs).Delay(time.Now().Add(1 * time.Second)).Dispatch()
+	s.NoError(facades.Queue().Job(&jobs.Test{}, testQueueArgs).Delay(time.Now().Add(1 * time.Second)).Dispatch())
 
 	time.Sleep(2 * time.Second)
 
@@ -51,7 +51,7 @@ func (s *QueueTestSuite) TestDispatchWithDelay() {
 }
 
 func (s *QueueTestSuite) TestDispatchChain() {
-	facades.Queue().Chain([]contractsqueue.Jobs{
+	s.NoError(facades.Queue().Chain([]contractsqueue.Jobs{
 		{
 			Job:  &jobs.Test{},
 			Args: testQueueArgs,
@@ -60,7 +60,7 @@ func (s *QueueTestSuite) TestDispatchChain() {
 			Job:  &jobs.Test{},
 			Args: testQueueArgs,
 		},
-	}).Dispatch()
+	}).Dispatch())
 
 	time.Sleep(1 * time.Second)
 
