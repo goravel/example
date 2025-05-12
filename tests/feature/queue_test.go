@@ -77,7 +77,7 @@ func (s *QueueTestSuite) TestDispatchWithConnectionAndQueue() {
 		s.T().Skip("skip test due to only for redis")
 	}
 
-	facades.Queue().Job(&jobs.Test{}, testQueueArgs).OnConnection("redis1").OnQueue("test").Dispatch()
+	s.NoError(facades.Queue().Job(&jobs.Test{}, testQueueArgs).OnConnection("redis1").OnQueue("test").Dispatch())
 
 	time.Sleep(1 * time.Second)
 
