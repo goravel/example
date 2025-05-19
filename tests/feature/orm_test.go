@@ -1,3 +1,5 @@
+//go:debug x509negativeserial=1
+
 package feature
 
 import (
@@ -21,6 +23,7 @@ func TestOrmTestSuite(t *testing.T) {
 
 // SetupTest will run before each test in the suite.
 func (s *OrmTestSuite) SetupTest() {
+	s.RefreshDatabase()
 }
 
 // TearDownTest will run after each test in the suite.

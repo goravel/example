@@ -10,11 +10,9 @@ import (
 func TestRedisDriver(t *testing.T) {
 	facades.Config().Add("cache.default", "redis")
 	facades.App().Refresh()
-	facades.App().Boot()
 
 	suite.Run(t, &RouteTestSuite{})
 
 	facades.Config().Add("cache.default", "memory")
 	facades.App().Refresh()
-	facades.App().Boot()
 }
