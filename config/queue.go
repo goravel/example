@@ -15,10 +15,22 @@ func init() {
 		// Queue Connections
 		//
 		// Here you may configure the connection information for each server that is used by your application.
-		// Drivers: "sync", "async", "custom"
+		// Drivers: "sync", "database", "machinery", "custom"
 		"connections": map[string]any{
 			"sync": map[string]any{
 				"driver": "sync",
+			},
+			"database": map[string]any{
+				"driver":     "database",
+				"connection": "sqlite",
+				"queue":      "default",
+				"concurrent": 1,
+			},
+			"machinery": map[string]any{
+				"driver":     "machinery",
+				"connection": "default",
+				"queue":      "default",
+				"concurrent": 1,
 			},
 			"redis": map[string]any{
 				"driver":     "custom",
