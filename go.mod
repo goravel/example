@@ -8,11 +8,11 @@ require (
 	github.com/99designs/gqlgen v0.17.57
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.3.1-0.20250327042617-5d9f62c59976
-	github.com/goravel/framework v1.15.2-0.20250531021301-f6542cd81af9
+	github.com/goravel/framework v1.15.2-0.20250531080756-1d20e34c7d3b
 	github.com/goravel/gin v1.3.1-0.20250327042606-1df030f41257
 	github.com/goravel/mysql v0.0.0-20250319075542-87a68d535125
 	github.com/goravel/postgres v0.0.2-0.20250319075525-0a0ea3bfa69a
-	github.com/goravel/redis v1.3.1-0.20250512064442-beb589265425
+	github.com/goravel/redis v1.3.1-0.20250531081233-f529f661ca9d
 	github.com/goravel/sqlite v0.0.0-20250319075628-124c135617fd
 	github.com/goravel/sqlserver v0.0.0-20250330044523-bf0931bdcdff
 	github.com/gorilla/websocket v1.5.0
@@ -218,9 +218,4 @@ require (
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.9.1 // indirect
 	modernc.org/sqlite v1.37.0 // indirect
-)
-
-replace (
-	github.com/goravel/framework => ../goravel/framework
-	github.com/goravel/redis => ../goravel/redis
 )
