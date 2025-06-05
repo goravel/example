@@ -1,12 +1,14 @@
 package feature
 
 import (
+	"errors"
 	"testing"
 	"time"
 
 	contractsqueue "github.com/goravel/framework/contracts/queue"
 	"github.com/goravel/framework/facades"
-	"github.com/goravel/framework/queue"
+	"github.com/goravel/framework/queue/utils"
+	"github.com/goravel/framework/support/carbon"
 	"github.com/stretchr/testify/suite"
 
 	"goravel/app/jobs"
@@ -25,6 +27,7 @@ func TestQueueTestSuite(t *testing.T) {
 // SetupTest will run before each test in the suite.
 func (s *QueueTestSuite) SetupTest() {
 	jobs.TestResult = nil
+	jobs.TestErrResult = nil
 }
 
 // TearDownTest will run after each test in the suite.
@@ -36,7 +39,7 @@ func (s *QueueTestSuite) TestDispatch() {
 
 	time.Sleep(1 * time.Second)
 
-	s.Equal(queue.ConvertArgs(testQueueArgs), jobs.TestResult)
+	s.Equal(utils.ConvertArgs(testQueueArgs), jobs.TestResult)
 }
 
 func (s *QueueTestSuite) TestDispatchWithDelay() {
@@ -44,7 +47,7 @@ func (s *QueueTestSuite) TestDispatchWithDelay() {
 
 	time.Sleep(2 * time.Second)
 
-	s.Equal(queue.ConvertArgs(testQueueArgs), jobs.TestResult)
+	s.Equal(utils.ConvertArgs(testQueueArgs), jobs.TestResult)
 }
 
 func (s *QueueTestSuite) TestDispatchChain() {
@@ -63,7 +66,7 @@ func (s *QueueTestSuite) TestDispatchChain() {
 
 	var args []any
 	for i := 0; i < 2; i++ {
-		args = append(args, queue.ConvertArgs(testQueueArgs)...)
+		args = append(args, utils.ConvertArgs(testQueueArgs)...)
 	}
 
 	s.Equal(args, jobs.TestResult)
@@ -74,7 +77,7 @@ func (s *QueueTestSuite) TestDispatchWithQueue() {
 
 	time.Sleep(1 * time.Second)
 
-	s.Equal(queue.ConvertArgs(testQueueArgs), jobs.TestResult)
+	s.Equal(utils.ConvertArgs(testQueueArgs), jobs.TestResult)
 }
 
 func (s *QueueTestSuite) TestDispatchWithConnectionAndQueue() {
@@ -86,7 +89,55 @@ func (s *QueueTestSuite) TestDispatchWithConnectionAndQueue() {
 
 	time.Sleep(1 * time.Second)
 
-	s.Equal(queue.ConvertArgs(testQueueArgs), jobs.TestResult)
+	s.Equal(utils.ConvertArgs(testQueueArgs), jobs.TestResult)
+}
+
+func (s *QueueTestSuite) TestSyncFailedJob() {
+	if facades.Config().GetString("queue.default") != "sync" {
+		s.T().Skip("skip test due to only for sync")
+	}
+
+	s.Equal(errors.New("test error"), facades.Queue().Job(&jobs.TestErr{}).Dispatch())
+}
+
+func (s *QueueTestSuite) TestFailedJobAndRetry() {
+	if facades.Config().GetString("queue.default") == "sync" {
+		s.T().Skip("skip test due to only for non-sync")
+	}
+
+	carbon.SetTestNow(carbon.Now())
+	defer carbon.ClearTestNow()
+
+	testErr := &jobs.TestErr{}
+	s.NoError(facades.Queue().Job(testErr, []contractsqueue.Arg{
+		{
+			Type:  "string",
+			Value: "test",
+		},
+	}).Dispatch())
+
+	time.Sleep(1 * time.Second)
+
+	s.Equal([]any{"test"}, jobs.TestErrResult)
+
+	failedJobs, err := facades.Queue().Failer().All()
+
+	s.Require().NoError(err)
+
+	if facades.Config().GetString("queue.default") != "machinery" {
+		s.Require().Equal(1, len(failedJobs))
+		s.Equal("default", failedJobs[0].Queue())
+		s.Equal(facades.Config().GetString("queue.default"), failedJobs[0].Connection())
+		s.Equal(carbon.NewDateTime(carbon.Now()), failedJobs[0].FailedAt())
+		s.Equal(testErr.Signature(), failedJobs[0].Signature())
+		s.NotEmpty(failedJobs[0].UUID())
+
+		s.NoError(facades.Artisan().Call("queue:retry"))
+
+		time.Sleep(1 * time.Second)
+
+		s.Equal([]any{"test", "test"}, jobs.TestErrResult)
+	}
 }
 
 var (
