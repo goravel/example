@@ -8,17 +8,17 @@ require (
 	github.com/99designs/gqlgen v0.17.57
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.3.1-0.20250327042617-5d9f62c59976
-	github.com/goravel/framework v1.15.2-0.20250531080756-1d20e34c7d3b
+	github.com/goravel/framework v1.15.2-0.20250602131423-6b6b6a889779
 	github.com/goravel/gin v1.3.1-0.20250327042606-1df030f41257
 	github.com/goravel/mysql v0.0.0-20250319075542-87a68d535125
 	github.com/goravel/postgres v0.0.2-0.20250319075525-0a0ea3bfa69a
-	github.com/goravel/redis v1.3.1-0.20250531081233-f529f661ca9d
+	github.com/goravel/redis v1.3.1-0.20250602142751-ca5637f20264
 	github.com/goravel/sqlite v0.0.0-20250319075628-124c135617fd
 	github.com/goravel/sqlserver v0.0.0-20250330044523-bf0931bdcdff
 	github.com/gorilla/websocket v1.5.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cast v1.8.0
+	github.com/spf13/cast v1.9.1
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.2
@@ -108,7 +108,7 @@ require (
 	github.com/gookit/color v1.5.4 // indirect
 	github.com/gookit/filter v1.2.2 // indirect
 	github.com/gookit/goutil v0.6.18 // indirect
-	github.com/gookit/validate v1.5.4 // indirect
+	github.com/gookit/validate v1.5.5 // indirect
 	github.com/goravel/file-rotatelogs/v2 v2.4.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -149,7 +149,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/pterm/pterm v0.12.80 // indirect
 	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
-	github.com/redis/go-redis/v9 v9.8.0 // indirect
+	github.com/redis/go-redis/v9 v9.9.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
