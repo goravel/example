@@ -132,7 +132,7 @@ func (s *QueueTestSuite) TestFailedJobAndRetry() {
 		s.Equal(testErr.Signature(), failedJobs[0].Signature())
 		s.NotEmpty(failedJobs[0].UUID())
 
-		s.NoError(failedJobs[0].Retry())
+		s.NoError(facades.Artisan().Call("queue:retry"))
 
 		time.Sleep(1 * time.Second)
 
