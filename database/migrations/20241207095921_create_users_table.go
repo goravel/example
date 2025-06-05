@@ -20,8 +20,8 @@ func (r *M20241207095921CreateUsersTable) Up() error {
 			table.BigIncrements("id")
 			table.String("name").Default("")
 			table.String("avatar").Default("")
-			table.Timestamps()
-			table.SoftDeletes()
+			table.TimestampsTz()
+			table.SoftDeletesTz()
 		})
 	}
 
