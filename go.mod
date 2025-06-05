@@ -8,7 +8,7 @@ require (
 	github.com/99designs/gqlgen v0.17.57
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.3.6
-	github.com/goravel/framework v1.15.8
+	github.com/goravel/framework v1.15.9
 	github.com/goravel/gin v1.3.3
 	github.com/goravel/redis v1.3.1
 	github.com/gorilla/websocket v1.5.0
