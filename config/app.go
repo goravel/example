@@ -1,6 +1,8 @@
 package config
 
 import (
+	"github.com/goravel/cloudinary"
+	"github.com/goravel/cos"
 	"github.com/goravel/fiber"
 	"github.com/goravel/framework/auth"
 	"github.com/goravel/framework/cache"
@@ -25,9 +27,12 @@ import (
 	"github.com/goravel/framework/translation"
 	"github.com/goravel/framework/validation"
 	"github.com/goravel/gin"
+	"github.com/goravel/minio"
 	"github.com/goravel/mysql"
+	"github.com/goravel/oss"
 	"github.com/goravel/postgres"
 	"github.com/goravel/redis"
+	"github.com/goravel/s3"
 	"github.com/goravel/sqlite"
 	"github.com/goravel/sqlserver"
 
@@ -131,6 +136,10 @@ func init() {
 			&providers.DatabaseServiceProvider{},
 			&gin.ServiceProvider{},
 			&fiber.ServiceProvider{},
+			&cos.ServiceProvider{},
+			&oss.ServiceProvider{},
+			&cloudinary.ServiceProvider{},
+			&minio.ServiceProvider{},
 		},
 	})
 }
