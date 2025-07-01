@@ -19,7 +19,7 @@ require (
 	github.com/goravel/mysql v0.0.0-20250630131106-fc0d63ac5a27
 	github.com/goravel/oss v1.3.1-0.20250701013459-2a9ca057125a
 	github.com/goravel/postgres v0.0.2-0.20250630131025-a6d249a48e7c
-	github.com/goravel/redis v1.3.1-0.20250630061056-4f079b7a4939
+	github.com/goravel/redis v1.3.1-0.20250701080427-19b2ce369ba2
 	github.com/goravel/s3 v1.3.1-0.20250701013425-2b447c3ad638
 	github.com/goravel/sqlite v0.0.0-20250630131145-68b23a3ec334
 	github.com/goravel/sqlserver v0.0.0-20250630131219-6f4fdf07b96e
