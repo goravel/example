@@ -133,10 +133,10 @@ func (s *FilesystemTestSuite) TestPutAndGet() {
 			storage = facades.Storage().Disk(driver)
 		}
 
-		storage.Put("test.txt", "test")
+		s.NoError(storage.Put("test.txt", "test"))
 		content, err := storage.Get("test.txt")
 
-		s.Require().NoError(err)
+		s.NoError(err)
 		s.Equal("test", content)
 
 		s.NoError(storage.Delete("test.txt"))

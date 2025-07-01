@@ -13,7 +13,7 @@ require (
 	github.com/goravel/cos v1.3.1-0.20250701013535-0e16a8178ddf
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.3.1-0.20250624233529-3700d7706640
-	github.com/goravel/framework v1.15.2-0.20250630090536-ae80591ce1c5
+	github.com/goravel/framework v1.15.2-0.20250630125237-bd4544fa5c81
 	github.com/goravel/gin v1.3.1-0.20250624233435-0d62e1afc42c
 	github.com/goravel/minio v1.3.3-0.20250701013234-66ba357bf287
 	github.com/goravel/mysql v0.0.0-20250630131106-fc0d63ac5a27
