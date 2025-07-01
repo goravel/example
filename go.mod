@@ -13,7 +13,7 @@ require (
 	github.com/goravel/cos v1.3.1-0.20250701013535-0e16a8178ddf
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.3.1-0.20250624233529-3700d7706640
-	github.com/goravel/framework v1.15.2-0.20250630125237-bd4544fa5c81
+	github.com/goravel/framework v1.15.2-0.20250701070909-51b5ee2aed12
 	github.com/goravel/gin v1.3.1-0.20250624233435-0d62e1afc42c
 	github.com/goravel/minio v1.3.3-0.20250701013234-66ba357bf287
 	github.com/goravel/mysql v0.0.0-20250630131106-fc0d63ac5a27
@@ -116,6 +116,7 @@ require (
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/gofiber/template v1.8.3 // indirect
 	github.com/gofiber/utils v1.1.0 // indirect
+	github.com/goforj/godump v1.4.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect

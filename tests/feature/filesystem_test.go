@@ -20,7 +20,7 @@ import (
 type FilesystemTestSuite struct {
 	suite.Suite
 	tests.TestCase
-	minioDocker *testingdocker.ImageDriver
+	minioDocker contractsdocker.ImageDriver
 	drivers     []string
 }
 
@@ -33,13 +33,57 @@ func (s *FilesystemTestSuite) SetupSuite() {
 		"",
 		"local",
 		"public",
-		"s3",
-		"cos",
-		"oss",
-		"cloudinary",
-		"minio",
 	}
 
+	if os.Getenv("AWS_ACCESS_KEY_ID") != "" {
+		s.drivers = append(s.drivers, "s3")
+	}
+	if os.Getenv("ALIYUN_ACCESS_KEY_ID") != "" {
+		s.drivers = append(s.drivers, "oss")
+	}
+	if os.Getenv("TENCENT_ACCESS_KEY_ID") != "" {
+		s.drivers = append(s.drivers, "cos")
+	}
+	if os.Getenv("CLOUDINARY_ACCESS_KEY_ID") != "" {
+		s.drivers = append(s.drivers, "cloudinary")
+	}
+	if os.Getenv("MINIO_ACCESS_KEY_ID") != "" {
+		s.drivers = append(s.drivers, "minio")
+		s.minioDocker = initMinio()
+	}
+
+	fmt.Printf("testing filesystem drivers: %v\n", s.drivers)
+}
+
+func (s *FilesystemTestSuite) SetupTest() {
+}
+
+func (s *FilesystemTestSuite) TearDownSuite() {
+	if s.minioDocker != nil {
+		s.NoError(s.minioDocker.Shutdown())
+	}
+}
+
+func (s *FilesystemTestSuite) TestPutAndGet() {
+	for _, driver := range s.drivers {
+		var storage filesystem.Driver
+		if driver == "" {
+			storage = facades.Storage()
+		} else {
+			storage = facades.Storage().Disk(driver)
+		}
+
+		s.NoError(storage.Put("test.txt", "test"))
+		content, err := storage.Get("test.txt")
+
+		s.NoError(err)
+		s.Equal("test", content)
+
+		s.NoError(storage.Delete("test.txt"))
+	}
+}
+
+func initMinio() contractsdocker.ImageDriver {
 	minioAccessKey := os.Getenv("MINIO_ACCESS_KEY_ID")
 	minioSecretKey := os.Getenv("MINIO_ACCESS_KEY_SECRET")
 	minioBucket := os.Getenv("MINIO_BUCKET")
@@ -65,7 +109,6 @@ func (s *FilesystemTestSuite) SetupSuite() {
 	endpoint := fmt.Sprintf("127.0.0.1:%s", supportdocker.ExposedPort(config.ExposedPorts, "9000"))
 	facades.Config().Add("filesystems.disks.minio.endpoint", endpoint)
 	facades.Config().Add("filesystems.disks.minio.url", fmt.Sprintf("http://%s/%s", endpoint, minioBucket))
-	// facades.App().Refresh()
 
 	if err := docker.Ready(func() error {
 		client, err := minio.New(endpoint, &minio.Options{
@@ -114,31 +157,5 @@ func (s *FilesystemTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	s.minioDocker = docker
-}
-
-func (s *FilesystemTestSuite) SetupTest() {
-}
-
-func (s *FilesystemTestSuite) TearDownSuite() {
-	s.NoError(s.minioDocker.Shutdown())
-}
-
-func (s *FilesystemTestSuite) TestPutAndGet() {
-	for _, driver := range s.drivers {
-		var storage filesystem.Driver
-		if driver == "" {
-			storage = facades.Storage()
-		} else {
-			storage = facades.Storage().Disk(driver)
-		}
-
-		s.NoError(storage.Put("test.txt", "test"))
-		content, err := storage.Get("test.txt")
-
-		s.NoError(err)
-		s.Equal("test", content)
-
-		s.NoError(storage.Delete("test.txt"))
-	}
+	return docker
 }

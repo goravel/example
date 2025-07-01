@@ -1,6 +1,9 @@
 package routes
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/facades"
@@ -12,6 +15,13 @@ import (
 
 func Web() {
 	facades.Route().Get("/", func(ctx http.Context) http.Response {
+		err := facades.Cache().Put("test", "test", 10*time.Second)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println(facades.Cache().Get("test"))
+
 		return ctx.Response().View().Make("welcome.tmpl", map[string]any{
 			"version": support.Version,
 		})
