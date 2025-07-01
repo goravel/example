@@ -7,6 +7,8 @@ import (
 	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support/path"
 	miniofacades "github.com/goravel/minio/facades"
+	ossfacades "github.com/goravel/oss/facades"
+	s3facades "github.com/goravel/s3/facades"
 )
 
 func init() {
@@ -36,6 +38,17 @@ func init() {
 				"root":   path.Storage("app/public"),
 				"url":    config.Env("APP_URL", "").(string) + "/storage",
 			},
+			"s3": map[string]any{
+				"driver": "custom",
+				"key":    config.Env("AWS_ACCESS_KEY_ID"),
+				"secret": config.Env("AWS_ACCESS_KEY_SECRET"),
+				"region": config.Env("AWS_REGION"),
+				"bucket": config.Env("AWS_BUCKET"),
+				"url":    config.Env("AWS_URL"),
+				"via": func() (filesystem.Driver, error) {
+					return s3facades.S3("s3") // The `s3` value is the `disks` key
+				},
+			},
 			"cos": map[string]any{
 				"driver": "custom",
 				"key":    config.Env("TENCENT_ACCESS_KEY_ID"),
@@ -43,6 +56,17 @@ func init() {
 				"url":    config.Env("TENCENT_URL"),
 				"via": func() (filesystem.Driver, error) {
 					return cosfacades.Cos("cos") // The `cos` value is the `disks` key
+				},
+			},
+			"oss": map[string]any{
+				"driver":   "custom",
+				"key":      config.Env("ALIYUN_ACCESS_KEY_ID"),
+				"secret":   config.Env("ALIYUN_ACCESS_KEY_SECRET"),
+				"bucket":   config.Env("ALIYUN_BUCKET"),
+				"url":      config.Env("ALIYUN_URL"),
+				"endpoint": config.Env("ALIYUN_ENDPOINT"),
+				"via": func() (filesystem.Driver, error) {
+					return ossfacades.Oss("oss") // The `oss` value is the `disks` key
 				},
 			},
 			"cloudinary": map[string]any{

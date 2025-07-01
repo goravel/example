@@ -32,20 +32,20 @@ func init() {
 				"queue":      "default",
 				"concurrent": 1,
 			},
-			"redis": map[string]any{
-				"driver":     "custom",
-				"connection": "default",
-				"queue":      "default",
-				"via": func() (queue.Driver, error) {
-					return redisfacades.Queue("redis") // The `redis` value is the key of `connections`
-				},
-			},
 			"redis1": map[string]any{
 				"driver":     "custom",
 				"connection": "default",
 				"queue":      "default",
 				"via": func() (queue.Driver, error) {
 					return redisfacades.Queue("redis1") // The `redis` value is the key of `connections`
+				},
+			},
+			"redis": map[string]any{
+				"driver":     "custom",
+				"connection": "default",
+				"queue":      "default",
+				"via": func() (queue.Driver, error) {
+					return redisfacades.Queue("redis") // The `redis` value is the key of `connections`
 				},
 			},
 		},

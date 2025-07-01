@@ -136,6 +136,7 @@ func init() {
 			&providers.DatabaseServiceProvider{},
 			&gin.ServiceProvider{},
 			&fiber.ServiceProvider{},
+			&s3.ServiceProvider{},
 			&cos.ServiceProvider{},
 			&oss.ServiceProvider{},
 			&cloudinary.ServiceProvider{},

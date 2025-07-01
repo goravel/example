@@ -6,18 +6,21 @@ toolchain go1.23.3
 
 require (
 	github.com/99designs/gqlgen v0.17.57
-	github.com/goravel/cloudinary v1.3.1-0.20250623094022-a312aa4e7dfd
-	github.com/goravel/cos v1.3.1-0.20250616074654-632688c58908
+	github.com/gin-gonic/gin v1.10.1
+	github.com/gofiber/fiber/v2 v2.52.8
+	github.com/gofiber/template/html/v2 v2.1.3
+	github.com/goravel/cloudinary v1.3.1-0.20250701013623-ccf6c109476c
+	github.com/goravel/cos v1.3.1-0.20250701013535-0e16a8178ddf
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.3.1-0.20250624233529-3700d7706640
 	github.com/goravel/framework v1.15.2-0.20250630090536-ae80591ce1c5
 	github.com/goravel/gin v1.3.1-0.20250624233435-0d62e1afc42c
-	github.com/goravel/minio v1.3.3-0.20250623051150-5fba7ca6f7b7
+	github.com/goravel/minio v1.3.3-0.20250701013234-66ba357bf287
 	github.com/goravel/mysql v0.0.0-20250630131106-fc0d63ac5a27
-	github.com/goravel/oss v1.3.1-0.20250616074323-bbc12a95057e
+	github.com/goravel/oss v1.3.1-0.20250701013459-2a9ca057125a
 	github.com/goravel/postgres v0.0.2-0.20250630131025-a6d249a48e7c
 	github.com/goravel/redis v1.3.1-0.20250630061056-4f079b7a4939
-	github.com/goravel/s3 v1.3.1-0.20250630142223-bfe2946f190a
+	github.com/goravel/s3 v1.3.1-0.20250701013425-2b447c3ad638
 	github.com/goravel/sqlite v0.0.0-20250630131145-68b23a3ec334
 	github.com/goravel/sqlserver v0.0.0-20250630131219-6f4fdf07b96e
 	github.com/gorilla/websocket v1.5.0
@@ -97,7 +100,6 @@ require (
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
 	github.com/gin-contrib/sse v1.0.0 // indirect
-	github.com/gin-gonic/gin v1.10.1 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -112,9 +114,7 @@ require (
 	github.com/go-sql-driver/mysql v1.9.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.3.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
-	github.com/gofiber/fiber/v2 v2.52.8 // indirect
 	github.com/gofiber/template v1.8.3 // indirect
-	github.com/gofiber/template/html/v2 v2.1.3 // indirect
 	github.com/gofiber/utils v1.1.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
