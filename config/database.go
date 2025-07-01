@@ -17,14 +17,6 @@ func init() {
 
 		// Database connections
 		"connections": map[string]any{
-			"sqlite": map[string]any{
-				"database": config.Env("DB_DATABASE", "forge"),
-				"prefix":   "",
-				"singular": false, // Table name is singular
-				"via": func() (driver.Driver, error) {
-					return sqlitefacades.Sqlite("sqlite")
-				},
-			},
 			"postgres": map[string]any{
 				"host":     config.Env("DB_HOST", "127.0.0.1"),
 				"port":     config.Env("DB_PORT", 5432),
@@ -37,6 +29,20 @@ func init() {
 				"prefix":   "",
 				"via": func() (driver.Driver, error) {
 					return postgresfacades.Postgres("postgres")
+				},
+			},
+			"mysql": map[string]any{
+				"host":     config.Env("DB_HOST", "127.0.0.1"),
+				"port":     config.Env("DB_PORT", 3306),
+				"database": config.Env("DB_DATABASE", "forge"),
+				"username": config.Env("DB_USERNAME", ""),
+				"password": config.Env("DB_PASSWORD", ""),
+				"charset":  "utf8mb4",
+				"loc":      "UTC", // Asia/Shanghai
+				"prefix":   "",
+				"singular": false,
+				"via": func() (driver.Driver, error) {
+					return mysqlfacades.Mysql("mysql")
 				},
 			},
 			"sqlserver": map[string]any{
@@ -52,18 +58,12 @@ func init() {
 					return sqlserverfacades.Sqlserver("sqlserver")
 				},
 			},
-			"mysql": map[string]any{
-				"host":     config.Env("DB_HOST", "127.0.0.1"),
-				"port":     config.Env("DB_PORT", 3306),
+			"sqlite": map[string]any{
 				"database": config.Env("DB_DATABASE", "forge"),
-				"username": config.Env("DB_USERNAME", ""),
-				"password": config.Env("DB_PASSWORD", ""),
-				"charset":  "utf8mb4",
-				"loc":      "UTC", // Asia/Shanghai
 				"prefix":   "",
-				"singular": false,
+				"singular": false, // Table name is singular
 				"via": func() (driver.Driver, error) {
-					return mysqlfacades.Mysql("mysql")
+					return sqlitefacades.Sqlite("sqlite")
 				},
 			},
 		},
@@ -112,12 +112,6 @@ func init() {
 			"driver": "default",
 			"table":  "migrations",
 		},
-
-		// Redis Databases
-		//
-		// Redis is an open source, fast, and advanced key-value store that also
-		// provides a richer body of commands than a typical key-value system
-		// such as APC or Memcached.
 		"redis": map[string]any{
 			"default": map[string]any{
 				"host":     config.Env("REDIS_HOST", ""),

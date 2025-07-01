@@ -14,14 +14,24 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		panic(err)
 	}
-
 	if err := database.Build(); err != nil {
 		panic(err)
 	}
-
 	if err := database.Migrate(); err != nil {
 		panic(err)
 	}
+
+	cache, err := facades.Testing().Docker().Cache("redis")
+	if err != nil {
+		panic(err)
+	}
+	if err := cache.Build(); err != nil {
+		panic(err)
+	}
+	if err := cache.Ready(); err != nil {
+		panic(err)
+	}
+	facades.Config().Add("database.redis.default.port", cache.Config().Port)
 
 	go func() {
 		if err := facades.Route().Run(); err != nil {
@@ -37,6 +47,9 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	if err := database.Shutdown(); err != nil {
+		panic(err)
+	}
+	if err := cache.Shutdown(); err != nil {
 		panic(err)
 	}
 
