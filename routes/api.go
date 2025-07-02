@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/facades"
 	httpmiddleware "github.com/goravel/framework/http/middleware"
 
@@ -12,8 +13,15 @@ import (
 func Api() {
 	// Auth
 	authController := controllers.NewAuthController()
-	facades.Route().Post("auth/login", authController.Login)
-	facades.Route().Middleware(middleware.Auth()).Get("auth/info", authController.Info)
+	facades.Route().Prefix("jwt").Group(func(route route.Router) {
+		route.Post("login", authController.LoginByJwt)
+		route.Middleware(middleware.Jwt()).Get("info", authController.InfoByJwt)
+	})
+
+	facades.Route().Prefix("session").Group(func(route route.Router) {
+		route.Post("login", authController.LoginBySession)
+		route.Middleware(middleware.Session()).Get("info", authController.InfoBySession)
+	})
 
 	// DB
 	dbController := controllers.NewDBController()
@@ -28,11 +36,6 @@ func Api() {
 	facades.Route().Post("/validation/json", validationController.Json)
 	facades.Route().Post("/validation/request", validationController.Request)
 	facades.Route().Post("/validation/form", validationController.Form)
-
-	// JWT
-	jwtController := controllers.NewJwtController()
-	facades.Route().Middleware(httpmiddleware.Throttle("login")).Get("/jwt/login", jwtController.Login)
-	facades.Route().Middleware(middleware.Jwt()).Get("/jwt", jwtController.Index)
 
 	// Localization
 	langController := controllers.NewLangController()

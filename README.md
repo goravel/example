@@ -30,9 +30,9 @@ Welcome to star, PR and issues！
 
 [app/http/controllers/validation_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/validation_controller.go)
 
-### JWT Middleware
+### Auth
 
-[app/http/controllers/jwt_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/jwt_controller.go)
+[app/http/controllers/auth_controller.go](https://github.com/goravel/example/blob/master/app/http/controllers/auth_controller.go)
 
 ### Unit Test (Testing With Mock)
 

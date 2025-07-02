@@ -34,7 +34,7 @@ func (s *HttpTestSuite) SetupTest() {
 func (s *HttpTestSuite) TearDownTest() {
 }
 
-func (s *HttpTestSuite) TestAuth() {
+func (s *HttpTestSuite) TestAuthByJwt() {
 	type Response struct {
 		ID   uint
 		User models.User
@@ -60,10 +60,11 @@ func (s *HttpTestSuite) TestAuth() {
 	for _, test := range tests {
 		s.Run(test.name, func() {
 			// Unauthorized
-			resp, err := s.Http(s.T()).Get("auth/info")
+			resp, err := s.Http(s.T()).Get("jwt/info")
 
 			s.Require().NoError(err)
 			resp.AssertUnauthorized()
+
 			content, err := resp.Content()
 			s.Require().NoError(err)
 			s.Equal("Unauthorized", content)
@@ -72,8 +73,8 @@ func (s *HttpTestSuite) TestAuth() {
 			var authLogin Response
 			body, err := http.NewBody().SetField("name", test.name).Build()
 			s.Require().NoError(err)
-			resp, err = s.Http(s.T()).WithHeader("Guard", test.guard).Bind(&authLogin).Post("auth/login", body.Reader())
 
+			resp, err = s.Http(s.T()).WithHeader("Guard", test.guard).Bind(&authLogin).Post("jwt/login", body.Reader())
 			s.Require().NoError(err)
 			resp.AssertSuccessful()
 
@@ -85,15 +86,51 @@ func (s *HttpTestSuite) TestAuth() {
 
 			// Get User
 			var authUser Response
-			resp, err = s.Http(s.T()).WithHeader("Authorization", token).WithHeader("Guard", test.guard).Bind(&authUser).Get("auth/info")
+			resp, err = s.Http(s.T()).WithHeader("Authorization", token).WithHeader("Guard", test.guard).Bind(&authUser).Get("jwt/info")
 
 			s.Require().NoError(err)
 			resp.AssertSuccessful()
+
 			s.Equal(authLogin.User.ID, authUser.User.ID)
 			s.Equal(authLogin.User.Name, authUser.User.Name)
 			s.Equal(authLogin.User.ID, authUser.ID)
 		})
 	}
+}
+
+func (s *HttpTestSuite) TestAuthBySession() {
+	type Response struct {
+		ID   uint
+		User models.User
+	}
+
+	// Unauthorized
+	resp, err := s.Http(s.T()).Get("session/info")
+	s.Require().NoError(err)
+	resp.AssertUnauthorized()
+
+	// Login
+	var authLogin Response
+	body, err := http.NewBody().SetField("name", "Goravel").Build()
+	s.Require().NoError(err)
+
+	resp, err = s.Http(s.T()).WithHeader("Guard", "session").Bind(&authLogin).Post("session/login", body.Reader())
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	s.True(authLogin.User.ID > 0)
+	s.Equal("Goravel", authLogin.User.Name)
+
+	// Get User
+	var authUser Response
+	resp, err = s.Http(s.T()).WithHeader("Guard", "session").WithCookies(resp.Cookies()).Bind(&authUser).Get("session/info")
+
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	s.Equal(authLogin.User.ID, authUser.User.ID)
+	s.Equal(authLogin.User.Name, authUser.User.Name)
+	s.Equal(authLogin.User.ID, authUser.ID)
 }
 
 func (s *HttpTestSuite) TestBindQuery() {
