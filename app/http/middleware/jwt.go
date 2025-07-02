@@ -2,24 +2,29 @@ package middleware
 
 import (
 	"errors"
-	"net/http"
 
 	"github.com/goravel/framework/auth"
-	httpcontract "github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
 )
 
-func Jwt() httpcontract.Middleware {
-	return func(ctx httpcontract.Context) {
+func Jwt() http.Middleware {
+	return func(ctx http.Context) {
+		guard := facades.Config().GetString("auth.defaults.guard")
+		if ctx.Request().Header("Guard") != "" {
+			guard = ctx.Request().Header("Guard")
+		}
+
 		token := ctx.Request().Header("Authorization", "")
 		if token == "" {
-			ctx.Request().Abort(http.StatusUnauthorized)
+			_ = ctx.Response().String(http.StatusUnauthorized, "Unauthorized").Abort()
 			return
 		}
 
-		if _, err := facades.Auth(ctx).Parse(token); err != nil {
+		if _, err := facades.Auth(ctx).Guard(guard).Parse(token); err != nil {
 			if errors.Is(err, auth.ErrorTokenExpired) {
-				token, err = facades.Auth(ctx).Refresh()
+				// Refresh token
+				token, err = facades.Auth(ctx).Guard(guard).Refresh()
 				if err != nil {
 					// Refresh time exceeded
 					ctx.Request().Abort(http.StatusUnauthorized)
@@ -28,6 +33,7 @@ func Jwt() httpcontract.Middleware {
 
 				token = "Bearer " + token
 			} else {
+				// Token is invalid
 				ctx.Request().Abort(http.StatusUnauthorized)
 				return
 			}
