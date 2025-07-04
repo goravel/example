@@ -20,5 +20,6 @@ func (r *LangController) Index(ctx http.Context) http.Response {
 		"current_locale": facades.App().CurrentLocale(ctx),
 		"name":           facades.Lang(ctx).Get("name"),
 		"fallback":       facades.Lang(ctx).Get("description"),
+		"fs":             facades.Lang(ctx).Get("fs"),
 	})
 }

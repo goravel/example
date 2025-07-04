@@ -37,6 +37,7 @@ import (
 	"github.com/goravel/sqlserver"
 
 	"goravel/app/providers"
+	"goravel/lang_fs"
 )
 
 // Boot Start all init methods of the current folder to bootstrap all config.
@@ -88,6 +89,7 @@ func init() {
 		// The path to the language files for the application. You may change
 		// the path to a different directory if you would like to customize it.
 		"lang_path": "lang",
+		"lang_fs":   lang_fs.Fs,
 
 		// Encryption Key
 		//
