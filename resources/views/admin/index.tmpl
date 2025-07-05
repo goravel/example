@@ -1,5 +1,6 @@
 {{ define "admin/index.tmpl" }}
   {{ template "admin/header.tmpl" . }}
   <p>Hello, {{ .name }}</p>
+  <p>Hello, {{ trans .ctx "name" }}</p>
   {{ template "admin/footer.tmpl" . }}
 {{ end }}
