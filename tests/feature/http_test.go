@@ -214,6 +214,11 @@ func (s *HttpTestSuite) TestLang() {
 			lang:           "cn",
 			expectResponse: map[string]any{"current_locale": "cn", "fallback": "Goravel 是一个基于 Go 语言的 Web 开发框架", "name": "Goravel 框架"},
 		},
+		{
+			name:           "lang is fs",
+			lang:           "fs",
+			expectResponse: map[string]any{"current_locale": "fs", "fallback": "Goravel 是一个基于 Go 语言的 Web 开发框架", "name": "fs name"},
+		},
 	}
 
 	for _, test := range tests {
