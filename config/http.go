@@ -1,9 +1,14 @@
 package config
 
 import (
+	"context"
+	"html/template"
+
+	"github.com/gin-gonic/gin/render"
 	fiberfacades "github.com/goravel/fiber/facades"
 	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/facades"
+	"github.com/goravel/gin"
 	ginfacades "github.com/goravel/gin/facades"
 )
 
@@ -20,6 +25,15 @@ func init() {
 				"header_limit": 4096,
 				"route": func() (route.Route, error) {
 					return ginfacades.Route("gin"), nil
+				},
+				"template": func() (render.HTMLRender, error) {
+					return gin.NewTemplate(gin.RenderOptions{
+						FuncMap: template.FuncMap{
+							"trans": func(ctx context.Context, key string) string {
+								return facades.Lang(ctx).Get(key)
+							},
+						},
+					})
 				},
 			},
 			"fiber": map[string]any{

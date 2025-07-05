@@ -32,6 +32,7 @@ func Web() {
 	// Check the views in `resources/views/admin/*`
 	facades.Route().Get("view", func(ctx http.Context) http.Response {
 		return ctx.Response().View().Make("admin/index.tmpl", map[string]any{
+			"ctx":  ctx,
 			"name": "Goravel",
 		})
 	})
