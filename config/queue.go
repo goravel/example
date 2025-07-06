@@ -10,12 +10,12 @@ func init() {
 	config := facades.Config()
 	config.Add("queue", map[string]any{
 		// Default Queue Connection Name
-		"default": config.Env("QUEUE_CONNECTION", "sync"),
+		"default": config.Env("QUEUE_CONNECTION", "database"),
 
 		// Queue Connections
 		//
 		// Here you may configure the connection information for each server that is used by your application.
-		// Drivers: "sync", "database", "machinery", "custom"
+		// Drivers: "sync", "database", "custom"
 		"connections": map[string]any{
 			"sync": map[string]any{
 				"driver": "sync",
