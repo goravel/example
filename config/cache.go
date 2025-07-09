@@ -30,7 +30,7 @@ func init() {
 				"driver":     "custom",
 				"connection": "default",
 				"via": func() (cache.Driver, error) {
-					return redisfacades.Redis("redis"), nil // The `redis` value is the key of `stores`
+					return redisfacades.Cache("redis") // The `redis` value is the key of `stores`
 				},
 			},
 		},

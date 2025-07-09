@@ -1,7 +1,12 @@
 package config
 
 import (
+	"github.com/goravel/framework/contracts/database/driver"
 	"github.com/goravel/framework/facades"
+	mysqlfacades "github.com/goravel/mysql/facades"
+	postgresfacades "github.com/goravel/postgres/facades"
+	sqlitefacades "github.com/goravel/sqlite/facades"
+	sqlserverfacades "github.com/goravel/sqlserver/facades"
 )
 
 func init() {
@@ -23,6 +28,9 @@ func init() {
 				"loc":      "Local",
 				"prefix":   "",
 				"singular": false, // Table name is singular
+				"via": func() (driver.Driver, error) {
+					return mysqlfacades.Mysql("mysql")
+				},
 			},
 			"postgres": map[string]any{
 				"driver":   "postgres",
@@ -35,12 +43,18 @@ func init() {
 				"timezone": "UTC", // Asia/Shanghai
 				"prefix":   "",
 				"singular": false, // Table name is singular
+				"via": func() (driver.Driver, error) {
+					return postgresfacades.Postgres("postgres")
+				},
 			},
 			"sqlite": map[string]any{
 				"driver":   "sqlite",
 				"database": config.Env("DB_DATABASE", "forge"),
 				"prefix":   "",
 				"singular": false, // Table name is singular
+				"via": func() (driver.Driver, error) {
+					return sqlitefacades.Sqlite("sqlite")
+				},
 			},
 			"sqlserver": map[string]any{
 				"driver":   "sqlserver",
@@ -52,6 +66,9 @@ func init() {
 				"charset":  "utf8mb4",
 				"prefix":   "",
 				"singular": false, // Table name is singular
+				"via": func() (driver.Driver, error) {
+					return sqlserverfacades.Sqlserver("sqlserver")
+				},
 			},
 		},
 
@@ -96,8 +113,7 @@ func init() {
 		// the migrations on disk haven't actually been run in the database.
 		// Available Drivers: "default", "sql"
 		"migrations": map[string]any{
-			"driver": "default",
-			"table":  "migrations",
+			"table": "migrations",
 		},
 
 		// Redis Databases

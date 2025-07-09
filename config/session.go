@@ -16,7 +16,12 @@ func init() {
 		// may specify any of the other wonderful drivers provided here.
 		//
 		// Supported: "file"
-		"driver": config.Env("SESSION_DRIVER", "file"),
+		"default": config.Env("SESSION_DRIVER", "file"),
+		"drivers": map[string]any{
+			"file": map[string]any{
+				"driver": "file",
+			},
+		},
 
 		// Session Lifetime
 		//

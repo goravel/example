@@ -40,7 +40,7 @@ func (receiver *Exists) Passes(_ validation.Data, val any, options ...any) bool 
 			query = query.OrWhere(options[i].(string), requestValue)
 		}
 	}
-	err := query.Count(&count)
+	count, err := query.Count()
 	if err != nil {
 		return false
 	}
