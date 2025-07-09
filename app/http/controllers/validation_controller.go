@@ -31,8 +31,8 @@ air
  ********************************/
 
 type User struct {
-	Name string          `json:"name" form:"name"`
-	Date carbon.DateTime `json:"date" form:"date"`
+	Name string           `json:"name" form:"name"`
+	Date *carbon.DateTime `json:"date" form:"date"`
 }
 
 type ValidationController struct {

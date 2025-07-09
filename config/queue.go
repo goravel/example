@@ -18,11 +18,17 @@ func init() {
 			"sync": map[string]any{
 				"driver": "sync",
 			},
-			"redis": map[string]any{
-				"driver":     "redis",
-				"connection": "default",
-				"queue":      config.Env("REDIS_QUEUE", "default"),
+			"database": map[string]any{
+				"driver":     "database",
+				"connection": "postgres",
+				"queue":      "default",
+				"concurrent": 1,
 			},
+		},
+
+		"failed": map[string]any{
+			"database": config.Env("DB_CONNECTION", "postgres"),
+			"table":    "failed_jobs",
 		},
 	})
 }
