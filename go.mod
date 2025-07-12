@@ -9,18 +9,18 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/gofiber/fiber/v2 v2.52.8
 	github.com/gofiber/template/html/v2 v2.1.3
-	github.com/goravel/cloudinary v1.3.1-0.20250701013623-ccf6c109476c
-	github.com/goravel/cos v1.3.1-0.20250701013535-0e16a8178ddf
+	github.com/goravel/cloudinary v1.3.1-0.20250701145215-64838ae7ab98
+	github.com/goravel/cos v1.3.1-0.20250701145305-fd5bb338334b
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.3.1-0.20250624233529-3700d7706640
-	github.com/goravel/framework v1.15.2-0.20250709145509-fe8bfb185be3
-	github.com/goravel/gin v1.3.1-0.20250624233435-0d62e1afc42c
-	github.com/goravel/minio v1.3.3-0.20250701013234-66ba357bf287
+	github.com/goravel/fiber v1.3.1-0.20250712134229-b63fa31e79c8
+	github.com/goravel/framework v1.15.2-0.20250712102013-18aec32a4b92
+	github.com/goravel/gin v1.3.1-0.20250712134225-887aa2d6a4f8
+	github.com/goravel/minio v1.3.3-0.20250701145351-6dc8a21bf2fe
 	github.com/goravel/mysql v0.0.0-20250705141641-91b14214c9d9
-	github.com/goravel/oss v1.3.1-0.20250701013459-2a9ca057125a
+	github.com/goravel/oss v1.3.1-0.20250701145314-a68e45d11aa8
 	github.com/goravel/postgres v0.0.2-0.20250705141303-0e7bf0a3d485
 	github.com/goravel/redis v1.3.1-0.20250701080427-19b2ce369ba2
-	github.com/goravel/s3 v1.3.1-0.20250701013425-2b447c3ad638
+	github.com/goravel/s3 v1.3.1-0.20250707070738-0176387d586a
 	github.com/goravel/sqlite v0.0.0-20250706143115-e712c7eaf066
 	github.com/goravel/sqlserver v0.0.0-20250705141333-0a380a08a805
 	github.com/gorilla/websocket v1.5.0
@@ -68,7 +68,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.7.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.17 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.17 // indirect
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.82.0 // indirect
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.83.0 // indirect
 	github.com/aws/smithy-go v1.22.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bytedance/sonic v1.13.2 // indirect
@@ -249,5 +249,3 @@ require (
 	gorm.io/gorm v1.30.0 // indirect
 	gorm.io/plugin/dbresolver v1.6.0 // indirect
 )
-
-replace github.com/goravel/framework => ../goravel/framework

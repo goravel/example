@@ -30,7 +30,6 @@ func (receiver *RouteServiceProvider) Boot(app foundation.Application) {
 	routes.Web()
 	routes.Api()
 	routes.Graphql()
-	routes.Test()
 }
 
 func (receiver *RouteServiceProvider) configureRateLimiting() {

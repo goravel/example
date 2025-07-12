@@ -275,6 +275,24 @@ func (s *HttpTestSuite) TestTimeout() {
 	resp.AssertStatus(contractshttp.StatusRequestTimeout)
 }
 
+func (s *HttpTestSuite) TestUrl() {
+	resp, err := s.Http(s.T()).Get("/url/get/1?a=1&b=2")
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	content, err := resp.Content()
+	s.Require().NoError(err)
+	s.Equal(`{"full_url":"http://example.com/url/get/1?a=1\u0026b=2","info":{"handler":"goravel/routes.Api.func11.1","method":"GET","name":"url.get","path":"/url/get/{id}"},"info1":{"handler":"goravel/routes.Api.func11.1","method":"GET|HEAD","name":"url.get","path":"/url/get/{id}"},"method":"GET","name":"url.get","origin_path":"/url/get/{id}","path":"/url/get/1","url":"/url/get/1?a=1\u0026b=2"}`, content)
+
+	resp, err = s.Http(s.T()).Post("/url/post/1?a=1&b=2", strings.NewReader("{\"name\":\"Goravel\"}"))
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	content, err = resp.Content()
+	s.Require().NoError(err)
+	s.Equal(`{"full_url":"http://example.com/url/post/1?a=1\u0026b=2","info":{"handler":"goravel/routes.Api.func11.2","method":"POST","name":"url.post","path":"/url/post/{id}"},"info1":{"handler":"goravel/routes.Api.func11.2","method":"POST","name":"url.post","path":"/url/post/{id}"},"method":"POST","name":"url.post","origin_path":"/url/post/{id}","path":"/url/post/1","url":"/url/post/1?a=1\u0026b=2"}`, content)
+}
+
 func (s *HttpTestSuite) TestUsers() {
 	// Add a user
 	var createdUser struct {

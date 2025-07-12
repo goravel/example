@@ -105,10 +105,10 @@ func init() {
 		"providers": []foundation.ServiceProvider{
 			&log.ServiceProvider{},
 			&console.ServiceProvider{},
-			&sqlite.ServiceProvider{},
 			&postgres.ServiceProvider{},
-			&sqlserver.ServiceProvider{},
 			&mysql.ServiceProvider{},
+			&sqlserver.ServiceProvider{},
+			&sqlite.ServiceProvider{},
 			&database.ServiceProvider{},
 			&redis.ServiceProvider{},
 			&cache.ServiceProvider{},
@@ -136,13 +136,13 @@ func init() {
 			&providers.EventServiceProvider{},
 			&providers.ValidationServiceProvider{},
 			&providers.DatabaseServiceProvider{},
-			&gin.ServiceProvider{},
-			&fiber.ServiceProvider{},
 			&s3.ServiceProvider{},
 			&cos.ServiceProvider{},
 			&oss.ServiceProvider{},
 			&cloudinary.ServiceProvider{},
 			&minio.ServiceProvider{},
+			&gin.ServiceProvider{},
+			&fiber.ServiceProvider{},
 		},
 	})
 }
