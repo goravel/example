@@ -24,9 +24,9 @@ func init() {
 				"username": config.Env("DB_USERNAME", ""),
 				"password": config.Env("DB_PASSWORD", ""),
 				"sslmode":  "disable",
-				"timezone": "UTC", // Asia/Shanghai
 				"singular": false,
 				"prefix":   "",
+				"schema":   config.Env("DB_SCHEMA", "public"),
 				"via": func() (driver.Driver, error) {
 					return postgresfacades.Postgres("postgres")
 				},
@@ -38,7 +38,6 @@ func init() {
 				"username": config.Env("DB_USERNAME", ""),
 				"password": config.Env("DB_PASSWORD", ""),
 				"charset":  "utf8mb4",
-				"loc":      "UTC", // Asia/Shanghai
 				"prefix":   "",
 				"singular": false,
 				"via": func() (driver.Driver, error) {
@@ -61,7 +60,7 @@ func init() {
 			"sqlite": map[string]any{
 				"database": config.Env("DB_DATABASE", "forge"),
 				"prefix":   "",
-				"singular": false, // Table name is singular
+				"singular": false,
 				"via": func() (driver.Driver, error) {
 					return sqlitefacades.Sqlite("sqlite")
 				},
