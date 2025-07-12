@@ -13,16 +13,16 @@ require (
 	github.com/goravel/cos v1.3.1-0.20250701013535-0e16a8178ddf
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.3.1-0.20250624233529-3700d7706640
-	github.com/goravel/framework v1.15.2-0.20250705063713-ce3829e55901
+	github.com/goravel/framework v1.15.2-0.20250709145509-fe8bfb185be3
 	github.com/goravel/gin v1.3.1-0.20250624233435-0d62e1afc42c
 	github.com/goravel/minio v1.3.3-0.20250701013234-66ba357bf287
-	github.com/goravel/mysql v0.0.0-20250702013219-02363f0dea53
+	github.com/goravel/mysql v0.0.0-20250705141641-91b14214c9d9
 	github.com/goravel/oss v1.3.1-0.20250701013459-2a9ca057125a
-	github.com/goravel/postgres v0.0.2-0.20250702013229-88925359fcda
+	github.com/goravel/postgres v0.0.2-0.20250705141303-0e7bf0a3d485
 	github.com/goravel/redis v1.3.1-0.20250701080427-19b2ce369ba2
 	github.com/goravel/s3 v1.3.1-0.20250701013425-2b447c3ad638
-	github.com/goravel/sqlite v0.0.0-20250702012737-7c2a5ef1517b
-	github.com/goravel/sqlserver v0.0.0-20250702012302-0ca470d0e297
+	github.com/goravel/sqlite v0.0.0-20250706143115-e712c7eaf066
+	github.com/goravel/sqlserver v0.0.0-20250705141333-0a380a08a805
 	github.com/gorilla/websocket v1.5.0
 	github.com/minio/minio-go/v7 v7.0.94
 	github.com/opentracing/opentracing-go v1.2.0
