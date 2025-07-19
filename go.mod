@@ -10,7 +10,11 @@ require (
 	github.com/goravel/fiber v1.3.1-0.20250707034241-ac46c8f08939
 	github.com/goravel/framework v1.15.2-0.20250709093156-01cc7789fba9
 	github.com/goravel/gin v1.3.1-0.20250707034218-5e330d056811
+	github.com/goravel/mysql v0.0.0-20250705141641-91b14214c9d9
+	github.com/goravel/postgres v0.0.2-0.20250705141303-0e7bf0a3d485
 	github.com/goravel/redis v1.3.1-0.20250701080427-19b2ce369ba2
+	github.com/goravel/sqlite v0.0.0-20250706143115-e712c7eaf066
+	github.com/goravel/sqlserver v0.0.0-20250705141333-0a380a08a805
 	github.com/gorilla/websocket v1.5.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
@@ -106,10 +110,6 @@ require (
 	github.com/gookit/goutil v0.6.18 // indirect
 	github.com/gookit/validate v1.5.5 // indirect
 	github.com/goravel/file-rotatelogs/v2 v2.4.2 // indirect
-	github.com/goravel/mysql v0.0.0-20250705141641-91b14214c9d9 // indirect
-	github.com/goravel/postgres v0.0.2-0.20250705141303-0e7bf0a3d485 // indirect
-	github.com/goravel/sqlite v0.0.0-20250706143115-e712c7eaf066 // indirect
-	github.com/goravel/sqlserver v0.0.0-20250705141333-0a380a08a805 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect

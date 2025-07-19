@@ -3,7 +3,6 @@ package database
 import (
 	"github.com/goravel/framework/contracts/database/schema"
 	"github.com/goravel/framework/contracts/database/seeder"
-
 	"goravel/database/migrations"
 	"goravel/database/seeders"
 )
@@ -15,9 +14,9 @@ func (kernel Kernel) Migrations() []schema.Migration {
 	return []schema.Migration{
 		&migrations.M20210101000002CreateJobsTable{},
 		&migrations.M20241207095921CreateUsersTable{},
+		&migrations.M20250719092032CreatePersonsTable{},
 	}
 }
-
 func (kernel Kernel) Seeders() []seeder.Seeder {
 	return []seeder.Seeder{
 		&seeders.DatabaseSeeder{},

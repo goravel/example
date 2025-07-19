@@ -17,7 +17,7 @@ func (r *M20210101000002CreateJobsTable) Up() error {
 	if !facades.Schema().HasTable("jobs") {
 		if err := facades.Schema().Create("jobs", func(table schema.Blueprint) {
 			table.ID()
-			table.String("queue")
+			table.String("queue", 100)
 			table.LongText("payload")
 			table.UnsignedTinyInteger("attempts").Default(0)
 			table.DateTimeTz("reserved_at").Nullable()
@@ -32,7 +32,7 @@ func (r *M20210101000002CreateJobsTable) Up() error {
 	if !facades.Schema().HasTable("failed_jobs") {
 		if err := facades.Schema().Create("failed_jobs", func(table schema.Blueprint) {
 			table.ID()
-			table.String("uuid")
+			table.String("uuid", 100)
 			table.Text("connection")
 			table.Text("queue")
 			table.LongText("payload")
