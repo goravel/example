@@ -10,19 +10,19 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.8
 	github.com/gofiber/template/html/v2 v2.1.3
 	github.com/goravel/cloudinary v1.3.1-0.20250701145215-64838ae7ab98
-	github.com/goravel/cos v1.3.1-0.20250701145305-fd5bb338334b
+	github.com/goravel/cos v1.4.0
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.3.1-0.20250712134229-b63fa31e79c8
-	github.com/goravel/framework v1.15.2-0.20250712102013-18aec32a4b92
-	github.com/goravel/gin v1.3.1-0.20250712134225-887aa2d6a4f8
-	github.com/goravel/minio v1.3.3-0.20250701145351-6dc8a21bf2fe
-	github.com/goravel/mysql v0.0.0-20250705141641-91b14214c9d9
-	github.com/goravel/oss v1.3.1-0.20250701145314-a68e45d11aa8
-	github.com/goravel/postgres v0.0.2-0.20250705141303-0e7bf0a3d485
-	github.com/goravel/redis v1.3.1-0.20250701080427-19b2ce369ba2
-	github.com/goravel/s3 v1.3.1-0.20250707070738-0176387d586a
-	github.com/goravel/sqlite v0.0.0-20250706143115-e712c7eaf066
-	github.com/goravel/sqlserver v0.0.0-20250705141333-0a380a08a805
+	github.com/goravel/fiber v1.4.0
+	github.com/goravel/framework v1.16.0
+	github.com/goravel/gin v1.4.0
+	github.com/goravel/minio v1.4.0
+	github.com/goravel/mysql v1.4.0
+	github.com/goravel/oss v1.4.0
+	github.com/goravel/postgres v1.4.0
+	github.com/goravel/redis v1.4.0
+	github.com/goravel/s3 v1.4.0
+	github.com/goravel/sqlite v1.4.0
+	github.com/goravel/sqlserver v1.4.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/minio/minio-go/v7 v7.0.94
 	github.com/opentracing/opentracing-go v1.2.0
@@ -55,7 +55,7 @@ require (
 	github.com/RichardKnop/machinery/v2 v2.0.13 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible // indirect
-	github.com/andybalholm/brotli v1.1.1 // indirect
+	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aws/aws-sdk-go v1.55.5 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.36.5 // indirect
@@ -79,7 +79,7 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.5 // indirect
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
 	github.com/charmbracelet/huh v0.7.0 // indirect
-	github.com/charmbracelet/huh/spinner v0.0.0-20250603124601-31a1db2cbc39 // indirect
+	github.com/charmbracelet/huh/spinner v0.0.0-20250710160949-2f807e878be2 // indirect
 	github.com/charmbracelet/lipgloss v1.1.0 // indirect
 	github.com/charmbracelet/x/ansi v0.9.2 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13 // indirect
@@ -93,7 +93,7 @@ require (
 	github.com/dave/dst v0.27.3 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/dromara/carbon/v2 v2.6.9 // indirect
+	github.com/dromara/carbon/v2 v2.6.11 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
@@ -207,7 +207,7 @@ require (
 	github.com/unrolled/secure v1.17.0 // indirect
 	github.com/urfave/cli/v3 v3.3.8 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.62.0 // indirect
+	github.com/valyala/fasthttp v1.63.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
@@ -225,17 +225,17 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.15.0 // indirect
-	golang.org/x/crypto v0.39.0 // indirect
-	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
-	golang.org/x/mod v0.25.0 // indirect
-	golang.org/x/net v0.41.0 // indirect
+	golang.org/x/crypto v0.40.0 // indirect
+	golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc // indirect
+	golang.org/x/mod v0.26.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/sync v0.15.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/term v0.32.0 // indirect
-	golang.org/x/text v0.26.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
+	golang.org/x/term v0.33.0 // indirect
+	golang.org/x/text v0.27.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
-	golang.org/x/tools v0.34.0 // indirect
+	golang.org/x/tools v0.35.0 // indirect
 	google.golang.org/api v0.237.0 // indirect
 	google.golang.org/genproto v0.0.0-20250505200425-f936aa4a68b2 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250603155806-513f23925822 // indirect
