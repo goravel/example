@@ -13,7 +13,7 @@ require (
 	github.com/goravel/cos v1.4.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.4.0
-	github.com/goravel/framework v1.16.0
+	github.com/goravel/framework v1.16.1-0.20250721074010-73aa0e269eda
 	github.com/goravel/gin v1.4.0
 	github.com/goravel/minio v1.4.0
 	github.com/goravel/mysql v1.4.0
@@ -70,7 +70,7 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.6 // indirect
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
 	github.com/charmbracelet/huh v0.7.0 // indirect
-	github.com/charmbracelet/huh/spinner v0.0.0-20250710160949-2f807e878be2 // indirect
+	github.com/charmbracelet/huh/spinner v0.0.0-20250714122654-40d2b68703eb // indirect
 	github.com/charmbracelet/lipgloss v1.1.0 // indirect
 	github.com/charmbracelet/x/ansi v0.9.3 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13 // indirect
@@ -184,9 +184,6 @@ require (
 	github.com/urfave/cli/v3 v3.3.8 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.63.0 // indirect
-	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
-	github.com/xdg-go/scram v1.1.2 // indirect
-	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/xrash/smetrics v0.0.0-20250705151800-55b8f293f342 // indirect
 	go.opentelemetry.io/otel/metric v1.36.0 // indirect
@@ -196,20 +193,16 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.15.0 // indirect
 	golang.org/x/crypto v0.40.0 // indirect
-	golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc // indirect
+	golang.org/x/exp v0.0.0-20250718183923-645b1fa84792 // indirect
 	golang.org/x/mod v0.26.0 // indirect
 	golang.org/x/net v0.42.0 // indirect
-	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/term v0.33.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
 	golang.org/x/tools v0.35.0 // indirect
-	google.golang.org/api v0.237.0 // indirect
-	google.golang.org/genproto v0.0.0-20250505200425-f936aa4a68b2 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20250603155806-513f23925822 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.6.0 // indirect
