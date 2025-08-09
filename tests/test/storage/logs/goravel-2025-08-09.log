@@ -1,0 +1,31 @@
+[2025-08-09 16:41:53.136] local.info: [1.240ms] [rows:4] select name from sqlite_master where type = 'table' and name not like 'sqlite_%' order by name
+[2025-08-09 16:41:53.137] local.info: [0.095ms] [rows:4] SELECT `migration` FROM `migrations` ORDER BY batch ASC,migration ASC
+[2025-08-09 16:41:53.137] local.info: [0.054ms] [rows:4] select name from sqlite_master where type = 'table' and name not like 'sqlite_%' order by name
+[2025-08-09 16:41:53.137] local.info: [0.187ms] [rows:4] SELECT * FROM `migrations` WHERE batch >= 1 ORDER BY batch DESC,migration DESC LIMIT 4
+[2025-08-09 16:41:53.138] local.info: [0.598ms] [rows:1] DELETE FROM `migrations` WHERE `migration` = '20250331111908_add_columns_to_users_table'
+[2025-08-09 16:41:53.139] local.info: [0.384ms] [rows:1] DELETE FROM `migrations` WHERE `migration` = '20250331093125_alert_columns_of_users_table'
+[2025-08-09 16:41:53.14] local.info: [0.602ms] [rows:1] drop table if exists "jobs"
+[2025-08-09 16:41:53.14] local.info: [0.084ms] [rows:1] drop table if exists "failed_jobs"
+[2025-08-09 16:41:53.14] local.info: [0.300ms] [rows:1] DELETE FROM `migrations` WHERE `migration` = '20210101000002_create_jobs_table'
+[2025-08-09 16:41:53.141] local.info: [0.133ms] [rows:1] drop table if exists "users"
+[2025-08-09 16:41:53.141] local.info: [0.215ms] [rows:1] DELETE FROM `migrations` WHERE `migration` = '20210101000001_create_users_table'
+[2025-08-09 16:41:53.141] local.info: [0.081ms] [rows:1] select name from sqlite_master where type = 'table' and name not like 'sqlite_%' order by name
+[2025-08-09 16:41:53.141] local.info: [0.042ms] [rows:0] SELECT `migration` FROM `migrations` ORDER BY batch ASC,migration ASC
+[2025-08-09 16:41:53.141] local.info: [0.038ms] [rows:0] SELECT `batch` FROM `migrations` ORDER BY batch DESC LIMIT 1
+[2025-08-09 16:41:53.141] local.info: [0.034ms] [rows:1] select name from sqlite_master where type = 'table' and name not like 'sqlite_%' order by name
+[2025-08-09 16:41:53.142] local.info: [0.200ms] [rows:1] create table "users" ("id" integer primary key autoincrement not null, "name" varchar default '' not null, "avatar" varchar default '' not null, "created_at" datetime null, "updated_at" datetime null, "deleted_at" datetime null)
+[2025-08-09 16:41:53.142] local.info: [0.362ms] [rows:1] INSERT INTO `migrations` (`batch`,`migration`) VALUES (1,'20210101000001_create_users_table')
+[2025-08-09 16:41:53.142] local.info: [0.061ms] [rows:2] select name from sqlite_master where type = 'table' and name not like 'sqlite_%' order by name
+[2025-08-09 16:41:53.143] local.info: [0.346ms] [rows:1] create table "jobs" ("id" integer primary key autoincrement not null, "queue" varchar not null, "payload" text not null, "attempts" integer default '0' not null, "reserved_at" datetime null, "available_at" datetime not null, "created_at" datetime default CURRENT_TIMESTAMP not null)
+[2025-08-09 16:41:53.143] local.info: [0.113ms] [rows:1] create index "jobs_queue_index" on "jobs" ("queue")
+[2025-08-09 16:41:53.143] local.info: [0.063ms] [rows:3] select name from sqlite_master where type = 'table' and name not like 'sqlite_%' order by name
+[2025-08-09 16:41:53.143] local.info: [0.076ms] [rows:1] create table "failed_jobs" ("id" integer primary key autoincrement not null, "uuid" varchar not null, "connection" text not null, "queue" text not null, "payload" text not null, "exception" text not null, "failed_at" datetime default CURRENT_TIMESTAMP not null)
+[2025-08-09 16:41:53.143] local.info: [0.052ms] [rows:1] create unique index "failed_jobs_uuid_unique" on "failed_jobs" ("uuid")
+[2025-08-09 16:41:53.144] local.info: [0.419ms] [rows:1] INSERT INTO `migrations` (`batch`,`migration`) VALUES (1,'20210101000002_create_jobs_table')
+[2025-08-09 16:41:53.144] local.info: [0.460ms] [rows:1] alter table "users" add column "alias" varchar default '' not null
+[2025-08-09 16:41:53.145] local.info: [0.107ms] [rows:1] alter table "users" add column "email" varchar null
+[2025-08-09 16:41:53.145] local.info: [0.304ms] [rows:1] INSERT INTO `migrations` (`batch`,`migration`) VALUES (1,'20250331111908_add_columns_to_users_table')
+[2025-08-09 16:41:53.145] local.info: [0.056ms] [rows:4] select name from sqlite_master where type = 'table' and name not like 'sqlite_%' order by name
+[2025-08-09 16:41:53.145] local.info: [0.186ms] [rows:8] select name, type, not "notnull" as "nullable", dflt_value as "default", pk as "primary", hidden as "extra" from pragma_table_xinfo('users') order by cid asc
+[2025-08-09 16:41:53.146] local.info: [0.522ms] [rows:1] alter table "users" rename column "email" to "mail"
+[2025-08-09 16:41:53.147] local.info: [0.330ms] [rows:1] INSERT INTO `migrations` (`batch`,`migration`) VALUES (1,'20250331093125_alert_columns_of_users_table')
