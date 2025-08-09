@@ -168,3 +168,19 @@ func TestInstallAndUninstallHttpDrivers(t *testing.T) {
 	assert.True(t, file.Contain(path.Config("http.go"), `github.com/goravel/framework/contracts/route`))
 	assert.True(t, file.Contain(path.Config("http.go"), `fiberfacades "github.com/goravel/fiber/facades"`))
 }
+
+func TestInstallAndUninstallLocalPackage(t *testing.T) {
+	assert.NoError(t, facades.Artisan().Call("make:package example"))
+	assert.True(t, file.Exists(path.Base("packages", "example")))
+	assert.True(t, file.Exists(path.Base("packages", "example", "setup", "setup.go")))
+
+	assert.NoError(t, facades.Artisan().Call("package:install goravel/packages/example"))
+	assert.True(t, file.Contain(path.Config("app.go"), "&example.ServiceProvider{},"))
+	assert.True(t, file.Contain(path.Config("app.go"), "goravel/packages/example"))
+
+	assert.NoError(t, facades.Artisan().Call("package:uninstall goravel/packages/example"))
+	assert.False(t, file.Contain(path.Config("app.go"), "&example.ServiceProvider{},"))
+	assert.False(t, file.Contain(path.Config("app.go"), "goravel/packages/example"))
+
+	assert.NoError(t, file.Remove(path.Base("packages", "example")))
+}
