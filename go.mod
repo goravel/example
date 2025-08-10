@@ -13,7 +13,7 @@ require (
 	github.com/goravel/cos v1.4.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.4.0
-	github.com/goravel/framework v1.16.1-0.20250721074010-73aa0e269eda
+	github.com/goravel/framework v1.16.1-0.20250809020334-93dc8a3d679b
 	github.com/goravel/gin v1.4.0
 	github.com/goravel/minio v1.4.0
 	github.com/goravel/mysql v1.4.0
@@ -33,7 +33,7 @@ require (
 	github.com/swaggo/swag v1.16.2
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	github.com/vektah/gqlparser/v2 v2.5.19
-	google.golang.org/grpc v1.73.0
+	google.golang.org/grpc v1.74.2
 )
 
 require (
@@ -104,7 +104,7 @@ require (
 	github.com/gofiber/template v1.8.3 // indirect
 	github.com/gofiber/utils v1.1.0 // indirect
 	github.com/goforj/godump v1.5.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.3 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -186,9 +186,6 @@ require (
 	github.com/valyala/fasthttp v1.63.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/xrash/smetrics v0.0.0-20250705151800-55b8f293f342 // indirect
-	go.opentelemetry.io/otel/metric v1.36.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.36.0 // indirect
-	go.opentelemetry.io/otel/trace v1.36.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.15.0 // indirect
@@ -208,6 +205,6 @@ require (
 	gorm.io/driver/mysql v1.6.0 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
 	gorm.io/driver/sqlserver v1.6.0 // indirect
-	gorm.io/gorm v1.30.0 // indirect
-	gorm.io/plugin/dbresolver v1.6.0 // indirect
+	gorm.io/gorm v1.30.1 // indirect
+	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
