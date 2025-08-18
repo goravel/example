@@ -1,8 +1,8 @@
 module goravel
 
-go 1.23.0
+go 1.24.0
 
-toolchain go1.23.3
+toolchain go1.24.6
 
 require (
 	github.com/99designs/gqlgen v0.17.57
@@ -13,7 +13,7 @@ require (
 	github.com/goravel/cos v1.4.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.4.0
-	github.com/goravel/framework v1.16.1-0.20250817030216-8695c99f76ca
+	github.com/goravel/framework v1.16.1-0.20250818085402-9bb4da63174f
 	github.com/goravel/gin v1.4.0
 	github.com/goravel/minio v1.4.0
 	github.com/goravel/mysql v1.4.0
@@ -70,7 +70,7 @@ require (
 	github.com/charmbracelet/bubbletea v1.3.6 // indirect
 	github.com/charmbracelet/colorprofile v0.2.3-0.20250311203215-f60798e515dc // indirect
 	github.com/charmbracelet/huh v0.7.0 // indirect
-	github.com/charmbracelet/huh/spinner v0.0.0-20250714122654-40d2b68703eb // indirect
+	github.com/charmbracelet/huh/spinner v0.0.0-20250811123337-95b882db3fb0 // indirect
 	github.com/charmbracelet/lipgloss v1.1.0 // indirect
 	github.com/charmbracelet/x/ansi v0.9.3 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13 // indirect
@@ -181,7 +181,7 @@ require (
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/unrolled/secure v1.17.0 // indirect
-	github.com/urfave/cli/v3 v3.3.8 // indirect
+	github.com/urfave/cli/v3 v3.4.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.63.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
@@ -190,7 +190,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.15.0 // indirect
 	golang.org/x/crypto v0.41.0 // indirect
-	golang.org/x/exp v0.0.0-20250808145144-a408d31f581a // indirect
+	golang.org/x/exp v0.0.0-20250813145105-42675adae3e6 // indirect
 	golang.org/x/mod v0.27.0 // indirect
 	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
