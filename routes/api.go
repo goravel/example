@@ -151,4 +151,9 @@ func Api() {
 			})
 		}).Name("url.post")
 	})
+
+	facades.Route().Prefix("/api").Group(func(router route.Router) {
+		loginController := controllers.NewLoginController()
+		router.Post("/login", loginController.Login)
+	})
 }
