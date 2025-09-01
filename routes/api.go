@@ -151,4 +151,7 @@ func Api() {
 			})
 		}).Name("url.post")
 	})
+
+	testController := controllers.NewTestController()
+	facades.Route().Get("/test", testController.Test)
 }
