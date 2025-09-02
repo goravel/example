@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/database/db"
 	"github.com/goravel/framework/facades"
 
 	"goravel/app/models"
@@ -26,13 +27,15 @@ func (r *UserController) Index(ctx http.Context) http.Response {
 	}
 
 	return ctx.Response().Success().Json(http.Json{
+		"code":  0,
 		"users": users,
 	})
 }
 
 func (r *UserController) Show(ctx http.Context) http.Response {
 	var user models.User
-	if err := facades.Orm().Query().Where("id", ctx.Request().Input("id")).First(&user); err != nil {
+	if err := facades.Orm().Query().Select(db.Raw("select * from user where id=1 as user").(string),
+		"id").Where("id", ctx.Request().Input("id")).First(&user); err != nil {
 		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"error": err.Error(),
 		})

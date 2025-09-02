@@ -10,5 +10,6 @@ type User struct {
 	Avatar string
 	Alias  string
 	Mail   string
+	User   string `json:"user"`
 	orm.SoftDeletes
 }
