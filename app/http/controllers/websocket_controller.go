@@ -56,7 +56,9 @@ func (r *WebsocketController) Server(ctx http.Context) http.Response {
 	if err != nil {
 		return ctx.Response().String(http.StatusInternalServerError, err.Error())
 	}
-	defer ws.Close()
+	defer func() {
+		_ = ws.Close()
+	}()
 	for {
 		mt, message, err := ws.ReadMessage()
 		fmt.Println("Received:", string(message))

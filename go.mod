@@ -13,12 +13,12 @@ require (
 	github.com/goravel/cos v1.4.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.4.0
-	github.com/goravel/framework v1.16.0
+	github.com/goravel/framework v1.16.3
 	github.com/goravel/gin v1.4.0
 	github.com/goravel/minio v1.4.0
 	github.com/goravel/mysql v1.4.0
 	github.com/goravel/oss v1.4.0
-	github.com/goravel/postgres v1.4.0
+	github.com/goravel/postgres v1.4.1
 	github.com/goravel/redis v1.4.0
 	github.com/goravel/s3 v1.4.0
 	github.com/goravel/sqlite v1.4.0
@@ -28,7 +28,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cast v1.9.2
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.2
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
@@ -112,7 +112,7 @@ require (
 	github.com/go-playground/validator/v10 v10.26.0 // indirect
 	github.com/go-redsync/redsync/v4 v4.13.0 // indirect
 	github.com/go-sql-driver/mysql v1.9.1 // indirect
-	github.com/go-viper/mapstructure/v2 v2.3.0 // indirect
+	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/gofiber/template v1.8.3 // indirect
 	github.com/gofiber/utils v1.1.0 // indirect
@@ -246,6 +246,6 @@ require (
 	gorm.io/driver/mysql v1.6.0 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
 	gorm.io/driver/sqlserver v1.6.0 // indirect
-	gorm.io/gorm v1.30.0 // indirect
+	gorm.io/gorm v1.30.1 // indirect
 	gorm.io/plugin/dbresolver v1.6.0 // indirect
 )
