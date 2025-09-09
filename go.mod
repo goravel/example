@@ -18,7 +18,7 @@ require (
 	github.com/goravel/minio v1.4.0
 	github.com/goravel/mysql v1.4.0
 	github.com/goravel/oss v1.4.0
-	github.com/goravel/postgres v1.4.0
+	github.com/goravel/postgres v1.4.1
 	github.com/goravel/redis v1.4.0
 	github.com/goravel/s3 v1.4.0
 	github.com/goravel/sqlite v1.4.0
@@ -28,7 +28,7 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cast v1.9.2
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.2
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
@@ -246,6 +246,6 @@ require (
 	gorm.io/driver/mysql v1.6.0 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
 	gorm.io/driver/sqlserver v1.6.0 // indirect
-	gorm.io/gorm v1.30.0 // indirect
+	gorm.io/gorm v1.30.1 // indirect
 	gorm.io/plugin/dbresolver v1.6.0 // indirect
 )
