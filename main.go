@@ -13,6 +13,8 @@ import (
 func main() {
 	// This bootstraps the framework and gets it ready for use.
 	bootstrap.Boot()
+	// Start schedule by facades.Schedule  启动任务调度
+	go facades.Schedule().Run()
 
 	// Create a channel to listen for OS signals
 	quit := make(chan os.Signal, 1)
