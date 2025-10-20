@@ -14,6 +14,9 @@ func main() {
 	// This bootstraps the framework and gets it ready for use.
 	bootstrap.Boot()
 
+	// Start schedule by facades.Schedule
+	go facades.Schedule().Run()
+
 	// Create a channel to listen for OS signals
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -42,6 +45,9 @@ func main() {
 	// Listen for the OS signal
 	go func() {
 		<-quit
+		if err := facades.Schedule().Shutdown(); err != nil {
+			facades.Log().Errorf("Schedule Shutdown error: %v", err)
+		}
 		if err := facades.Route().Shutdown(); err != nil {
 			facades.Log().Errorf("Route Shutdown error: %v", err)
 		}
