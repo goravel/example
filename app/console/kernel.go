@@ -24,5 +24,6 @@ func (kernel *Kernel) Commands() []console.Command {
 		&commands.Test1{},
 		&commands.Test2{},
 		&commands.Test3{},
+		&commands.Test{},
 	}
 }
