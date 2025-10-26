@@ -44,9 +44,6 @@ func (s *FilesystemTestSuite) SetupSuite() {
 	if os.Getenv("TENCENT_ACCESS_KEY_ID") != "" {
 		s.drivers = append(s.drivers, "cos")
 	}
-	if os.Getenv("CLOUDINARY_ACCESS_KEY_ID") != "" {
-		s.drivers = append(s.drivers, "cloudinary")
-	}
 	if os.Getenv("MINIO_ACCESS_KEY_ID") != "" {
 		s.drivers = append(s.drivers, "minio")
 		s.minioDocker = initMinio()
