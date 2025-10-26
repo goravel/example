@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/goravel/cloudinary"
 	"github.com/goravel/cos"
 	"github.com/goravel/fiber"
 	"github.com/goravel/framework/auth"
@@ -139,7 +138,6 @@ func init() {
 			&s3.ServiceProvider{},
 			&cos.ServiceProvider{},
 			&oss.ServiceProvider{},
-			&cloudinary.ServiceProvider{},
 			&minio.ServiceProvider{},
 			&gin.ServiceProvider{},
 			&fiber.ServiceProvider{},
