@@ -7,17 +7,17 @@ require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/gofiber/fiber/v2 v2.52.9
 	github.com/gofiber/template/html/v2 v2.1.3
-	github.com/goravel/cos v1.4.0
+	github.com/goravel/cos v1.4.1-0.20251020055616-03c68b78269e
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.4.1-0.20251013050926-e006866b96bf
+	github.com/goravel/fiber v1.4.1-0.20250922131727-7eca52c86407
 	github.com/goravel/framework v1.16.4-0.20251026023652-3b9edf6dfdfb
-	github.com/goravel/gin v1.4.1-0.20251020021736-af497fd0b6fd
-	github.com/goravel/minio v1.4.0
+	github.com/goravel/gin v1.4.1-0.20250922060926-8d0edce5d25f
+	github.com/goravel/minio v1.4.1-0.20251020060255-97cb1d9a3f50
 	github.com/goravel/mysql v1.4.1-0.20251004125635-4f20630e412d
-	github.com/goravel/oss v1.4.0
+	github.com/goravel/oss v1.4.1-0.20251020050831-71909828aabb
 	github.com/goravel/postgres v1.4.2-0.20251004124223-f9a9b9ac0c93
-	github.com/goravel/redis v1.4.1-0.20251025091837-3b1b693a6cdd
-	github.com/goravel/s3 v1.4.0
+	github.com/goravel/redis v1.4.1-0.20251013053853-1c4f86e1cc7c
+	github.com/goravel/s3 v1.4.1-0.20251020083052-18ce14567179
 	github.com/goravel/sqlite v1.4.1-0.20251004131812-ab9e59222309
 	github.com/goravel/sqlserver v1.4.1-0.20251004130832-c84ae22a9d68
 	github.com/gorilla/websocket v1.5.0
@@ -55,18 +55,18 @@ require (
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aws/aws-sdk-go v1.55.5 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.36.5 // indirect
-	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.11 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.17.70 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.36 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.36 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.3.36 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.12.4 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.7.4 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.12.17 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.18.17 // indirect
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.83.0 // indirect
-	github.com/aws/smithy-go v1.22.4 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.39.3 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.2 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.18.17 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.10 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.10 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.10 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.2 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.10 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.10 // indirect
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.88.5 // indirect
+	github.com/aws/smithy-go v1.23.1 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
@@ -196,7 +196,7 @@ require (
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/swaggo/files/v2 v2.0.0 // indirect
-	github.com/tencentyun/cos-go-sdk-v5 v0.7.66 // indirect
+	github.com/tencentyun/cos-go-sdk-v5 v0.7.70 // indirect
 	github.com/tetratelabs/wazero v1.9.0 // indirect
 	github.com/tinylib/msgp v1.3.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
@@ -205,7 +205,7 @@ require (
 	github.com/unrolled/secure v1.17.0 // indirect
 	github.com/urfave/cli/v3 v3.4.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.67.0 // indirect
+	github.com/valyala/fasthttp v1.66.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
