@@ -48,6 +48,9 @@ func main() {
 		if err := facades.Grpc().Shutdown(); err != nil {
 			facades.Log().Errorf("Grpc Shutdown error: %v", err)
 		}
+		if err := facades.Queue().Worker().Shutdown(); err != nil {
+			facades.Log().Errorf("Queue Shutdown error: %v", err)
+		}
 
 		os.Exit(0)
 	}()
