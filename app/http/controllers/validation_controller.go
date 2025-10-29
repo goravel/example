@@ -75,8 +75,8 @@ func (r *ValidationController) Json(ctx http.Context) http.Response {
 }
 
 func (r *ValidationController) Request(ctx http.Context) http.Response {
-	var userCreate requests.UserCreate
-	errors, err := ctx.Request().ValidateRequest(&userCreate)
+	var validationCreate requests.ValidationCreate
+	errors, err := ctx.Request().ValidateRequest(&validationCreate)
 	if err != nil {
 		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": err.Error(),
@@ -89,11 +89,11 @@ func (r *ValidationController) Request(ctx http.Context) http.Response {
 	}
 
 	return ctx.Response().Success().Json(http.Json{
-		"name":   userCreate.Name,
-		"tags":   userCreate.Tags,
-		"scores": userCreate.Scores,
-		"date":   userCreate.Date.ToDateTimeString(),
-		"code":   userCreate.Code,
+		"name":   validationCreate.Name,
+		"tags":   validationCreate.Tags,
+		"scores": validationCreate.Scores,
+		"date":   validationCreate.Date.ToDateTimeString(),
+		"code":   validationCreate.Code,
 	})
 }
 
