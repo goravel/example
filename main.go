@@ -33,8 +33,9 @@ func main() {
 	}()
 
 	// Start queue server by facades.Queue().
+	worker := facades.Queue().Worker()
 	go func() {
-		if err := facades.Queue().Worker().Run(); err != nil {
+		if err := worker.Run(); err != nil {
 			facades.Log().Errorf("Queue run error: %v", err)
 		}
 	}()
@@ -47,6 +48,9 @@ func main() {
 		}
 		if err := facades.Grpc().Shutdown(); err != nil {
 			facades.Log().Errorf("Grpc Shutdown error: %v", err)
+		}
+		if err := worker.Shutdown(); err != nil {
+			facades.Log().Errorf("Queue Shutdown error: %v", err)
 		}
 
 		os.Exit(0)

@@ -20,6 +20,7 @@ func (r *M20210101000001CreateUsersTable) Up() error {
 			table.BigIncrements("id")
 			table.String("name").Default("")
 			table.String("avatar").Default("")
+			table.Json("tags").Nullable()
 			table.Timestamps()
 			table.SoftDeletes()
 			table.Comment("user table")
