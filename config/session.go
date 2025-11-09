@@ -1,9 +1,11 @@
 package config
 
 import (
+	"github.com/goravel/framework/contracts/session"
 	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support/path"
 	"github.com/goravel/framework/support/str"
+	redisfacades "github.com/goravel/redis/facades"
 )
 
 func init() {
@@ -21,6 +23,13 @@ func init() {
 		"drivers": map[string]any{
 			"file": map[string]any{
 				"driver": "file",
+			},
+			"redis": map[string]any{
+				"driver":     "custom",
+				"connection": "default",
+				"via": func() (session.Driver, error) {
+					return redisfacades.Session("redis")
+				},
 			},
 		},
 
