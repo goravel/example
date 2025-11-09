@@ -24,6 +24,7 @@ import (
 	"github.com/goravel/framework/testing"
 	"github.com/goravel/framework/translation"
 	"github.com/goravel/framework/validation"
+	"github.com/goravel/framework/view"
 	"github.com/goravel/minio"
 	"github.com/goravel/mysql"
 	"github.com/goravel/oss"
@@ -118,6 +119,7 @@ func init() {
 			&session.ServiceProvider{},
 			&translation.ServiceProvider{},
 			&testing.ServiceProvider{},
+			&view.ServiceProvider{},
 			&providers.AppServiceProvider{},
 			&providers.AuthServiceProvider{},
 			&providers.RouteServiceProvider{},
