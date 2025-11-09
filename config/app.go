@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/goravel/cos"
-	"github.com/goravel/fiber"
 	"github.com/goravel/framework/auth"
 	"github.com/goravel/framework/cache"
 	"github.com/goravel/framework/console"
@@ -25,12 +24,10 @@ import (
 	"github.com/goravel/framework/testing"
 	"github.com/goravel/framework/translation"
 	"github.com/goravel/framework/validation"
-	"github.com/goravel/gin"
 	"github.com/goravel/minio"
 	"github.com/goravel/mysql"
 	"github.com/goravel/oss"
 	"github.com/goravel/postgres"
-	"github.com/goravel/redis"
 	"github.com/goravel/s3"
 	"github.com/goravel/sqlite"
 	"github.com/goravel/sqlserver"
@@ -104,12 +101,7 @@ func init() {
 		"providers": []foundation.ServiceProvider{
 			&log.ServiceProvider{},
 			&console.ServiceProvider{},
-			&postgres.ServiceProvider{},
-			&mysql.ServiceProvider{},
-			&sqlserver.ServiceProvider{},
-			&sqlite.ServiceProvider{},
 			&database.ServiceProvider{},
-			&redis.ServiceProvider{},
 			&cache.ServiceProvider{},
 			&http.ServiceProvider{},
 			&route.ServiceProvider{},
@@ -135,12 +127,14 @@ func init() {
 			&providers.EventServiceProvider{},
 			&providers.ValidationServiceProvider{},
 			&providers.DatabaseServiceProvider{},
+			&postgres.ServiceProvider{},
+			&mysql.ServiceProvider{},
+			&sqlserver.ServiceProvider{},
+			&sqlite.ServiceProvider{},
 			&s3.ServiceProvider{},
 			&cos.ServiceProvider{},
 			&oss.ServiceProvider{},
 			&minio.ServiceProvider{},
-			&gin.ServiceProvider{},
-			&fiber.ServiceProvider{},
 		},
 	})
 }

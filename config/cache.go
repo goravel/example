@@ -1,9 +1,7 @@
 package config
 
 import (
-	"github.com/goravel/framework/contracts/cache"
 	"github.com/goravel/framework/facades"
-	redisfacades "github.com/goravel/redis/facades"
 )
 
 func init() {
@@ -25,13 +23,6 @@ func init() {
 		"stores": map[string]any{
 			"memory": map[string]any{
 				"driver": "memory",
-			},
-			"redis": map[string]any{
-				"driver":     "custom",
-				"connection": "default",
-				"via": func() (cache.Driver, error) {
-					return redisfacades.Cache("redis") // The `redis` value is the key of `stores`
-				},
 			},
 		},
 
