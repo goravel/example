@@ -4,10 +4,13 @@ go 1.24.0
 
 require (
 	github.com/99designs/gqlgen v0.17.57
+	github.com/gin-gonic/gin v1.11.0
+	github.com/gofiber/fiber/v2 v2.52.9
+	github.com/gofiber/template/html/v2 v2.1.3
 	github.com/goravel/cos v1.4.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.4.1-0.20251109040651-b6c661b58190
-	github.com/goravel/framework v1.16.1-0.20251104151004-3c7c0d634ebd
+	github.com/goravel/framework v1.16.1-0.20251109075227-ffe30d208f56
 	github.com/goravel/gin v1.4.1-0.20251109031702-b35766bf8aa3
 	github.com/goravel/minio v1.4.0
 	github.com/goravel/mysql v1.4.0
@@ -83,7 +86,6 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.11 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
-	github.com/gin-gonic/gin v1.11.0 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-openapi/jsonpointer v0.20.2 // indirect
 	github.com/go-openapi/jsonreference v0.20.4 // indirect
@@ -96,9 +98,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.18.0 // indirect
-	github.com/gofiber/fiber/v2 v2.52.9 // indirect
 	github.com/gofiber/template v1.8.3 // indirect
-	github.com/gofiber/template/html/v2 v2.1.3 // indirect
 	github.com/gofiber/utils v1.1.0 // indirect
 	github.com/goforj/godump v1.6.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
@@ -207,3 +207,5 @@ require (
 	gorm.io/gorm v1.31.1 // indirect
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
+
+replace github.com/goravel/framework => github.com/goravel/framework v1.16.1-0.20251109075227-ffe30d208f56

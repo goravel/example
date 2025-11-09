@@ -276,8 +276,8 @@ github.com/goravel/fiber v1.4.1-0.20251109040651-b6c661b58190 h1:Q2rtE7r8M4hkVHZ
 github.com/goravel/fiber v1.4.1-0.20251109040651-b6c661b58190/go.mod h1:saOGAbRxtjrW+th8K/bYzrKK8WhvD4wxs7ncUstl5Lg=
 github.com/goravel/file-rotatelogs/v2 v2.4.2 h1:g68AzbePXcm0V2CpUMc9j4qVzcDn7+7aoWSjZ51C0m4=
 github.com/goravel/file-rotatelogs/v2 v2.4.2/go.mod h1:23VuSW8cBS4ax5cmbV+5AaiLpq25b8UJ96IhbAkdo8I=
-github.com/goravel/framework v1.16.1-0.20251104151004-3c7c0d634ebd h1:+1Xi+BAoy4IerA04QISZbBTKhFJgPJf7Z6/jND4BVSc=
-github.com/goravel/framework v1.16.1-0.20251104151004-3c7c0d634ebd/go.mod h1:jlAceXNhpeKURYGfjy8XoUqH/GOij1uYo1Ur9h3UDaI=
+github.com/goravel/framework v1.16.1-0.20251109075227-ffe30d208f56 h1:UX1nNz5mvMh/pOMGGn3glXEUuggBNWApiRij/Ivstf4=
+github.com/goravel/framework v1.16.1-0.20251109075227-ffe30d208f56/go.mod h1:jlAceXNhpeKURYGfjy8XoUqH/GOij1uYo1Ur9h3UDaI=
 github.com/goravel/gin v1.4.1-0.20251109031702-b35766bf8aa3 h1:K+bN9hZfN0Ia9DkaZCYdwSkqKLmgENXyPEX9RZFKLTw=
 github.com/goravel/gin v1.4.1-0.20251109031702-b35766bf8aa3/go.mod h1:x1PpRCCTO7IZQ/qvLY0OhSmfcDGZDs7oGqHQngLpwNA=
 github.com/goravel/minio v1.4.0 h1:WBs6QsN//2Q3sjguzyb1aC/BD6tdFXI3q9GYIjlffzc=

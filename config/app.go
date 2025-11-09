@@ -25,6 +25,7 @@ import (
 	"github.com/goravel/framework/testing"
 	"github.com/goravel/framework/translation"
 	"github.com/goravel/framework/validation"
+	"github.com/goravel/framework/view"
 	"github.com/goravel/gin"
 	"github.com/goravel/minio"
 	"github.com/goravel/mysql"
@@ -104,12 +105,7 @@ func init() {
 		"providers": []foundation.ServiceProvider{
 			&log.ServiceProvider{},
 			&console.ServiceProvider{},
-			&postgres.ServiceProvider{},
-			&mysql.ServiceProvider{},
-			&sqlserver.ServiceProvider{},
-			&sqlite.ServiceProvider{},
 			&database.ServiceProvider{},
-			&redis.ServiceProvider{},
 			&cache.ServiceProvider{},
 			&http.ServiceProvider{},
 			&route.ServiceProvider{},
@@ -126,6 +122,7 @@ func init() {
 			&session.ServiceProvider{},
 			&translation.ServiceProvider{},
 			&testing.ServiceProvider{},
+			&view.ServiceProvider{},
 			&providers.AppServiceProvider{},
 			&providers.AuthServiceProvider{},
 			&providers.RouteServiceProvider{},
@@ -135,10 +132,15 @@ func init() {
 			&providers.EventServiceProvider{},
 			&providers.ValidationServiceProvider{},
 			&providers.DatabaseServiceProvider{},
+			&postgres.ServiceProvider{},
+			&mysql.ServiceProvider{},
+			&sqlserver.ServiceProvider{},
+			&sqlite.ServiceProvider{},
 			&s3.ServiceProvider{},
 			&cos.ServiceProvider{},
 			&oss.ServiceProvider{},
 			&minio.ServiceProvider{},
+			&redis.ServiceProvider{},
 			&gin.ServiceProvider{},
 			&fiber.ServiceProvider{},
 		},
