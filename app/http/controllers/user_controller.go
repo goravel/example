@@ -4,6 +4,7 @@ import (
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
 
+	"goravel/app/http/requests"
 	"goravel/app/models"
 )
 
@@ -44,9 +45,25 @@ func (r *UserController) Show(ctx http.Context) http.Response {
 }
 
 func (r *UserController) Store(ctx http.Context) http.Response {
+	var userCreate requests.UserCreate
+	errors, err := ctx.Request().ValidateRequest(&userCreate)
+	if err != nil {
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
+			"message": err.Error(),
+		})
+	}
+	if errors != nil {
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
+			"message": errors.All(),
+		})
+	}
+
 	user := models.User{
-		Name:   ctx.Request().Input("name"),
-		Avatar: ctx.Request().Input("avatar"),
+		Name:   userCreate.Name,
+		Avatar: userCreate.Avatar,
+		Alias:  userCreate.Alias,
+		Mail:   userCreate.Mail,
+		Tags:   userCreate.Tags,
 	}
 	if err := facades.Orm().Query().Create(&user); err != nil {
 		return ctx.Response().Json(http.StatusBadRequest, http.Json{

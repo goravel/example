@@ -111,6 +111,7 @@ func init() {
 			"driver": "default",
 			"table":  "migrations",
 		},
+
 		"redis": map[string]any{
 			"default": map[string]any{
 				"host":     config.Env("REDIS_HOST", ""),

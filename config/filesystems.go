@@ -1,7 +1,6 @@
 package config
 
 import (
-	cloudinaryfacades "github.com/goravel/cloudinary/facades"
 	cosfacades "github.com/goravel/cos/facades"
 	"github.com/goravel/framework/contracts/filesystem"
 	"github.com/goravel/framework/facades"
@@ -67,15 +66,6 @@ func init() {
 				"endpoint": config.Env("ALIYUN_ENDPOINT"),
 				"via": func() (filesystem.Driver, error) {
 					return ossfacades.Oss("oss") // The `oss` value is the `disks` key
-				},
-			},
-			"cloudinary": map[string]any{
-				"driver": "custom",
-				"cloud":  config.Env("CLOUDINARY_CLOUD"),
-				"key":    config.Env("CLOUDINARY_ACCESS_KEY_ID"),
-				"secret": config.Env("CLOUDINARY_ACCESS_KEY_SECRET"),
-				"via": func() (filesystem.Driver, error) {
-					return cloudinaryfacades.Cloudinary("cloudinary") // The `cloudinary` value is the `disks` key
 				},
 			},
 			"minio": map[string]any{

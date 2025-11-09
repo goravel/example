@@ -91,18 +91,6 @@ func TestInstallAndUninstallFilesystemDrivers(t *testing.T) {
 	assert.True(t, file.Contain(path.Config("filesystems.go"), `"oss": map[string]any{`))
 	assert.True(t, file.Contain(path.Config("filesystems.go"), `ossfacades "github.com/goravel/oss/facades"`))
 
-	assert.NoError(t, facades.Artisan().Call("package:uninstall github.com/goravel/cloudinary@master"))
-	assert.False(t, file.Contain(path.Config("app.go"), "&cloudinary.ServiceProvider{},"))
-	assert.False(t, file.Contain(path.Config("app.go"), "github.com/goravel/cloudinary"))
-	assert.False(t, file.Contain(path.Config("filesystems.go"), `"cloudinary": map[string]any{`))
-	assert.False(t, file.Contain(path.Config("filesystems.go"), `cloudinaryfacades "github.com/goravel/cloudinary/facades"`))
-
-	assert.NoError(t, facades.Artisan().Call("package:install github.com/goravel/cloudinary@master"))
-	assert.True(t, file.Contain(path.Config("app.go"), "&cloudinary.ServiceProvider{},"))
-	assert.True(t, file.Contain(path.Config("app.go"), "github.com/goravel/cloudinary"))
-	assert.True(t, file.Contain(path.Config("filesystems.go"), `"cloudinary": map[string]any{`))
-	assert.True(t, file.Contain(path.Config("filesystems.go"), `cloudinaryfacades "github.com/goravel/cloudinary/facades"`))
-
 	assert.NoError(t, facades.Artisan().Call("package:uninstall github.com/goravel/minio@master"))
 	assert.False(t, file.Contain(path.Config("app.go"), "&minio.ServiceProvider{},"))
 	assert.False(t, file.Contain(path.Config("app.go"), "github.com/goravel/minio"))
