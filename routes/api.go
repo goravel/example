@@ -151,4 +151,22 @@ func Api() {
 			})
 		}).Name("url.post")
 	})
+
+	// Example of Gin placeholder conflict issue, plus ctx.Request().Route() not liking a placeholder having a suffix
+	facades.Route().Get("api/2/{username}/{deviceid}.json", func(ctx http.Context) http.Response {
+		username := ctx.Request().Route("username")
+		deviceID := ctx.Request().Route("deviceid") // Does not work due to the `.json` suffix in the URL
+
+		return ctx.Response().Json(http.StatusOK, http.Json{
+			"username": username,
+			"deviceID": deviceID,
+		}
+	})
+	facades.Route().Get("api/2/{username}.json", func(ctx http.Context) http.Response { // Causes a panic due to `api/2/{username} conflicting with previous route
+		username := ctx.Request().Route("username") // Again does not work ue to the `.json` suffix in the URL
+
+		return ctx.Respanse().Json(http.StatusOK, http.Json{
+			"username": username,
+		}
+	})
 }
