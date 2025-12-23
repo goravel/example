@@ -40,3 +40,57 @@ func TestDBDrivers(t *testing.T) {
 		assert.NoError(t, database.Shutdown())
 	}
 }
+
+func TestDuplicateDBConnection(t *testing.T) {
+	connections := []string{"postgres", "mysql", "sqlserver"}
+
+	for _, connection := range connections {
+		database, err := facades.Testing().Docker().Database(connection)
+		if err != nil {
+			panic(err)
+		}
+
+		if err := database.Build(); err != nil {
+			panic(err)
+		}
+
+		if err := database.Ready(); err != nil {
+			panic(err)
+		}
+
+		facades.Config().Add("database.default", connection)
+		facades.Config().Add("database.connections."+connection+".port", database.Config().Port)
+
+		facades.App().Refresh()
+
+		db, err := facades.Orm().DB()
+		if err != nil {
+			panic(err)
+		}
+
+		duplicateDatabase, err := facades.Testing().Docker().Database(connection)
+		if err != nil {
+			panic(err)
+		}
+
+		if err := duplicateDatabase.Build(); err != nil {
+			panic(err)
+		}
+
+		if err := duplicateDatabase.Ready(); err != nil {
+			panic(err)
+		}
+
+		facades.Config().Add("database.default", connection)
+		facades.Config().Add("database.connections."+connection+".port", duplicateDatabase.Config().Port)
+
+		facades.App().Refresh()
+
+		duplicateDatabaseDB, err := facades.Orm().DB()
+		if err != nil {
+			panic(err)
+		}
+
+		assert.NotEqual(t, duplicateDatabaseDB, db)
+	}
+}
