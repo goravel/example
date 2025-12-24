@@ -91,6 +91,7 @@ func TestDuplicateDBConnection(t *testing.T) {
 			panic(err)
 		}
 
+		assert.NotEqual(t, duplicateDatabase.Config().Port, database.Config().Port)
 		assert.NotEqual(t, duplicateDatabaseDB, db)
 	}
 }
