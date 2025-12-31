@@ -160,7 +160,7 @@ func (s *HttpTestSuite) TestFallback() {
 
 func (s *HttpTestSuite) TestFiles() {
 	body, err := http.NewBody().SetFiles(map[string][]string{
-		"files": []string{"lang/cn.json", "lang/en.json"},
+		"files": {"lang/cn.json", "lang/en.json"},
 	}).Build()
 	s.Require().NoError(err)
 
@@ -368,8 +368,24 @@ func (s *HttpTestSuite) TestUsers() {
 	s.Equal("{\"users\":[]}", context)
 }
 
+func (s *HttpTestSuite) TestValidationForm() {
+	payload := strings.NewReader(`{
+		"context": "ctx",
+		"name": "Goravel"
+	}`)
+
+	resp, err := s.Http(s.T()).Post("/validation/form", payload)
+
+	s.NoError(err)
+	resp.AssertSuccessful()
+	context, err := resp.Content()
+	s.Require().NoError(err)
+	s.Equal("{\"context\":\"ctx_context\",\"name\":\"Goravel\"}", context)
+}
+
 func (s *HttpTestSuite) TestValidationJson() {
 	payload := strings.NewReader(`{
+		"context": "ctx",
 		"name": "Goravel",
 		"date": "2024-07-08 18:33:32"
 	}`)
@@ -380,13 +396,14 @@ func (s *HttpTestSuite) TestValidationJson() {
 	resp.AssertSuccessful()
 	context, err := resp.Content()
 	s.Require().NoError(err)
-	s.Equal("{\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\"}", context)
+	s.Equal("{\"context\":\"ctx_context\",\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\"}", context)
 }
 
 func (s *HttpTestSuite) TestValidationRequest() {
 	s.Run("success", func() {
 		payload := strings.NewReader(`{
 			"name": " Goravel ",
+			"context": "ctx",
 			"date": "2024-07-08 18:33:32",
 			"tags": ["tag1", "tag2"],
 			"scores": [1, 2],
@@ -399,11 +416,12 @@ func (s *HttpTestSuite) TestValidationRequest() {
 		resp.AssertSuccessful()
 		context, err := resp.Content()
 		s.Require().NoError(err)
-		s.Equal("{\"code\":123456,\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\",\"scores\":[1,2],\"tags\":[\"tag1\",\"tag2\"]}", context)
+		s.Equal("{\"code\":123456,\"context\":\"ctx_context\",\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\",\"scores\":[1,2],\"tags\":[\"tag1\",\"tag2\"]}", context)
 	})
 
 	s.Run("failed", func() {
 		payload := strings.NewReader(`{
+			"context": "ctx",
 			"date": "1",
 			"tags": "tag1",
 			"scores": 1,

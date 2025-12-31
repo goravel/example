@@ -3,7 +3,6 @@ package feature
 import (
 	"os"
 	"testing"
-	"time"
 
 	"github.com/goravel/framework/support/file"
 
@@ -33,14 +32,6 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	facades.Config().Add("database.redis.default.port", cache.Config().Port)
-
-	go func() {
-		if err := facades.Route().Run(); err != nil {
-			facades.Log().Errorf("Route run error: %v", err)
-		}
-	}()
-
-	time.Sleep(1 * time.Second)
 
 	exit := m.Run()
 

@@ -1,6 +1,8 @@
 package rules
 
 import (
+	"context"
+
 	"github.com/goravel/framework/contracts/validation"
 
 	"goravel/app/facades"
@@ -24,7 +26,7 @@ func (receiver *Exists) Signature() string {
 }
 
 // Passes Determine if the validation rule passes.
-func (receiver *Exists) Passes(_ validation.Data, val any, options ...any) bool {
+func (receiver *Exists) Passes(ctx context.Context, _ validation.Data, val any, options ...any) bool {
 
 	tableName := options[0].(string)
 	fieldName := options[1].(string)
@@ -50,6 +52,6 @@ func (receiver *Exists) Passes(_ validation.Data, val any, options ...any) bool 
 }
 
 // Message Get the validation error message.
-func (receiver *Exists) Message() string {
+func (receiver *Exists) Message(ctx context.Context) string {
 	return "record does not exist"
 }

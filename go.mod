@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/99designs/gqlgen v0.17.57
 	github.com/gin-gonic/gin v1.11.0
-	github.com/gofiber/fiber/v2 v2.52.9
+	github.com/gofiber/fiber/v2 v2.52.10
 	github.com/gofiber/template/html/v2 v2.1.3
 	github.com/goravel/cos v1.4.0
 	github.com/goravel/example-proto v0.0.1
@@ -234,3 +234,9 @@ require (
 	gorm.io/gorm v1.31.1 // indirect
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
+
+replace github.com/goravel/framework => ../goravel/framework
+
+replace github.com/goravel/gin => ../goravel/gin
+
+replace github.com/goravel/fiber => ../goravel/fiber

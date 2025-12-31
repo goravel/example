@@ -1,5 +1,7 @@
 package filters
 
+import "context"
+
 type Test struct {
 }
 
@@ -19,26 +21,25 @@ func (receiver *Test) Signature() string {
 //
 // Example usages:
 //
-// 1. Return only the transformed value:
-//    func (val string) int {
-//        // conversion logic
-//        return 1
-//    }
+//  1. Return only the transformed value:
+//     func (val string) int {
+//     // conversion logic
+//     return 1
+//     }
 //
-// 2. Return the transformed value and an error:
-//    func (val int) (int, error) {
-//        // conversion logic with error handling
-//        return 1, nil
-//    }
+//  2. Return the transformed value and an error:
+//     func (val int) (int, error) {
+//     // conversion logic with error handling
+//     return 1, nil
+//     }
 //
-// 3. Take additional arguments:
-//    func (val string, def ...string) string {
-//        if val == "" && len(def) > 0 {
-//            return def[0]
-//        }
-//        return val
-//    }
-//
-func (receiver *Test) Handle() any {
+//  3. Take additional arguments:
+//     func (val string, def ...string) string {
+//     if val == "" && len(def) > 0 {
+//     return def[0]
+//     }
+//     return val
+//     }
+func (receiver *Test) Handle(ctx context.Context) any {
 	return nil
 }

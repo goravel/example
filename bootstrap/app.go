@@ -4,6 +4,7 @@ import (
 	"github.com/goravel/framework/auth"
 	"github.com/goravel/framework/contracts/database/seeder"
 	"github.com/goravel/framework/contracts/event"
+	contractsfoundation "github.com/goravel/framework/contracts/foundation"
 	"github.com/goravel/framework/contracts/foundation/configuration"
 	"github.com/goravel/framework/contracts/http"
 	contractshttp "github.com/goravel/framework/contracts/http"
@@ -28,8 +29,8 @@ import (
 	"goravel/routes"
 )
 
-func Boot() {
-	foundation.Setup().
+func Boot() contractsfoundation.Application {
+	return foundation.Setup().
 		WithFilters(Filters()).
 		WithCommands(Commands()).
 		WithMigrations(Migrations()).
@@ -38,6 +39,7 @@ func Boot() {
 		}).
 		WithRouting([]func(){
 			routes.Web,
+			routes.Api,
 			routes.Grpc,
 			routes.Graphql,
 		}).
@@ -98,5 +100,5 @@ func Boot() {
 			facades.Auth().Provider("another-orm", auth.NewOrmUserProvider)
 		}).
 		WithConfig(config.Boot).
-		Run()
+		Start()
 }
