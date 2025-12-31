@@ -66,11 +66,11 @@ func Boot() contractsfoundation.Application {
 			})
 		}).
 		WithGrpcServerInterceptors([]grpc.UnaryServerInterceptor{
-			interceptors.OpentracingServer,
+			interceptors.TestServer,
 		}).
 		WithGrpcClientInterceptors(map[string][]grpc.UnaryClientInterceptor{
 			"default": {
-				interceptors.OpentracingClient,
+				interceptors.TestClient,
 			},
 		}).
 		WithGrpcServerStatsHandlers([]stats.Handler{}).
