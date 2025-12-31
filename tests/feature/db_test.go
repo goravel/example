@@ -5,7 +5,8 @@ package feature
 import (
 	"testing"
 
-	"github.com/goravel/framework/facades"
+	"goravel/app/facades"
+
 	"github.com/goravel/framework/support/carbon"
 	"github.com/stretchr/testify/suite"
 

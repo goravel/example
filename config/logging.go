@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/goravel/framework/facades"
+	"goravel/app/facades"
 )
 
 func init() {
@@ -17,7 +17,7 @@ func init() {
 		// Log Channels
 		//
 		// Here you may configure the log channels for your application.
-		// Available Drivers: "single", "daily", "custom", "stack"
+		// Available Drivers: "single", "daily", "otel", "custom", "stack"
 		// Available Level: "debug", "info", "warning", "error", "fatal", "panic"
 		"channels": map[string]any{
 			"stack": map[string]any{
@@ -36,6 +36,10 @@ func init() {
 				"level":  config.Env("LOG_LEVEL", "debug"),
 				"days":   7,
 				"print":  true,
+			},
+			"otel": map[string]any{
+				"driver":          "otel",
+				"instrument_name": config.GetString("APP_NAME", "goravel/log"),
 			},
 		},
 	})

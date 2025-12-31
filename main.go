@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/goravel/framework/facades"
+	"goravel/app/facades"
 
 	"goravel/bootstrap"
 )

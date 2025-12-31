@@ -1,9 +1,10 @@
 package providers
 
 import (
+	"goravel/app/facades"
+
 	frameworkauth "github.com/goravel/framework/auth"
 	"github.com/goravel/framework/contracts/foundation"
-	"github.com/goravel/framework/facades"
 )
 
 type AuthServiceProvider struct {

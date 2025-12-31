@@ -10,16 +10,18 @@ import (
 )
 
 func main() {
-	packages.Setup(os.Args).
-		Install(
-			modify.GoFile(path.Config("app.go")).
-				Find(match.Imports()).Modify(modify.AddImport(packages.GetModulePath())).
-				Find(match.Providers()).Modify(modify.Register("&sms.ServiceProvider{}")),
-		).
-		Uninstall(
-			modify.GoFile(path.Config("app.go")).
-				Find(match.Providers()).Modify(modify.Unregister("&sms.ServiceProvider{}")).
-				Find(match.Imports()).Modify(modify.RemoveImport(packages.GetModulePath())),
-		).
-		Execute()
+	setup := packages.Setup(os.Args)
+	moduleImport := setup.Paths().Module().Import()
+	serviceProvider := "&sms.ServiceProvider{}"
+	appConfigPath := path.Config("app.go")
+
+	setup.Install(
+		modify.GoFile(appConfigPath).
+			Find(match.Imports()).Modify(modify.AddImport(moduleImport)).
+			Find(match.Providers()).Modify(modify.Register(serviceProvider)),
+	).Uninstall(
+		modify.GoFile(appConfigPath).
+			Find(match.Providers()).Modify(modify.Unregister(serviceProvider)).
+			Find(match.Imports()).Modify(modify.RemoveImport(moduleImport)),
+	).Execute()
 }

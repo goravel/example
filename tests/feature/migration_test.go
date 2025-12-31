@@ -3,7 +3,8 @@ package feature
 import (
 	"testing"
 
-	"github.com/goravel/framework/facades"
+	"goravel/app/facades"
+
 	"github.com/goravel/mysql"
 	"github.com/goravel/sqlite"
 	"github.com/goravel/sqlserver"

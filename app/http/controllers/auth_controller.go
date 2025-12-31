@@ -1,8 +1,9 @@
 package controllers
 
 import (
+	"goravel/app/facades"
+
 	"github.com/goravel/framework/contracts/http"
-	"github.com/goravel/framework/facades"
 	"github.com/spf13/cast"
 
 	"goravel/app/models"

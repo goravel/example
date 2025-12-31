@@ -2,11 +2,12 @@ package config
 
 import (
 	"github.com/goravel/framework/contracts/database/driver"
-	"github.com/goravel/framework/facades"
 	mysqlfacades "github.com/goravel/mysql/facades"
 	postgresfacades "github.com/goravel/postgres/facades"
 	sqlitefacades "github.com/goravel/sqlite/facades"
 	sqlserverfacades "github.com/goravel/sqlserver/facades"
+
+	"goravel/app/facades"
 )
 
 func init() {

@@ -3,9 +3,10 @@ package routes
 import (
 	"time"
 
+	"goravel/app/facades"
+
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/contracts/route"
-	"github.com/goravel/framework/facades"
 	httpmiddleware "github.com/goravel/framework/http/middleware"
 
 	"goravel/app/http/controllers"

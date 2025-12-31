@@ -1,8 +1,9 @@
 package routes
 
 import (
+	"goravel/app/facades"
+
 	proto "github.com/goravel/example-proto"
-	"github.com/goravel/framework/facades"
 
 	"goravel/app/grpc/controllers"
 )

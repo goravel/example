@@ -6,10 +6,11 @@ import (
 	"github.com/gofiber/template/html/v2"
 	fiberfacades "github.com/goravel/fiber/facades"
 	"github.com/goravel/framework/contracts/route"
-	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support/path"
 	"github.com/goravel/gin"
 	ginfacades "github.com/goravel/gin/facades"
+
+	"goravel/app/facades"
 )
 
 func init() {

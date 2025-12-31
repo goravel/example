@@ -1,42 +1,9 @@
 package config
 
 import (
-	"github.com/goravel/cos"
-	"github.com/goravel/fiber"
-	"github.com/goravel/framework/auth"
-	"github.com/goravel/framework/cache"
-	"github.com/goravel/framework/console"
-	"github.com/goravel/framework/contracts/foundation"
-	"github.com/goravel/framework/crypt"
-	"github.com/goravel/framework/database"
-	"github.com/goravel/framework/event"
-	"github.com/goravel/framework/facades"
-	"github.com/goravel/framework/filesystem"
-	"github.com/goravel/framework/grpc"
-	"github.com/goravel/framework/hash"
-	"github.com/goravel/framework/http"
-	"github.com/goravel/framework/log"
-	"github.com/goravel/framework/mail"
-	"github.com/goravel/framework/queue"
-	"github.com/goravel/framework/route"
-	"github.com/goravel/framework/schedule"
-	"github.com/goravel/framework/session"
 	"github.com/goravel/framework/support/carbon"
-	"github.com/goravel/framework/testing"
-	"github.com/goravel/framework/translation"
-	"github.com/goravel/framework/validation"
-	"github.com/goravel/framework/view"
-	"github.com/goravel/gin"
-	"github.com/goravel/minio"
-	"github.com/goravel/mysql"
-	"github.com/goravel/oss"
-	"github.com/goravel/postgres"
-	"github.com/goravel/redis"
-	"github.com/goravel/s3"
-	"github.com/goravel/sqlite"
-	"github.com/goravel/sqlserver"
 
-	"goravel/app/providers"
+	"goravel/app/facades"
 	"goravel/lang_fs"
 )
 
@@ -96,53 +63,5 @@ func init() {
 		// 32 character string, otherwise these encrypted strings
 		// will not be safe. Please do this before deploying an application!
 		"key": config.Env("APP_KEY", ""),
-
-		// Autoload service providers
-		//
-		// The service providers listed here will be automatically loaded on the
-		// request to your application. Feel free to add your own services to
-		// this array to grant expanded functionality to your applications.
-		"providers": []foundation.ServiceProvider{
-			&log.ServiceProvider{},
-			&console.ServiceProvider{},
-			&database.ServiceProvider{},
-			&cache.ServiceProvider{},
-			&http.ServiceProvider{},
-			&route.ServiceProvider{},
-			&schedule.ServiceProvider{},
-			&event.ServiceProvider{},
-			&queue.ServiceProvider{},
-			&grpc.ServiceProvider{},
-			&mail.ServiceProvider{},
-			&auth.ServiceProvider{},
-			&hash.ServiceProvider{},
-			&crypt.ServiceProvider{},
-			&filesystem.ServiceProvider{},
-			&validation.ServiceProvider{},
-			&session.ServiceProvider{},
-			&translation.ServiceProvider{},
-			&testing.ServiceProvider{},
-			&view.ServiceProvider{},
-			&providers.AppServiceProvider{},
-			&providers.AuthServiceProvider{},
-			&providers.RouteServiceProvider{},
-			&providers.GrpcServiceProvider{},
-			&providers.ConsoleServiceProvider{},
-			&providers.QueueServiceProvider{},
-			&providers.EventServiceProvider{},
-			&providers.ValidationServiceProvider{},
-			&providers.DatabaseServiceProvider{},
-			&postgres.ServiceProvider{},
-			&mysql.ServiceProvider{},
-			&sqlserver.ServiceProvider{},
-			&sqlite.ServiceProvider{},
-			&s3.ServiceProvider{},
-			&cos.ServiceProvider{},
-			&oss.ServiceProvider{},
-			&minio.ServiceProvider{},
-			&redis.ServiceProvider{},
-			&gin.ServiceProvider{},
-			&fiber.ServiceProvider{},
-		},
 	})
 }

@@ -1,4 +1,7 @@
 .idea
 .DS_Store
-storage/framework
-launch.json
+.env
+.env.*
+!.env.example
+storage
+tmp

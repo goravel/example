@@ -1,9 +1,10 @@
 package routes
 
 import (
+	"goravel/app/facades"
+
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/contracts/route"
-	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support"
 	"github.com/spf13/cast"
 

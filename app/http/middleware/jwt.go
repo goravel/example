@@ -3,9 +3,10 @@ package middleware
 import (
 	"errors"
 
+	"goravel/app/facades"
+
 	"github.com/goravel/framework/auth"
 	"github.com/goravel/framework/contracts/http"
-	"github.com/goravel/framework/facades"
 )
 
 func Jwt() http.Middleware {

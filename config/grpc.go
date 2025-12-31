@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/goravel/framework/facades"
+	"goravel/app/facades"
 )
 
 func init() {
@@ -20,6 +20,7 @@ func init() {
 			//	"host":         config.Env("GRPC_USER_HOST", ""),
 			//	"port":         config.Env("GRPC_USER_PORT", ""),
 			//	"interceptors": []string{},
+			//  "stats_handlers": []string{},
 			//},
 		},
 	})

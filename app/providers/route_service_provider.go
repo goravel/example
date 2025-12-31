@@ -1,13 +1,11 @@
 package providers
 
 import (
+	"goravel/app/facades"
+
 	"github.com/goravel/framework/contracts/foundation"
 	contractshttp "github.com/goravel/framework/contracts/http"
-	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/http/limit"
-
-	"goravel/app/http"
-	"goravel/routes"
 )
 
 type RouteServiceProvider struct {
@@ -17,19 +15,7 @@ func (receiver *RouteServiceProvider) Register(app foundation.Application) {
 }
 
 func (receiver *RouteServiceProvider) Boot(app foundation.Application) {
-	// Add HTTP middleware
-	facades.Route().GlobalMiddleware(http.Kernel{}.Middleware()...)
-	facades.Route().Recover(func(ctx contractshttp.Context, err any) {
-		facades.Log().Error(err)
-		_ = ctx.Response().String(contractshttp.StatusInternalServerError, "recover").Abort()
-	})
-
 	receiver.configureRateLimiting()
-
-	// Add routes
-	routes.Web()
-	routes.Api()
-	routes.Graphql()
 }
 
 func (receiver *RouteServiceProvider) configureRateLimiting() {

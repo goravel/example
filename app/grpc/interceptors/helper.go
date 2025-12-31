@@ -4,7 +4,8 @@ import (
 	"io"
 	"strings"
 
-	"github.com/goravel/framework/facades"
+	"goravel/app/facades"
+
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/transport"
