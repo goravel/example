@@ -1,9 +1,9 @@
 package migrations
 
 import (
-	"goravel/app/facades"
-
 	"github.com/goravel/framework/contracts/database/schema"
+
+	"goravel/app/facades"
 )
 
 type M20250330911908AddColumnsToUsersTable struct{}

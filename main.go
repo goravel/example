@@ -6,7 +6,6 @@ import (
 	"syscall"
 
 	"goravel/app/facades"
-
 	"goravel/bootstrap"
 )
 

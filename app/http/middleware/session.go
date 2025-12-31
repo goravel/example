@@ -1,11 +1,10 @@
 package middleware
 
 import (
-	"goravel/app/models"
+	"github.com/goravel/framework/contracts/http"
 
 	"goravel/app/facades"
-
-	"github.com/goravel/framework/contracts/http"
+	"goravel/app/models"
 )
 
 func Session() http.Middleware {

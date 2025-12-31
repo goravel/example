@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"goravel/app/facades"
-
 	"github.com/goravel/framework/contracts/http"
+
+	"goravel/app/facades"
 )
 
 type LangController struct {

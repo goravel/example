@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"goravel/app/facades"
-
 	"github.com/goravel/framework/support/file"
+
+	"goravel/app/facades"
 )
 
 func TestMain(m *testing.M) {

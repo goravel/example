@@ -1,6 +1,7 @@
 package bootstrap
 
 import (
+	"github.com/goravel/framework/auth"
 	"github.com/goravel/framework/contracts/database/seeder"
 	"github.com/goravel/framework/contracts/event"
 	"github.com/goravel/framework/contracts/foundation/configuration"
@@ -10,6 +11,7 @@ import (
 	"github.com/goravel/framework/contracts/schedule"
 	"github.com/goravel/framework/contracts/validation"
 	"github.com/goravel/framework/foundation"
+	"github.com/goravel/framework/http/limit"
 	httpmiddleware "github.com/goravel/framework/http/middleware"
 	"github.com/goravel/framework/session/middleware"
 	"google.golang.org/grpc"
@@ -75,8 +77,25 @@ func Boot() {
 			paths.App("app")
 		}).
 		WithProviders(Providers()).
-		WithSchedule([]schedule.Event{
-			facades.Schedule().Call(func() {}),
+		WithSchedule(func() []schedule.Event {
+			return []schedule.Event{
+				facades.Schedule().Call(func() {
+					facades.Log().Info("Scheduled Task Executed")
+				}),
+			}
+		}).
+		WithCallback(func() {
+			facades.RateLimiter().For("global", func(ctx contractshttp.Context) contractshttp.Limit {
+				return limit.PerMinute(1000)
+			})
+			facades.RateLimiter().ForWithLimits("ip", func(ctx contractshttp.Context) []contractshttp.Limit {
+				return []contractshttp.Limit{
+					limit.PerDay(1000),
+					limit.PerMinute(2).By(ctx.Request().Ip()),
+				}
+			})
+			facades.Auth().Extend("another-jwt", auth.NewJwtGuard)
+			facades.Auth().Provider("another-orm", auth.NewOrmUserProvider)
 		}).
 		WithConfig(config.Boot).
 		Run()

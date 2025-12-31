@@ -3,11 +3,8 @@ package feature
 import (
 	"context"
 	"fmt"
-	"goravel/tests"
 	"os"
 	"testing"
-
-	"goravel/app/facades"
 
 	"github.com/goravel/framework/contracts/filesystem"
 	contractsdocker "github.com/goravel/framework/contracts/testing/docker"
@@ -16,6 +13,9 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/stretchr/testify/suite"
+
+	"goravel/app/facades"
+	"goravel/tests"
 )
 
 type FilesystemTestSuite struct {

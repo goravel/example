@@ -3,9 +3,9 @@ package feature
 import (
 	"testing"
 
-	"goravel/app/facades"
-
 	"github.com/stretchr/testify/suite"
+
+	"goravel/app/facades"
 )
 
 func TestFiberDriver(t *testing.T) {

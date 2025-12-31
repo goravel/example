@@ -1,8 +1,6 @@
 package bootstrap
 
 import (
-	"goravel/app/providers"
-
 	"github.com/goravel/cos"
 	"github.com/goravel/fiber"
 	"github.com/goravel/framework/auth"
@@ -63,8 +61,6 @@ func Providers() []foundation.ServiceProvider {
 		&filesystem.ServiceProvider{},
 		&telemetry.ServiceProvider{},
 		&testing.ServiceProvider{},
-		&providers.AuthServiceProvider{},
-		&providers.RouteServiceProvider{},
 		&postgres.ServiceProvider{},
 		&mysql.ServiceProvider{},
 		&sqlserver.ServiceProvider{},

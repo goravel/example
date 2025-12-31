@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"goravel/app/facades"
-
 	httpcontract "github.com/goravel/framework/contracts/http"
+
+	"goravel/app/facades"
 )
 
 func Lang() httpcontract.Middleware {

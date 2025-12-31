@@ -3,10 +3,10 @@ package feature
 import (
 	"testing"
 
-	"goravel/app/facades"
-
 	"github.com/goravel/framework/contracts/queue"
 	"github.com/stretchr/testify/suite"
+
+	"goravel/app/facades"
 )
 
 func TestRedisDriver(t *testing.T) {

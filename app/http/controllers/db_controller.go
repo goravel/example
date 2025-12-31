@@ -1,10 +1,9 @@
 package controllers
 
 import (
-	"goravel/app/facades"
-
 	"github.com/goravel/framework/contracts/http"
 
+	"goravel/app/facades"
 	"goravel/app/models"
 )
 

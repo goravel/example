@@ -3,10 +3,10 @@ package feature
 import (
 	"testing"
 
-	"goravel/app/facades"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+
+	"goravel/app/facades"
 )
 
 func TestDBDrivers(t *testing.T) {

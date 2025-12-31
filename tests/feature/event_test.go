@@ -4,12 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"goravel/app/facades"
-
 	"github.com/goravel/framework/contracts/event"
 	"github.com/stretchr/testify/assert"
 
 	"goravel/app/events"
+	"goravel/app/facades"
 	"goravel/app/listeners"
 )
 

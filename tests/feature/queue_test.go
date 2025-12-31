@@ -5,13 +5,12 @@ import (
 	"testing"
 	"time"
 
-	"goravel/app/facades"
-
 	contractsqueue "github.com/goravel/framework/contracts/queue"
 	"github.com/goravel/framework/queue/utils"
 	"github.com/goravel/framework/support/carbon"
 	"github.com/stretchr/testify/suite"
 
+	"goravel/app/facades"
 	"goravel/app/jobs"
 	"goravel/tests"
 )

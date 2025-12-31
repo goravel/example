@@ -3,10 +3,9 @@ package feature
 import (
 	"testing"
 
-	"goravel/app/facades"
-
 	"github.com/stretchr/testify/suite"
 
+	"goravel/app/facades"
 	"goravel/app/models"
 	"goravel/tests"
 )

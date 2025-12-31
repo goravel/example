@@ -4,12 +4,12 @@ import (
 	"io"
 	"strings"
 
-	"goravel/app/facades"
-
 	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/transport"
 	"google.golang.org/grpc/metadata"
+
+	"goravel/app/facades"
 )
 
 type MDReaderWriter struct {

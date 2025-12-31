@@ -3,13 +3,12 @@ package feature
 import (
 	"testing"
 
-	"goravel/app/facades"
-
 	"github.com/goravel/mysql"
 	"github.com/goravel/sqlite"
 	"github.com/goravel/sqlserver"
 	"github.com/stretchr/testify/suite"
 
+	"goravel/app/facades"
 	"goravel/tests"
 )
 
