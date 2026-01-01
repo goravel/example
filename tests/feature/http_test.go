@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	contractshttp "github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/support"
 	"github.com/goravel/framework/support/http"
 	"github.com/stretchr/testify/suite"
 
@@ -200,6 +201,9 @@ func (s *HttpTestSuite) TestInputMapArray() {
 }
 
 func (s *HttpTestSuite) TestLang() {
+	// Change working directory to project root to use current lang files
+	s.T().Chdir(support.RelativePath)
+
 	tests := []struct {
 		name           string
 		lang           string
