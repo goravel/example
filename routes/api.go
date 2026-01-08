@@ -48,7 +48,7 @@ func Api() {
 		return ctx.Response().Success().String("success")
 	})
 
-	facades.Route().Resource("users", controllers.NewUserController())
+	facades.Route().Middleware(middleware.Localization()).Resource("users", controllers.NewUserController())
 
 	facades.Route().Get("stream", func(ctx http.Context) http.Response {
 		return ctx.Response().Stream(http.StatusCreated, func(w http.StreamWriter) error {

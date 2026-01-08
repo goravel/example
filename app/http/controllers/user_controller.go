@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"time"
+
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/facades"
 
@@ -25,6 +27,8 @@ func (r *UserController) Index(ctx http.Context) http.Response {
 			"error": err.Error(),
 		})
 	}
+
+	time.Sleep(5 * time.Second)
 
 	return ctx.Response().Success().Json(http.Json{
 		"users": users,
