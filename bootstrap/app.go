@@ -2,15 +2,12 @@ package bootstrap
 
 import (
 	"github.com/goravel/framework/auth"
-	"github.com/goravel/framework/contracts/database/seeder"
 	"github.com/goravel/framework/contracts/event"
 	contractsfoundation "github.com/goravel/framework/contracts/foundation"
 	"github.com/goravel/framework/contracts/foundation/configuration"
 	"github.com/goravel/framework/contracts/http"
 	contractshttp "github.com/goravel/framework/contracts/http"
-	"github.com/goravel/framework/contracts/queue"
 	"github.com/goravel/framework/contracts/schedule"
-	"github.com/goravel/framework/contracts/validation"
 	"github.com/goravel/framework/foundation"
 	"github.com/goravel/framework/http/limit"
 	httpmiddleware "github.com/goravel/framework/http/middleware"
@@ -21,64 +18,61 @@ import (
 	"goravel/app/events"
 	"goravel/app/facades"
 	"goravel/app/grpc/interceptors"
-	"goravel/app/jobs"
 	"goravel/app/listeners"
-	"goravel/app/rules"
 	"goravel/config"
-	"goravel/database/seeders"
 	"goravel/routes"
 )
 
 func Boot() contractsfoundation.Application {
 	return foundation.Setup().
-		WithFilters(Filters()).
-		WithCommands(Commands()).
-		WithMigrations(Migrations()).
-		WithSeeders([]seeder.Seeder{
-			&seeders.DatabaseSeeder{},
+		WithMigrations(Migrations).
+		WithSeeders(Seeders).
+		WithRouting(func() {
+			routes.Web()
+			routes.Api()
+			routes.Grpc()
+			routes.Graphql()
 		}).
-		WithRouting([]func(){
-			routes.Web,
-			routes.Api,
-			routes.Grpc,
-			routes.Graphql,
+		WithEvents(func() map[event.Event][]event.Listener {
+			return map[event.Event][]event.Listener{
+				events.NewOrderShipped(): {
+					listeners.NewSendShipmentNotification(),
+				},
+				events.NewOrderCanceled(): {
+					listeners.NewSendShipmentNotification(),
+				},
+			}
 		}).
-		WithEvents(map[event.Event][]event.Listener{
-			events.NewOrderShipped(): {
-				listeners.NewSendShipmentNotification(),
-			},
-			events.NewOrderCanceled(): {
-				listeners.NewSendShipmentNotification(),
-			},
-		}).
-		WithJobs([]queue.Job{
-			&jobs.Test{},
-			&jobs.TestErr{},
-		}).
-		WithRules([]validation.Rule{
-			&rules.Exists{},
-			&rules.NotExists{},
-		}).
+		WithJobs(Jobs).
+		WithRules(Rules).
 		WithMiddleware(func(handler configuration.Middleware) {
 			handler.Append(httpmiddleware.Throttle("global"), middleware.StartSession()).Recover(func(ctx http.Context, err any) {
 				facades.Log().Error(err)
 				_ = ctx.Response().String(contractshttp.StatusInternalServerError, "recover").Abort()
 			})
 		}).
-		WithGrpcServerInterceptors([]grpc.UnaryServerInterceptor{
-			interceptors.TestServer,
+		WithGrpcServerInterceptors(func() []grpc.UnaryServerInterceptor {
+			return []grpc.UnaryServerInterceptor{
+				interceptors.TestServer,
+			}
 		}).
-		WithGrpcClientInterceptors(map[string][]grpc.UnaryClientInterceptor{
-			"default": {
-				interceptors.TestClient,
-			},
+		WithGrpcClientInterceptors(func() map[string][]grpc.UnaryClientInterceptor {
+			return map[string][]grpc.UnaryClientInterceptor{
+				"default": {
+					interceptors.TestClient,
+				},
+			}
 		}).
-		WithGrpcServerStatsHandlers([]stats.Handler{}).
-		WithGrpcClientStatsHandlers(map[string][]stats.Handler{}).
+		WithGrpcServerStatsHandlers(func() []stats.Handler {
+			return []stats.Handler{}
+		}).
+		WithGrpcClientStatsHandlers(func() map[string][]stats.Handler {
+			return map[string][]stats.Handler{}
+		}).
 		WithPaths(func(paths configuration.Paths) {
 			paths.App("app")
 		}).
-		WithProviders(Providers()).
+		WithProviders(Providers).
 		WithSchedule(func() []schedule.Event {
 			return []schedule.Event{
 				facades.Schedule().Call(func() {
