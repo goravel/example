@@ -49,7 +49,6 @@ func Boot() contractsfoundation.Application {
 			handler.Append(
 				httpmiddleware.Throttle("global"),
 				middleware.StartSession(),
-				httpmiddleware.VerifyCsrfToken(nil),
 			).Recover(func(ctx http.Context, err any) {
 				facades.Log().Error(err)
 				_ = ctx.Response().String(contractshttp.StatusInternalServerError, "recover").Abort()
