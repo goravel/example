@@ -46,7 +46,11 @@ func Boot() contractsfoundation.Application {
 		WithJobs(Jobs).
 		WithRules(Rules).
 		WithMiddleware(func(handler configuration.Middleware) {
-			handler.Append(httpmiddleware.Throttle("global"), middleware.StartSession()).Recover(func(ctx http.Context, err any) {
+			handler.Append(
+				httpmiddleware.Throttle("global"),
+				middleware.StartSession(),
+				httpmiddleware.VerifyCsrfToken(nil),
+			).Recover(func(ctx http.Context, err any) {
 				facades.Log().Error(err)
 				_ = ctx.Response().String(contractshttp.StatusInternalServerError, "recover").Abort()
 			})

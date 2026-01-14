@@ -418,6 +418,7 @@ func (s *HttpTestSuite) TestValidationRequest() {
 
 		s.NoError(err)
 		resp.AssertSuccessful()
+
 		context, err := resp.Content()
 		s.Require().NoError(err)
 		s.Equal("{\"code\":123456,\"context\":\"ctx_context\",\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\",\"scores\":[1,2],\"tags\":[\"tag1\",\"tag2\"]}", context)
@@ -441,4 +442,17 @@ func (s *HttpTestSuite) TestValidationRequest() {
 		s.Require().NoError(err)
 		s.Equal("{\"message\":{\"code\":{\"regex\":\"code value does not pass the regex check\"},\"date\":{\"date\":\"date value should be a date string\"},\"name\":{\"required\":\"name is required to not be empty\"}}}", content)
 	})
+}
+
+func (s *HttpTestSuite) TestView() {
+	resp, err := s.Http(s.T()).Get("/view")
+	s.NoError(err)
+	resp.AssertSuccessful()
+
+	context, err := resp.Content()
+	s.Require().NoError(err)
+
+	csrfToken := resp.Headers().Get("X-CSRF-TOKEN")
+	s.NotEmpty(csrfToken)
+	s.Equal(context, fmt.Sprintf("\n  \n<html>\n  <body>\n    <p>I'm the header</p>\n\n  <p>Hello, Goravel</p>\n  <p> CSRF Token: %s </p>\n  \n  <p>I'm the footer</p>\n  </body>\n</html>\n\n", csrfToken))
 }
