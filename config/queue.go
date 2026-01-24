@@ -27,12 +27,6 @@ func init() {
 				"queue":      "default",
 				"concurrent": 1,
 			},
-			"machinery": map[string]any{
-				"driver":     "machinery",
-				"connection": "default",
-				"queue":      "default",
-				"concurrent": 1,
-			},
 			"redis1": map[string]any{
 				"driver":     "custom",
 				"connection": "default",

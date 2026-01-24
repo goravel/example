@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"github.com/goravel/framework/auth"
+	"github.com/goravel/framework/contracts/database/schema"
 	"github.com/goravel/framework/contracts/event"
 	contractsfoundation "github.com/goravel/framework/contracts/foundation"
 	"github.com/goravel/framework/contracts/foundation/configuration"
@@ -19,6 +20,7 @@ import (
 	"goravel/app/facades"
 	"goravel/app/grpc/interceptors"
 	"goravel/app/listeners"
+	"goravel/app/models"
 	"goravel/config"
 	"goravel/routes"
 )
@@ -95,6 +97,9 @@ func Boot() contractsfoundation.Application {
 			})
 			facades.Auth().Extend("another-jwt", auth.NewJwtGuard)
 			facades.Auth().Provider("another-orm", auth.NewOrmUserProvider)
+			facades.Schema().Extend(schema.Extension{
+				Models: []any{models.User{}},
+			})
 		}).
 		WithConfig(config.Boot).
 		Start()

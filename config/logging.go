@@ -22,14 +22,14 @@ func init() {
 		"channels": map[string]any{
 			"stack": map[string]any{
 				"driver":   "stack",
-				"channels": []string{"daily"},
+				"channels": []string{"single", "daily"},
 			},
 			"single": map[string]any{
 				"driver":    "single",
 				"path":      "storage/logs/goravel.log",
 				"level":     config.Env("LOG_LEVEL", "debug"),
 				"print":     false,
-				"formatter": "text",
+				"formatter": "json",
 			},
 			"daily": map[string]any{
 				"driver":    "daily",
@@ -38,10 +38,6 @@ func init() {
 				"days":      7,
 				"print":     true,
 				"formatter": "text",
-			},
-			"otel": map[string]any{
-				"driver":          "otel",
-				"instrument_name": config.GetString("APP_NAME", "goravel/log"),
 			},
 		},
 	})

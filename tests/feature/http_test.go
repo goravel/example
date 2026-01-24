@@ -75,10 +75,11 @@ func (s *HttpTestSuite) TestAuthByJwt() {
 			body, err := http.NewBody().SetField("name", test.name).Build()
 			s.Require().NoError(err)
 
-			resp, err = s.Http(s.T()).WithHeader("Guard", test.guard).Bind(&authLogin).Post("jwt/login", body.Reader())
+			resp, err = s.Http(s.T()).WithHeader("Guard", test.guard).Post("jwt/login", body.Reader())
 			s.Require().NoError(err)
 			resp.AssertSuccessful()
 
+			s.NoError(resp.Bind(&authLogin))
 			s.True(authLogin.User.ID > 0)
 			s.Equal(test.name, authLogin.User.Name)
 
@@ -87,11 +88,12 @@ func (s *HttpTestSuite) TestAuthByJwt() {
 
 			// Get User
 			var authUser Response
-			resp, err = s.Http(s.T()).WithHeader("Authorization", token).WithHeader("Guard", test.guard).Bind(&authUser).Get("jwt/info")
+			resp, err = s.Http(s.T()).WithHeader("Authorization", token).WithHeader("Guard", test.guard).Get("jwt/info")
 
 			s.Require().NoError(err)
 			resp.AssertSuccessful()
 
+			s.NoError(resp.Bind(&authUser))
 			s.Equal(authLogin.User.ID, authUser.User.ID)
 			s.Equal(authLogin.User.Name, authUser.User.Name)
 			s.Equal(authLogin.User.ID, authUser.ID)
@@ -115,20 +117,22 @@ func (s *HttpTestSuite) TestAuthBySession() {
 	body, err := http.NewBody().SetField("name", "Goravel").Build()
 	s.Require().NoError(err)
 
-	resp, err = s.Http(s.T()).WithHeader("Guard", "session").Bind(&authLogin).Post("session/login", body.Reader())
+	resp, err = s.Http(s.T()).WithHeader("Guard", "session").Post("session/login", body.Reader())
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
 
+	s.NoError(resp.Bind(&authLogin))
 	s.True(authLogin.User.ID > 0)
 	s.Equal("Goravel", authLogin.User.Name)
 
 	// Get User
 	var authUser Response
-	resp, err = s.Http(s.T()).WithHeader("Guard", "session").WithCookies(resp.Cookies()).Bind(&authUser).Get("session/info")
+	resp, err = s.Http(s.T()).WithHeader("Guard", "session").WithCookies(resp.Cookies()).Get("session/info")
 
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
 
+	s.NoError(resp.Bind(&authUser))
 	s.Equal(authLogin.User.ID, authUser.User.ID)
 	s.Equal(authLogin.User.Name, authUser.User.Name)
 	s.Equal(authLogin.User.ID, authUser.ID)
@@ -305,10 +309,12 @@ func (s *HttpTestSuite) TestUsers() {
 
 	body, err := http.NewBody().SetField("name", "Goravel").SetField("avatar", "https://goravel.dev/avatar.png").Build()
 	s.Require().NoError(err)
-	resp, err := s.Http(s.T()).Bind(&createdUser).Post("users", body.Reader())
+	resp, err := s.Http(s.T()).Post("users", body.Reader())
 
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
+
+	s.NoError(resp.Bind(&createdUser))
 	s.True(createdUser.User.ID > 0)
 	s.Equal("Goravel", createdUser.User.Name)
 	s.Equal("https://goravel.dev/avatar.png", createdUser.User.Avatar)
@@ -317,10 +323,12 @@ func (s *HttpTestSuite) TestUsers() {
 	var users struct {
 		Users []models.User
 	}
-	resp, err = s.Http(s.T()).Bind(&users).Get("users")
+	resp, err = s.Http(s.T()).Get("users")
 
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
+
+	s.NoError(resp.Bind(&users))
 	s.Equal(1, len(users.Users))
 	s.True(users.Users[0].ID > 0)
 	s.Equal("Goravel", users.Users[0].Name)
@@ -333,10 +341,12 @@ func (s *HttpTestSuite) TestUsers() {
 
 	body, err = http.NewBody().SetField("name", "Framework").Build()
 	s.Require().NoError(err)
-	resp, err = s.Http(s.T()).Bind(&updatedUser).Put(fmt.Sprintf("users/%d", createdUser.User.ID), body.Reader())
+	resp, err = s.Http(s.T()).Put(fmt.Sprintf("users/%d", createdUser.User.ID), body.Reader())
 
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
+
+	s.NoError(resp.Bind(&updatedUser))
 	s.Equal(createdUser.User.ID, updatedUser.User.ID)
 	s.Equal("Framework", updatedUser.User.Name)
 	s.Equal("https://goravel.dev/avatar.png", updatedUser.User.Avatar)
@@ -345,10 +355,12 @@ func (s *HttpTestSuite) TestUsers() {
 	var user struct {
 		User models.User
 	}
-	resp, err = s.Http(s.T()).Bind(&user).Get(fmt.Sprintf("users/%d", createdUser.User.ID))
+	resp, err = s.Http(s.T()).Get(fmt.Sprintf("users/%d", createdUser.User.ID))
 
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
+
+	s.NoError(resp.Bind(&user))
 	s.True(user.User.ID > 0)
 	s.Equal("Framework", user.User.Name)
 	s.Equal("https://goravel.dev/avatar.png", user.User.Avatar)

@@ -25,17 +25,14 @@ func (s *MainTestSuite) SetupSuite() {
 }
 
 func (s *MainTestSuite) TearDownTest() {
-	res, err := facades.Process().Run("git", "checkout", ".")
+	res := facades.Process().Run("git", "checkout", ".")
 	s.False(res.Failed())
-	s.NoError(err)
 
-	res, err = facades.Process().Run("git", "clean", "-fd")
+	res = facades.Process().Run("git", "clean", "-fd")
 	s.False(res.Failed())
-	s.NoError(err)
 
-	res, err = facades.Process().Run("go", "mod", "tidy")
+	res = facades.Process().Run("go", "mod", "tidy")
 	s.False(res.Failed())
-	s.NoError(err)
 }
 
 func (s *MainTestSuite) TestMakeCommand() {
@@ -68,10 +65,11 @@ func (s *MainTestSuite) TestMakeMiddleware() {
 func (s *MainTestSuite) TestMakeMigration() {
 	carbon.SetTestNow(carbon.Parse("2026-01-02 12:34:56"))
 	defer carbon.ClearTestNow()
-	s.NoError(facades.Artisan().Call("make:migration create_agents_table"))
-	s.True(file.Contains(path.Bootstrap("migrations.go"), "&migrations.M20260102123456CreateAgentsTable{},"))
-	s.True(file.Exists(path.Migration("20260102123456_create_agents_table.go")))
+	s.NoError(facades.Artisan().Call("make:migration create_users_table -m User"))
+	s.True(file.Contains(path.Bootstrap("migrations.go"), "&migrations.M20260102123456CreateUsersTable{},"))
 	s.True(file.Contains(path.Bootstrap("app.go"), "WithMigrations(Migrations)."))
+	s.True(file.Exists(path.Migration("20260102123456_create_users_table.go")))
+	s.True(file.Contains(path.Migration("20260102123456_create_users_table.go"), `table.BigIncrements("id")`))
 }
 
 func (s *MainTestSuite) TestMakeProvider() {
@@ -93,4 +91,9 @@ func (s *MainTestSuite) TestMakeSeeder() {
 	s.True(file.Contains(path.Bootstrap("seeders.go"), "&seeders.TestSeeder{},"))
 	s.True(file.Exists(path.Database("seeders", "test_seeder.go")))
 	s.True(file.Contains(path.Bootstrap("app.go"), "WithSeeders(Seeders)."))
+}
+
+func (s *MainTestSuite) TestMakeView() {
+	s.NoError(facades.Artisan().Call("make:view TestView"))
+	s.True(file.Exists(path.View("TestView.tmpl")))
 }

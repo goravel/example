@@ -124,20 +124,18 @@ func (s *QueueTestSuite) TestFailedJobAndRetry() {
 
 	s.Require().NoError(err)
 
-	if facades.Config().GetString("queue.default") != "machinery" {
-		s.Require().Equal(1, len(failedJobs))
-		s.Equal("default", failedJobs[0].Queue())
-		s.Equal(facades.Config().GetString("queue.default"), failedJobs[0].Connection())
-		s.Equal(carbon.NewDateTime(carbon.Now()), failedJobs[0].FailedAt())
-		s.Equal(testErr.Signature(), failedJobs[0].Signature())
-		s.NotEmpty(failedJobs[0].UUID())
+	s.Require().Equal(1, len(failedJobs))
+	s.Equal("default", failedJobs[0].Queue())
+	s.Equal(facades.Config().GetString("queue.default"), failedJobs[0].Connection())
+	s.Equal(carbon.NewDateTime(carbon.Now()), failedJobs[0].FailedAt())
+	s.Equal(testErr.Signature(), failedJobs[0].Signature())
+	s.NotEmpty(failedJobs[0].UUID())
 
-		s.NoError(facades.Artisan().Call("queue:retry"))
+	s.NoError(facades.Artisan().Call("queue:retry"))
 
-		time.Sleep(1 * time.Second)
+	time.Sleep(1 * time.Second)
 
-		s.Equal([]any{"test", "test"}, jobs.TestErrResult)
-	}
+	s.Equal([]any{"test", "test"}, jobs.TestErrResult)
 }
 
 var (

@@ -6,5 +6,6 @@ import (
 
 func main() {
 	app := bootstrap.Boot()
+
 	app.Wait()
 }
