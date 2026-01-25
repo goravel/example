@@ -16,4 +16,5 @@ func TestLog(t *testing.T) {
 
 	facades.Log().Info("This is an info log")
 	assert.True(t, file.Contains(path.Storage("logs", "goravel.log"), `{"environment":"local","level":"info","message":"This is an info log","time":"2026-01-02 12:34:56.123"}`))
+	assert.True(t, file.Contains(path.Storage("logs", "goravel-2026-01-02.log"), `[2026-01-02 12:34:56.123] local.info: This is an info log`))
 }
