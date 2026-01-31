@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"testing"
 
 	"goravel/app/facades"
@@ -12,6 +13,12 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+func TestMain(m *testing.M) {
+	_ = bootstrap.Boot()
+
+	os.Exit(m.Run())
+}
+
 type MainTestSuite struct {
 	suite.Suite
 }
@@ -20,9 +27,7 @@ func TestMainTestSuite(t *testing.T) {
 	suite.Run(t, new(MainTestSuite))
 }
 
-func (s *MainTestSuite) SetupSuite() {
-	bootstrap.Boot()
-}
+func (s *MainTestSuite) SetupSuite() {}
 
 func (s *MainTestSuite) TearDownTest() {
 	res := facades.Process().Run("git", "checkout", ".")
