@@ -7,7 +7,6 @@ import (
 	contractsfoundation "github.com/goravel/framework/contracts/foundation"
 	"github.com/goravel/framework/contracts/foundation/configuration"
 	"github.com/goravel/framework/contracts/http"
-	contractshttp "github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/contracts/schedule"
 	"github.com/goravel/framework/foundation"
 	"github.com/goravel/framework/http/limit"
@@ -53,7 +52,7 @@ func Boot() contractsfoundation.Application {
 				middleware.StartSession(),
 			).Recover(func(ctx http.Context, err any) {
 				facades.Log().Error(err)
-				_ = ctx.Response().String(contractshttp.StatusInternalServerError, "recover").Abort()
+				_ = ctx.Response().String(http.StatusInternalServerError, "recover").Abort()
 			})
 		}).
 		WithGrpcServerInterceptors(func() []grpc.UnaryServerInterceptor {
@@ -86,11 +85,11 @@ func Boot() contractsfoundation.Application {
 			}
 		}).
 		WithCallback(func() {
-			facades.RateLimiter().For("global", func(ctx contractshttp.Context) contractshttp.Limit {
+			facades.RateLimiter().For("global", func(ctx http.Context) http.Limit {
 				return limit.PerMinute(1000)
 			})
-			facades.RateLimiter().ForWithLimits("ip", func(ctx contractshttp.Context) []contractshttp.Limit {
-				return []contractshttp.Limit{
+			facades.RateLimiter().ForWithLimits("ip", func(ctx http.Context) []http.Limit {
+				return []http.Limit{
 					limit.PerDay(1000),
 					limit.PerMinute(2).By(ctx.Request().Ip()),
 				}
@@ -102,5 +101,5 @@ func Boot() contractsfoundation.Application {
 			})
 		}).
 		WithConfig(config.Boot).
-		Start()
+		Create()
 }

@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/contracts/route"
+	"github.com/goravel/framework/http/middleware"
 	"github.com/goravel/framework/support"
 	"github.com/spf13/cast"
 
@@ -30,7 +31,7 @@ func Web() {
 
 	// View Nesting
 	// Check the views in `resources/views/admin/*`
-	facades.Route().Get("view", func(ctx http.Context) http.Response {
+	facades.Route().Middleware(middleware.VerifyCsrfToken()).Get("view", func(ctx http.Context) http.Response {
 		return ctx.Response().View().Make("admin/index.tmpl", map[string]any{
 			"name": "Goravel",
 		})

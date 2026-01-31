@@ -116,14 +116,13 @@ func (s *QueueTestSuite) TestFailedJobAndRetry() {
 		},
 	}).Dispatch())
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 
 	s.Equal([]any{"test"}, jobs.TestErrResult)
 
 	failedJobs, err := facades.Queue().Failer().All()
 
 	s.Require().NoError(err)
-
 	s.Require().Equal(1, len(failedJobs))
 	s.Equal("default", failedJobs[0].Queue())
 	s.Equal(facades.Config().GetString("queue.default"), failedJobs[0].Connection())

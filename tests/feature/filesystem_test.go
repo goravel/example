@@ -97,7 +97,7 @@ func initMinio() contractsdocker.ImageDriver {
 		ExposedPorts: []string{
 			"9000",
 		},
-	})
+	}, facades.Process())
 	err := docker.Build()
 	if err != nil {
 		panic(err)

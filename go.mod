@@ -7,21 +7,21 @@ require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/gofiber/fiber/v2 v2.52.10
 	github.com/gofiber/template/html/v2 v2.1.3
-	github.com/goravel/cos v1.4.0
+	github.com/goravel/cos v1.4.1-0.20260119061407-c34e691dc260
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.4.1-0.20260119020611-d08df5169095
-	github.com/goravel/framework v1.16.1-0.20260124084247-8c0eb592cde1
-	github.com/goravel/gin v1.4.1-0.20260119024408-7972b901c4a6
-	github.com/goravel/minio v1.4.0
-	github.com/goravel/mysql v1.4.0
-	github.com/goravel/oss v1.4.0
-	github.com/goravel/postgres v1.4.0
-	github.com/goravel/redis v1.4.1-0.20251027061218-1700878059b1
-	github.com/goravel/s3 v1.4.0
-	github.com/goravel/sqlite v1.4.1-0.20251004131812-ab9e59222309
-	github.com/goravel/sqlserver v1.4.0
+	github.com/goravel/fiber v1.4.1-0.20260130111158-688da848b1c9
+	github.com/goravel/framework v1.16.1-0.20260131012210-869f116a689c
+	github.com/goravel/gin v1.4.1-0.20260130111309-846f506ddba7
+	github.com/goravel/minio v1.4.1-0.20260130133352-d57c2792bbd1
+	github.com/goravel/mysql v1.4.1-0.20260130090702-6eb356b420cf
+	github.com/goravel/oss v1.4.1-0.20260119065510-15404d4d28b2
+	github.com/goravel/postgres v1.4.2-0.20260130090236-17eee6b25b9a
+	github.com/goravel/redis v1.4.1-0.20260130133704-744b63a44af5
+	github.com/goravel/s3 v1.4.1-0.20260119050014-4ce85ec7c1cc
+	github.com/goravel/sqlite v1.4.1-0.20251220041203-e070ee3e3575
+	github.com/goravel/sqlserver v1.4.1-0.20260130091010-2a734bd0dc9f
 	github.com/gorilla/websocket v1.5.0
-	github.com/minio/minio-go/v7 v7.0.95
+	github.com/minio/minio-go/v7 v7.0.98
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cast v1.10.0
@@ -46,18 +46,18 @@ require (
 	github.com/aliyun/aliyun-oss-go-sdk v3.0.2+incompatible // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
-	github.com/aws/aws-sdk-go-v2 v1.39.5 // indirect
-	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.2 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.18.20 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.12 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.12 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.12 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.3 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.12 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.12 // indirect
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.89.1 // indirect
-	github.com/aws/smithy-go v1.23.1 // indirect
+	github.com/aws/aws-sdk-go-v2 v1.41.1 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.4 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.19.7 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.17 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.17 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.17 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.4 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.8 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.17 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.17 // indirect
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.95.1 // indirect
+	github.com/aws/smithy-go v1.24.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
@@ -128,6 +128,7 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.18.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
+	github.com/klauspost/crc32 v1.3.0 // indirect
 	github.com/lann/builder v0.0.0-20180802200727-47ae307949d0 // indirect
 	github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -139,7 +140,7 @@ require (
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
 	github.com/microsoft/go-mssqldb v1.9.1 // indirect
-	github.com/minio/crc64nvme v1.0.2 // indirect
+	github.com/minio/crc64nvme v1.1.1 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
@@ -159,7 +160,7 @@ require (
 	github.com/pterm/pterm v0.12.82 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.54.0 // indirect
-	github.com/redis/go-redis/v9 v9.16.0 // indirect
+	github.com/redis/go-redis/v9 v9.17.3 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rotisserie/eris v0.5.4 // indirect
@@ -177,9 +178,9 @@ require (
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/swaggo/files/v2 v2.0.0 // indirect
-	github.com/tencentyun/cos-go-sdk-v5 v0.7.71 // indirect
+	github.com/tencentyun/cos-go-sdk-v5 v0.7.72 // indirect
 	github.com/tetratelabs/wazero v1.9.0 // indirect
-	github.com/tinylib/msgp v1.3.0 // indirect
+	github.com/tinylib/msgp v1.6.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
@@ -230,7 +231,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.6.0 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
-	gorm.io/driver/sqlserver v1.6.1 // indirect
+	gorm.io/driver/sqlserver v1.6.3 // indirect
 	gorm.io/gorm v1.31.1 // indirect
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )

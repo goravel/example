@@ -165,7 +165,7 @@ func (s *HttpTestSuite) TestFallback() {
 
 func (s *HttpTestSuite) TestFiles() {
 	body, err := http.NewBody().SetFiles(map[string][]string{
-		"files": {"lang/cn.json", "lang/en.json"},
+		"files": {"log_test.go", "support_test.go"},
 	}).Build()
 	s.Require().NoError(err)
 
@@ -175,7 +175,7 @@ func (s *HttpTestSuite) TestFiles() {
 
 	content, err := resp.Content()
 	s.Require().NoError(err)
-	s.Equal("{\"files\":[\"cn.json\",\"en.json\"]}", content)
+	s.Equal("{\"files\":[\"log_test.go\",\"support_test.go\"]}", content)
 }
 
 func (s *HttpTestSuite) TestInputMap() {

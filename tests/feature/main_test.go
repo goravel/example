@@ -17,6 +17,9 @@ func TestMain(m *testing.M) {
 	if err := database.Build(); err != nil {
 		panic(err)
 	}
+	if err := database.Ready(); err != nil {
+		panic(err)
+	}
 	if err := database.Migrate(); err != nil {
 		panic(err)
 	}
@@ -31,7 +34,10 @@ func TestMain(m *testing.M) {
 	if err := cache.Ready(); err != nil {
 		panic(err)
 	}
-	facades.Config().Add("database.redis.default.port", cache.Config().Port)
+
+	if err := facades.App().Restart(); err != nil {
+		panic(err)
+	}
 
 	exit := m.Run()
 
