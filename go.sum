@@ -279,8 +279,8 @@ github.com/goravel/fiber v1.4.1-0.20260130111158-688da848b1c9 h1:OfzR52vI/knC/8B
 github.com/goravel/fiber v1.4.1-0.20260130111158-688da848b1c9/go.mod h1:xIrFL8w5meXh/gO/j9gROZSPvLoVWKAbJpxAJUJhUoM=
 github.com/goravel/file-rotatelogs/v2 v2.4.2 h1:g68AzbePXcm0V2CpUMc9j4qVzcDn7+7aoWSjZ51C0m4=
 github.com/goravel/file-rotatelogs/v2 v2.4.2/go.mod h1:23VuSW8cBS4ax5cmbV+5AaiLpq25b8UJ96IhbAkdo8I=
-github.com/goravel/framework v1.16.1-0.20260131012210-869f116a689c h1:A1ER3AGASg5b2ONYvCtTdbTlkTVf54ebPFaBfjPYgZs=
-github.com/goravel/framework v1.16.1-0.20260131012210-869f116a689c/go.mod h1:RvgW+VhSE0aCr2ju/d6B8PsPsz04Q7gUFnWCY9ru6MI=
+github.com/goravel/framework v1.16.1-0.20260131081018-91ee246e1565 h1:Bux/99ZGcG8UUMGFN2srk5UFhuxjyieKnu1w32+Jy5M=
+github.com/goravel/framework v1.16.1-0.20260131081018-91ee246e1565/go.mod h1:RvgW+VhSE0aCr2ju/d6B8PsPsz04Q7gUFnWCY9ru6MI=
 github.com/goravel/gin v1.4.1-0.20260130111309-846f506ddba7 h1:QTAtPAgp6R1MfZi66zdFF7l3vnqoP+DYMtYn45C9Jzo=
 github.com/goravel/gin v1.4.1-0.20260130111309-846f506ddba7/go.mod h1:BP1OPu27qBoKaUV1ZS0cYt1C1jyAwhCo7e8o1A5aM+Y=
 github.com/goravel/minio v1.4.1-0.20260130133352-d57c2792bbd1 h1:q2b35hQJJsuQuKiLuRmbEvl8SPtK40K5pf9z+ll0vnw=
@@ -430,8 +430,6 @@ github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8/go.mod h1:HKlIX3XHQyzL
 github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c h1:+mdjkGKdHQG3305AYmdv1U2eRNDiU2ErMBj1gwrq8eQ=
 github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c/go.mod h1:7rwL4CYBLnjLxUqIJNnCWiEdr3bn6IUYi15bNlnbCCU=
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=
-github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
-github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=

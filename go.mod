@@ -10,7 +10,7 @@ require (
 	github.com/goravel/cos v1.4.1-0.20260119061407-c34e691dc260
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.4.1-0.20260130111158-688da848b1c9
-	github.com/goravel/framework v1.16.1-0.20260131012210-869f116a689c
+	github.com/goravel/framework v1.16.1-0.20260131081018-91ee246e1565
 	github.com/goravel/gin v1.4.1-0.20260130111309-846f506ddba7
 	github.com/goravel/minio v1.4.1-0.20260130133352-d57c2792bbd1
 	github.com/goravel/mysql v1.4.1-0.20260130090702-6eb356b420cf
@@ -23,7 +23,6 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/minio/minio-go/v7 v7.0.98
 	github.com/opentracing/opentracing-go v1.2.0
-	github.com/pkg/errors v0.9.1
 	github.com/spf13/cast v1.10.0
 	github.com/stretchr/testify v1.11.1
 	github.com/swaggo/http-swagger/v2 v2.0.2
