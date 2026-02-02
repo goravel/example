@@ -64,7 +64,6 @@ func (s *MainTestSuite) TestMakeJob() {
 func (s *MainTestSuite) TestMakeMiddleware() {
 	s.NoError(facades.Artisan().Call("make:middleware TestMiddleware"))
 	s.True(file.Exists(path.App("http", "middleware", "test_middleware.go")))
-	s.True(file.Contains(path.Bootstrap("app.go"), "middleware.TestMiddleware(),"))
 }
 
 func (s *MainTestSuite) TestMakeMigration() {

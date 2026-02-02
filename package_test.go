@@ -3,13 +3,11 @@ package main
 import (
 	"testing"
 
-	"github.com/goravel/framework/contracts/foundation"
 	"github.com/goravel/framework/support/file"
 	"github.com/goravel/framework/support/path"
 	"github.com/stretchr/testify/assert"
 
 	"goravel/app/facades"
-	"goravel/packages/sms"
 )
 
 func TestInstallAndUninstallDBDrivers(t *testing.T) {
@@ -165,7 +163,7 @@ func TestInstallAndUninstallLocalPackage(t *testing.T) {
 	assert.True(t, file.Exists(path.Base("packages", "example")))
 	assert.True(t, file.Exists(path.Base("packages", "example", "setup", "setup.go")))
 
-	assert.NoError(t, facades.Artisan().Call("package:install goravel/packages/example"))
+	assert.False(t, facades.Process().Run("go run . artisan package:install goravel/packages/example").Failed())
 	assert.True(t, file.Contain(path.Bootstrap("providers.go"), "&example.ServiceProvider{},"))
 	assert.True(t, file.Contain(path.Bootstrap("providers.go"), "goravel/packages/example"))
 
@@ -181,11 +179,11 @@ func TestInstallAndPublishAndUninstallLocalPackage(t *testing.T) {
 	assert.True(t, file.Contain(path.Bootstrap("providers.go"), "goravel/packages/sms"))
 	assert.True(t, file.Contain(path.Bootstrap("providers.go"), "&sms.ServiceProvider{}"))
 
-	facades.Config().Add("app.providers", append(facades.Config().Get("app.providers").([]foundation.ServiceProvider), &sms.ServiceProvider{}))
-	facades.App().Refresh()
-
-	assert.NoError(t, facades.Artisan().Call("vendor:publish --package=./packages/sms --no-ansi"))
+	assert.False(t, facades.Process().Run("go run . artisan vendor:publish --package=./packages/sms --no-ansi").Failed())
 	assert.True(t, file.Exists(path.Config("sms.go")))
+
 	assert.NoError(t, file.Remove(path.Config("sms.go")))
 	assert.NoError(t, facades.Artisan().Call("package:uninstall ./packages/sms"))
+	assert.False(t, file.Contain(path.Bootstrap("providers.go"), "goravel/packages/sms"))
+	assert.False(t, file.Contain(path.Bootstrap("providers.go"), "&sms.ServiceProvider{}"))
 }

@@ -5,21 +5,21 @@ go 1.24.0
 require (
 	github.com/99designs/gqlgen v0.17.57
 	github.com/gin-gonic/gin v1.11.0
-	github.com/gofiber/fiber/v2 v2.52.10
+	github.com/gofiber/fiber/v2 v2.52.11
 	github.com/gofiber/template/html/v2 v2.1.3
-	github.com/goravel/cos v1.4.1-0.20260119061407-c34e691dc260
+	github.com/goravel/cos v1.4.1-0.20260202063754-94dfdfd83aef
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.4.1-0.20260130111158-688da848b1c9
-	github.com/goravel/framework v1.16.1-0.20260131081018-91ee246e1565
-	github.com/goravel/gin v1.4.1-0.20260130111309-846f506ddba7
-	github.com/goravel/minio v1.4.1-0.20260130133352-d57c2792bbd1
-	github.com/goravel/mysql v1.4.1-0.20260130090702-6eb356b420cf
-	github.com/goravel/oss v1.4.1-0.20260119065510-15404d4d28b2
-	github.com/goravel/postgres v1.4.2-0.20260130090236-17eee6b25b9a
-	github.com/goravel/redis v1.4.1-0.20260130133704-744b63a44af5
-	github.com/goravel/s3 v1.4.1-0.20260119050014-4ce85ec7c1cc
-	github.com/goravel/sqlite v1.4.1-0.20251220041203-e070ee3e3575
-	github.com/goravel/sqlserver v1.4.1-0.20260130091010-2a734bd0dc9f
+	github.com/goravel/fiber v1.4.1-0.20260202063051-42b3d5ae83a1
+	github.com/goravel/framework v1.16.1-0.20260202073759-3c53710513a8
+	github.com/goravel/gin v1.4.1-0.20260202063042-46dbfa2d4bd4
+	github.com/goravel/minio v1.4.1-0.20260202063801-62da6a3b8b9b
+	github.com/goravel/mysql v1.4.1-0.20260202063929-ce6d9b5b2eea
+	github.com/goravel/oss v1.4.1-0.20260202063450-15738b9a2430
+	github.com/goravel/postgres v1.4.2-0.20260202063923-5859268c6f26
+	github.com/goravel/redis v1.4.1-0.20260202063222-4a88f340af02
+	github.com/goravel/s3 v1.4.1-0.20260202063341-df5c3a638caf
+	github.com/goravel/sqlite v1.4.1-0.20260202064133-f364d07e9baf
+	github.com/goravel/sqlserver v1.4.1-0.20260202064122-b4e46969f994
 	github.com/gorilla/websocket v1.5.0
 	github.com/minio/minio-go/v7 v7.0.98
 	github.com/opentracing/opentracing-go v1.2.0
@@ -55,7 +55,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.17 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.17 // indirect
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.95.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.96.0 // indirect
 	github.com/aws/smithy-go v1.24.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
@@ -84,7 +84,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
@@ -103,7 +103,7 @@ require (
 	github.com/gofiber/template v1.8.3 // indirect
 	github.com/gofiber/utils v1.1.0 // indirect
 	github.com/goforj/godump v1.9.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
