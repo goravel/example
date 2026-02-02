@@ -2,22 +2,21 @@ package feature
 
 import (
 	"testing"
+	"time"
 
 	"github.com/goravel/framework/contracts/queue"
-	"github.com/goravel/framework/facades"
 	"github.com/stretchr/testify/suite"
+
+	"goravel/app/facades"
 )
 
 func TestRedisDriver(t *testing.T) {
 	facades.Config().Add("cache.default", "redis")
 	facades.Config().Add("queue.default", "redis")
-	facades.App().Refresh()
 
-	go func() {
-		if err := facades.Queue().Worker().Run(); err != nil {
-			facades.Log().Errorf("Queue run error: %v", err)
-		}
-	}()
+	if err := facades.App().Restart(); err != nil {
+		panic(err)
+	}
 
 	go func() {
 		if err := facades.Queue().Worker(queue.Args{
@@ -36,10 +35,14 @@ func TestRedisDriver(t *testing.T) {
 		}
 	}()
 
+	time.Sleep(1 * time.Second)
+
 	suite.Run(t, &HttpTestSuite{})
 	suite.Run(t, &QueueTestSuite{})
 
 	facades.Config().Add("cache.default", "memory")
 	facades.Config().Add("queue.default", "sync")
-	facades.App().Refresh()
+	if err := facades.App().Restart(); err != nil {
+		panic(err)
+	}
 }

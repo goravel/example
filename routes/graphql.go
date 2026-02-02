@@ -1,13 +1,13 @@
 package routes
 
 import (
-	"goravel/graph"
-	"goravel/graph/generated"
-
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/goravel/framework/contracts/http"
-	"github.com/goravel/framework/facades"
+
+	"goravel/app/facades"
+	"goravel/graph"
+	"goravel/graph/generated"
 )
 
 func Graphql() {

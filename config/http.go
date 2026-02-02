@@ -6,10 +6,11 @@ import (
 	"github.com/gofiber/template/html/v2"
 	fiberfacades "github.com/goravel/fiber/facades"
 	"github.com/goravel/framework/contracts/route"
-	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support/path"
 	"github.com/goravel/gin"
 	ginfacades "github.com/goravel/gin/facades"
+
+	"goravel/app/facades"
 )
 
 func init() {
@@ -71,13 +72,16 @@ func init() {
 				"key": "",
 			},
 		},
-		"client": map[string]any{
-			"base_url":                config.GetString("HTTP_CLIENT_BASE_URL", "http://127.0.0.1:3000"),
-			"timeout":                 config.GetDuration("HTTP_CLIENT_TIMEOUT"),
-			"max_idle_conns":          config.GetInt("HTTP_CLIENT_MAX_IDLE_CONNS"),
-			"max_idle_conns_per_host": config.GetInt("HTTP_CLIENT_MAX_IDLE_CONNS_PER_HOST"),
-			"max_conns_per_host":      config.GetInt("HTTP_CLIENT_MAX_CONN_PER_HOST"),
-			"idle_conn_timeout":       config.GetDuration("HTTP_CLIENT_IDLE_CONN_TIMEOUT"),
+		"default_client": config.Env("HTTP_CLIENT_DEFAULT", "default"),
+		"clients": map[string]any{
+			"default": map[string]any{
+				"base_url":                config.Env("HTTP_CLIENT_BASE_URL", "http://127.0.0.1:3000"),
+				"timeout":                 config.Env("HTTP_CLIENT_TIMEOUT", "30s"),
+				"max_idle_conns":          config.Env("HTTP_CLIENT_MAX_IDLE_CONNS", 100),
+				"max_idle_conns_per_host": config.Env("HTTP_CLIENT_MAX_IDLE_CONNS_PER_HOST", 2),
+				"max_conns_per_host":      config.Env("HTTP_CLIENT_MAX_CONN_PER_HOST", 0),
+				"idle_conn_timeout":       config.Env("HTTP_CLIENT_IDLE_CONN_TIMEOUT", "90s"),
+			},
 		},
 	})
 }

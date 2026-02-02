@@ -3,11 +3,12 @@ package config
 import (
 	cosfacades "github.com/goravel/cos/facades"
 	"github.com/goravel/framework/contracts/filesystem"
-	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support/path"
 	miniofacades "github.com/goravel/minio/facades"
 	ossfacades "github.com/goravel/oss/facades"
 	s3facades "github.com/goravel/s3/facades"
+
+	"goravel/app/facades"
 )
 
 func init() {

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	contractshttp "github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/support"
 	"github.com/goravel/framework/support/http"
 	"github.com/stretchr/testify/suite"
 
@@ -74,10 +75,11 @@ func (s *HttpTestSuite) TestAuthByJwt() {
 			body, err := http.NewBody().SetField("name", test.name).Build()
 			s.Require().NoError(err)
 
-			resp, err = s.Http(s.T()).WithHeader("Guard", test.guard).Bind(&authLogin).Post("jwt/login", body.Reader())
+			resp, err = s.Http(s.T()).WithHeader("Guard", test.guard).Post("jwt/login", body.Reader())
 			s.Require().NoError(err)
 			resp.AssertSuccessful()
 
+			s.NoError(resp.Bind(&authLogin))
 			s.True(authLogin.User.ID > 0)
 			s.Equal(test.name, authLogin.User.Name)
 
@@ -86,11 +88,12 @@ func (s *HttpTestSuite) TestAuthByJwt() {
 
 			// Get User
 			var authUser Response
-			resp, err = s.Http(s.T()).WithHeader("Authorization", token).WithHeader("Guard", test.guard).Bind(&authUser).Get("jwt/info")
+			resp, err = s.Http(s.T()).WithHeader("Authorization", token).WithHeader("Guard", test.guard).Get("jwt/info")
 
 			s.Require().NoError(err)
 			resp.AssertSuccessful()
 
+			s.NoError(resp.Bind(&authUser))
 			s.Equal(authLogin.User.ID, authUser.User.ID)
 			s.Equal(authLogin.User.Name, authUser.User.Name)
 			s.Equal(authLogin.User.ID, authUser.ID)
@@ -114,20 +117,22 @@ func (s *HttpTestSuite) TestAuthBySession() {
 	body, err := http.NewBody().SetField("name", "Goravel").Build()
 	s.Require().NoError(err)
 
-	resp, err = s.Http(s.T()).WithHeader("Guard", "session").Bind(&authLogin).Post("session/login", body.Reader())
+	resp, err = s.Http(s.T()).WithHeader("Guard", "session").Post("session/login", body.Reader())
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
 
+	s.NoError(resp.Bind(&authLogin))
 	s.True(authLogin.User.ID > 0)
 	s.Equal("Goravel", authLogin.User.Name)
 
 	// Get User
 	var authUser Response
-	resp, err = s.Http(s.T()).WithHeader("Guard", "session").WithCookies(resp.Cookies()).Bind(&authUser).Get("session/info")
+	resp, err = s.Http(s.T()).WithHeader("Guard", "session").WithCookies(resp.Cookies()).Get("session/info")
 
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
 
+	s.NoError(resp.Bind(&authUser))
 	s.Equal(authLogin.User.ID, authUser.User.ID)
 	s.Equal(authLogin.User.Name, authUser.User.Name)
 	s.Equal(authLogin.User.ID, authUser.ID)
@@ -160,7 +165,7 @@ func (s *HttpTestSuite) TestFallback() {
 
 func (s *HttpTestSuite) TestFiles() {
 	body, err := http.NewBody().SetFiles(map[string][]string{
-		"files": []string{"lang/cn.json", "lang/en.json"},
+		"files": {"log_test.go", "support_test.go"},
 	}).Build()
 	s.Require().NoError(err)
 
@@ -170,7 +175,7 @@ func (s *HttpTestSuite) TestFiles() {
 
 	content, err := resp.Content()
 	s.Require().NoError(err)
-	s.Equal("{\"files\":[\"cn.json\",\"en.json\"]}", content)
+	s.Equal("{\"files\":[\"log_test.go\",\"support_test.go\"]}", content)
 }
 
 func (s *HttpTestSuite) TestInputMap() {
@@ -200,6 +205,9 @@ func (s *HttpTestSuite) TestInputMapArray() {
 }
 
 func (s *HttpTestSuite) TestLang() {
+	// Change working directory to project root to use current lang files
+	s.T().Chdir(support.RelativePath)
+
 	tests := []struct {
 		name           string
 		lang           string
@@ -301,10 +309,12 @@ func (s *HttpTestSuite) TestUsers() {
 
 	body, err := http.NewBody().SetField("name", "Goravel").SetField("avatar", "https://goravel.dev/avatar.png").Build()
 	s.Require().NoError(err)
-	resp, err := s.Http(s.T()).Bind(&createdUser).Post("users", body.Reader())
+	resp, err := s.Http(s.T()).Post("users", body.Reader())
 
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
+
+	s.NoError(resp.Bind(&createdUser))
 	s.True(createdUser.User.ID > 0)
 	s.Equal("Goravel", createdUser.User.Name)
 	s.Equal("https://goravel.dev/avatar.png", createdUser.User.Avatar)
@@ -313,10 +323,12 @@ func (s *HttpTestSuite) TestUsers() {
 	var users struct {
 		Users []models.User
 	}
-	resp, err = s.Http(s.T()).Bind(&users).Get("users")
+	resp, err = s.Http(s.T()).Get("users")
 
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
+
+	s.NoError(resp.Bind(&users))
 	s.Equal(1, len(users.Users))
 	s.True(users.Users[0].ID > 0)
 	s.Equal("Goravel", users.Users[0].Name)
@@ -329,10 +341,12 @@ func (s *HttpTestSuite) TestUsers() {
 
 	body, err = http.NewBody().SetField("name", "Framework").Build()
 	s.Require().NoError(err)
-	resp, err = s.Http(s.T()).Bind(&updatedUser).Put(fmt.Sprintf("users/%d", createdUser.User.ID), body.Reader())
+	resp, err = s.Http(s.T()).Put(fmt.Sprintf("users/%d", createdUser.User.ID), body.Reader())
 
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
+
+	s.NoError(resp.Bind(&updatedUser))
 	s.Equal(createdUser.User.ID, updatedUser.User.ID)
 	s.Equal("Framework", updatedUser.User.Name)
 	s.Equal("https://goravel.dev/avatar.png", updatedUser.User.Avatar)
@@ -341,10 +355,12 @@ func (s *HttpTestSuite) TestUsers() {
 	var user struct {
 		User models.User
 	}
-	resp, err = s.Http(s.T()).Bind(&user).Get(fmt.Sprintf("users/%d", createdUser.User.ID))
+	resp, err = s.Http(s.T()).Get(fmt.Sprintf("users/%d", createdUser.User.ID))
 
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
+
+	s.NoError(resp.Bind(&user))
 	s.True(user.User.ID > 0)
 	s.Equal("Framework", user.User.Name)
 	s.Equal("https://goravel.dev/avatar.png", user.User.Avatar)
@@ -368,8 +384,24 @@ func (s *HttpTestSuite) TestUsers() {
 	s.Equal("{\"users\":[]}", context)
 }
 
+func (s *HttpTestSuite) TestValidationForm() {
+	payload := strings.NewReader(`{
+		"context": "ctx",
+		"name": "Goravel"
+	}`)
+
+	resp, err := s.Http(s.T()).Post("/validation/form", payload)
+
+	s.NoError(err)
+	resp.AssertSuccessful()
+	context, err := resp.Content()
+	s.Require().NoError(err)
+	s.Equal("{\"context\":\"ctx_context\",\"name\":\"Goravel\"}", context)
+}
+
 func (s *HttpTestSuite) TestValidationJson() {
 	payload := strings.NewReader(`{
+		"context": "ctx",
 		"name": "Goravel",
 		"date": "2024-07-08 18:33:32"
 	}`)
@@ -380,13 +412,14 @@ func (s *HttpTestSuite) TestValidationJson() {
 	resp.AssertSuccessful()
 	context, err := resp.Content()
 	s.Require().NoError(err)
-	s.Equal("{\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\"}", context)
+	s.Equal("{\"context\":\"ctx_context\",\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\"}", context)
 }
 
 func (s *HttpTestSuite) TestValidationRequest() {
 	s.Run("success", func() {
 		payload := strings.NewReader(`{
 			"name": " Goravel ",
+			"context": "ctx",
 			"date": "2024-07-08 18:33:32",
 			"tags": ["tag1", "tag2"],
 			"scores": [1, 2],
@@ -397,13 +430,15 @@ func (s *HttpTestSuite) TestValidationRequest() {
 
 		s.NoError(err)
 		resp.AssertSuccessful()
+
 		context, err := resp.Content()
 		s.Require().NoError(err)
-		s.Equal("{\"code\":123456,\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\",\"scores\":[1,2],\"tags\":[\"tag1\",\"tag2\"]}", context)
+		s.Equal("{\"code\":123456,\"context\":\"ctx_context\",\"date\":\"2024-07-08 18:33:32\",\"name\":\"Goravel\",\"scores\":[1,2],\"tags\":[\"tag1\",\"tag2\"]}", context)
 	})
 
 	s.Run("failed", func() {
 		payload := strings.NewReader(`{
+			"context": "ctx",
 			"date": "1",
 			"tags": "tag1",
 			"scores": 1,
@@ -419,4 +454,17 @@ func (s *HttpTestSuite) TestValidationRequest() {
 		s.Require().NoError(err)
 		s.Equal("{\"message\":{\"code\":{\"regex\":\"code value does not pass the regex check\"},\"date\":{\"date\":\"date value should be a date string\"},\"name\":{\"required\":\"name is required to not be empty\"}}}", content)
 	})
+}
+
+func (s *HttpTestSuite) TestView() {
+	resp, err := s.Http(s.T()).Get("/view")
+	s.NoError(err)
+	resp.AssertSuccessful()
+
+	context, err := resp.Content()
+	s.Require().NoError(err)
+
+	csrfToken := resp.Headers().Get("X-CSRF-TOKEN")
+	s.NotEmpty(csrfToken)
+	s.Equal(context, fmt.Sprintf("\n  \n<html>\n  <body>\n    <p>I'm the header</p>\n\n  <p>Hello, Goravel</p>\n  <p> CSRF Token: %s </p>\n  \n  <p>I'm the footer</p>\n  </body>\n</html>\n\n", csrfToken))
 }

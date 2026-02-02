@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/goravel/framework/contracts/event"
-	"github.com/goravel/framework/facades"
 	"github.com/stretchr/testify/assert"
 
 	"goravel/app/events"
+	"goravel/app/facades"
 	"goravel/app/listeners"
 )
 

@@ -2,8 +2,9 @@ package config
 
 import (
 	"github.com/goravel/framework/contracts/queue"
-	"github.com/goravel/framework/facades"
 	redisfacades "github.com/goravel/redis/facades"
+
+	"goravel/app/facades"
 )
 
 func init() {
@@ -23,12 +24,6 @@ func init() {
 			"database": map[string]any{
 				"driver":     "database",
 				"connection": "sqlite",
-				"queue":      "default",
-				"concurrent": 1,
-			},
-			"machinery": map[string]any{
-				"driver":     "machinery",
-				"connection": "default",
 				"queue":      "default",
 				"concurrent": 1,
 			},

@@ -3,9 +3,9 @@ package feature
 import (
 	"testing"
 
-	"github.com/goravel/framework/facades"
 	"github.com/stretchr/testify/suite"
 
+	"goravel/app/facades"
 	"goravel/app/models"
 	"goravel/tests"
 )
@@ -35,13 +35,6 @@ func (s *OrmTestSuite) TestCreate() {
 		var user models.User
 		s.Require().NoError(facades.Orm().Query().First(&user))
 		s.Equal("Goravel", user.Name)
-
-		// var user2 models.User
-		// s.Require().NoError(facades.Orm().Query().Where(func(query orm.Query) orm.Query {
-		// 	return query.Where("name", "Goravel").OrWhere("name != ?", "test")
-		// }).Where("name", "Goravel2").First(&user2))
-
-		// s.Equal("Goravel", user2.Name)
 	})
 }
 

@@ -3,9 +3,10 @@ package feature
 import (
 	"testing"
 
-	"github.com/goravel/framework/facades"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+
+	"goravel/app/facades"
 )
 
 func TestDBDrivers(t *testing.T) {
@@ -28,14 +29,18 @@ func TestDBDrivers(t *testing.T) {
 		facades.Config().Add("database.default", connection)
 		facades.Config().Add("database.connections."+connection+".port", database.Config().Port)
 
-		facades.App().Refresh()
+		if err := facades.App().Restart(); err != nil {
+			panic(err)
+		}
 
 		suite.Run(t, &DBTestSuite{})
 		suite.Run(t, &OrmTestSuite{})
 		suite.Run(t, &MigrationTestSuite{})
 
 		facades.Config().Add("database.default", "sqlite")
-		facades.App().Refresh()
+		if err := facades.App().Restart(); err != nil {
+			panic(err)
+		}
 
 		assert.NoError(t, database.Shutdown())
 	}

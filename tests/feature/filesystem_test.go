@@ -3,18 +3,19 @@ package feature
 import (
 	"context"
 	"fmt"
-	"goravel/tests"
 	"os"
 	"testing"
 
 	"github.com/goravel/framework/contracts/filesystem"
 	contractsdocker "github.com/goravel/framework/contracts/testing/docker"
-	"github.com/goravel/framework/facades"
 	supportdocker "github.com/goravel/framework/support/docker"
 	testingdocker "github.com/goravel/framework/testing/docker"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/stretchr/testify/suite"
+
+	"goravel/app/facades"
+	"goravel/tests"
 )
 
 type FilesystemTestSuite struct {
@@ -96,7 +97,7 @@ func initMinio() contractsdocker.ImageDriver {
 		ExposedPorts: []string{
 			"9000",
 		},
-	})
+	}, facades.Process())
 	err := docker.Build()
 	if err != nil {
 		panic(err)

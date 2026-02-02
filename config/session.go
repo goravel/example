@@ -2,10 +2,11 @@ package config
 
 import (
 	"github.com/goravel/framework/contracts/session"
-	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support/path"
 	"github.com/goravel/framework/support/str"
 	redisfacades "github.com/goravel/redis/facades"
+
+	"goravel/app/facades"
 )
 
 func init() {

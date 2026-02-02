@@ -1,26 +1,27 @@
 package config
 
 import (
-	"github.com/goravel/framework/facades"
+	"goravel/app/facades"
 )
 
 func init() {
 	config := facades.Config()
 	config.Add("grpc", map[string]any{
 		// Configure your server host
-		"host": config.Env("GRPC_HOST", ""),
+		"host": config.Env("GRPC_HOST"),
 
 		// Configure your server port
-		"port": config.Env("GRPC_PORT", ""),
+		"port": config.Env("GRPC_PORT"),
 
-		// Configure your client host and interceptors.
-		// Interceptors can be the group name of UnaryClientInterceptorGroups in app/grpc/kernel.go.
-		"clients": map[string]any{
-			//"user": map[string]any{
-			//	"host":         config.Env("GRPC_USER_HOST", ""),
-			//	"port":         config.Env("GRPC_USER_PORT", ""),
-			//	"interceptors": []string{},
-			//},
+		// Configure servers which the client will connect to
+		"servers": map[string]any{
+			"user": map[string]any{
+				"host": config.Env("GRPC_USER_HOST"),
+				"port": config.Env("GRPC_USER_PORT"),
+				// the group name of UnaryClientInterceptorGroups
+				"interceptors":   []string{},
+				"stats_handlers": []string{},
+			},
 		},
 	})
 }

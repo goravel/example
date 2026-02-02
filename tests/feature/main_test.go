@@ -3,10 +3,10 @@ package feature
 import (
 	"os"
 	"testing"
-	"time"
 
-	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/support/file"
+
+	"goravel/app/facades"
 )
 
 func TestMain(m *testing.M) {
@@ -15,6 +15,9 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 	if err := database.Build(); err != nil {
+		panic(err)
+	}
+	if err := database.Ready(); err != nil {
 		panic(err)
 	}
 	if err := database.Migrate(); err != nil {
@@ -31,15 +34,10 @@ func TestMain(m *testing.M) {
 	if err := cache.Ready(); err != nil {
 		panic(err)
 	}
-	facades.Config().Add("database.redis.default.port", cache.Config().Port)
 
-	go func() {
-		if err := facades.Route().Run(); err != nil {
-			facades.Log().Errorf("Route run error: %v", err)
-		}
-	}()
-
-	time.Sleep(1 * time.Second)
+	if err := facades.App().Restart(); err != nil {
+		panic(err)
+	}
 
 	exit := m.Run()
 

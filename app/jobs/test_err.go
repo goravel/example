@@ -1,6 +1,8 @@
 package jobs
 
-import "errors"
+import (
+	"errors"
+)
 
 var TestErrResult []any
 

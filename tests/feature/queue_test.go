@@ -6,11 +6,11 @@ import (
 	"time"
 
 	contractsqueue "github.com/goravel/framework/contracts/queue"
-	"github.com/goravel/framework/facades"
 	"github.com/goravel/framework/queue/utils"
 	"github.com/goravel/framework/support/carbon"
 	"github.com/stretchr/testify/suite"
 
+	"goravel/app/facades"
 	"goravel/app/jobs"
 	"goravel/tests"
 )
@@ -116,28 +116,25 @@ func (s *QueueTestSuite) TestFailedJobAndRetry() {
 		},
 	}).Dispatch())
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 
 	s.Equal([]any{"test"}, jobs.TestErrResult)
 
 	failedJobs, err := facades.Queue().Failer().All()
 
 	s.Require().NoError(err)
+	s.Require().Equal(1, len(failedJobs))
+	s.Equal("default", failedJobs[0].Queue())
+	s.Equal(facades.Config().GetString("queue.default"), failedJobs[0].Connection())
+	s.Equal(carbon.NewDateTime(carbon.Now()), failedJobs[0].FailedAt())
+	s.Equal(testErr.Signature(), failedJobs[0].Signature())
+	s.NotEmpty(failedJobs[0].UUID())
 
-	if facades.Config().GetString("queue.default") != "machinery" {
-		s.Require().Equal(1, len(failedJobs))
-		s.Equal("default", failedJobs[0].Queue())
-		s.Equal(facades.Config().GetString("queue.default"), failedJobs[0].Connection())
-		s.Equal(carbon.NewDateTime(carbon.Now()), failedJobs[0].FailedAt())
-		s.Equal(testErr.Signature(), failedJobs[0].Signature())
-		s.NotEmpty(failedJobs[0].UUID())
+	s.NoError(facades.Artisan().Call("queue:retry"))
 
-		s.NoError(facades.Artisan().Call("queue:retry"))
+	time.Sleep(1 * time.Second)
 
-		time.Sleep(1 * time.Second)
-
-		s.Equal([]any{"test", "test"}, jobs.TestErrResult)
-	}
+	s.Equal([]any{"test", "test"}, jobs.TestErrResult)
 }
 
 var (
