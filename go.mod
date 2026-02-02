@@ -7,19 +7,19 @@ require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/gofiber/fiber/v2 v2.52.11
 	github.com/gofiber/template/html/v2 v2.1.3
-	github.com/goravel/cos v1.4.1-0.20260202063754-94dfdfd83aef
+	github.com/goravel/cos v1.17.0
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.4.1-0.20260202063051-42b3d5ae83a1
-	github.com/goravel/framework v1.16.1-0.20260202073759-3c53710513a8
-	github.com/goravel/gin v1.4.1-0.20260202063042-46dbfa2d4bd4
-	github.com/goravel/minio v1.4.1-0.20260202063801-62da6a3b8b9b
-	github.com/goravel/mysql v1.4.1-0.20260202063929-ce6d9b5b2eea
-	github.com/goravel/oss v1.4.1-0.20260202063450-15738b9a2430
-	github.com/goravel/postgres v1.4.2-0.20260202063923-5859268c6f26
-	github.com/goravel/redis v1.4.1-0.20260202063222-4a88f340af02
-	github.com/goravel/s3 v1.4.1-0.20260202063341-df5c3a638caf
-	github.com/goravel/sqlite v1.4.1-0.20260202064133-f364d07e9baf
-	github.com/goravel/sqlserver v1.4.1-0.20260202064122-b4e46969f994
+	github.com/goravel/fiber v1.17.0
+	github.com/goravel/framework v1.17.0
+	github.com/goravel/gin v1.17.0
+	github.com/goravel/minio v1.17.0
+	github.com/goravel/mysql v1.17.0
+	github.com/goravel/oss v1.17.0
+	github.com/goravel/postgres v1.17.0
+	github.com/goravel/redis v1.17.0
+	github.com/goravel/s3 v1.17.0
+	github.com/goravel/sqlite v1.17.0
+	github.com/goravel/sqlserver v1.17.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/minio/minio-go/v7 v7.0.98
 	github.com/opentracing/opentracing-go v1.2.0
