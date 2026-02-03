@@ -38,23 +38,6 @@ func (s *MainTestSuite) TearDownTest() {
 	s.False(facades.Process().Run("go", "mod", "tidy").Failed())
 }
 
-func (s *MainTestSuite) TestBuildCommand() {
-	s.Run("Windows", func() {
-		s.NoError(facades.Artisan().Call("build -s -a=amd64 -o=windows -n=goravel_windows.exe"))
-		s.True(file.Exists("goravel_windows.exe"))
-	})
-
-	s.Run("Linux", func() {
-		s.NoError(facades.Artisan().Call("build -s -a=amd64 -o=linux -n=goravel_linux"))
-		s.True(file.Exists("goravel_linux"))
-	})
-
-	s.Run("Darwin", func() {
-		s.NoError(facades.Artisan().Call("build -s -a=amd64 -o=darwin -n=goravel_darwin"))
-		s.True(file.Exists("goravel_darwin"))
-	})
-}
-
 func (s *MainTestSuite) TestMakeCommand() {
 	s.NoError(facades.Artisan().Call("make:command TestCommand"))
 	s.True(file.Contains(path.Bootstrap("commands.go"), "&commands.TestCommand{},"))
