@@ -5,21 +5,21 @@ go 1.24.0
 require (
 	github.com/99designs/gqlgen v0.17.57
 	github.com/gin-gonic/gin v1.11.0
-	github.com/gofiber/fiber/v2 v2.52.10
+	github.com/gofiber/fiber/v2 v2.52.11
 	github.com/gofiber/template/html/v2 v2.1.3
-	github.com/goravel/cos v1.4.1-0.20260119061407-c34e691dc260
+	github.com/goravel/cos v1.17.0
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.4.1-0.20260119020611-d08df5169095
-	github.com/goravel/framework v1.16.1-0.20260125030654-ec87b76cadae
-	github.com/goravel/gin v1.4.1-0.20260119024408-7972b901c4a6
-	github.com/goravel/minio v1.4.1-0.20260119083825-d62496279277
-	github.com/goravel/mysql v1.4.1-0.20260119010310-c2ccf7533db7
-	github.com/goravel/oss v1.4.1-0.20260119065510-15404d4d28b2
-	github.com/goravel/postgres v1.4.2-0.20260119025522-5fc6ef1d587e
-	github.com/goravel/redis v1.4.1-0.20260119044958-707f230f22c1
-	github.com/goravel/s3 v1.4.1-0.20260119050014-4ce85ec7c1cc
-	github.com/goravel/sqlite v1.4.1-0.20251220041203-e070ee3e3575
-	github.com/goravel/sqlserver v1.4.1-0.20260119004515-decab0c2d4c5
+	github.com/goravel/fiber v1.17.0
+	github.com/goravel/framework v1.17.0
+	github.com/goravel/gin v1.17.0
+	github.com/goravel/minio v1.17.0
+	github.com/goravel/mysql v1.17.1
+	github.com/goravel/oss v1.17.0
+	github.com/goravel/postgres v1.17.1
+	github.com/goravel/redis v1.17.0
+	github.com/goravel/s3 v1.17.0
+	github.com/goravel/sqlite v1.17.0
+	github.com/goravel/sqlserver v1.17.1
 	github.com/gorilla/websocket v1.5.0
 	github.com/minio/minio-go/v7 v7.0.98
 	github.com/opentracing/opentracing-go v1.2.0
@@ -56,7 +56,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.17 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.17 // indirect
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.95.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.96.0 // indirect
 	github.com/aws/smithy-go v1.24.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
@@ -85,7 +85,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
@@ -104,7 +104,7 @@ require (
 	github.com/gofiber/template v1.8.3 // indirect
 	github.com/gofiber/utils v1.1.0 // indirect
 	github.com/goforj/godump v1.9.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -160,7 +160,7 @@ require (
 	github.com/pterm/pterm v0.12.82 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.54.0 // indirect
-	github.com/redis/go-redis/v9 v9.17.2 // indirect
+	github.com/redis/go-redis/v9 v9.17.3 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rotisserie/eris v0.5.4 // indirect
@@ -235,3 +235,5 @@ require (
 	gorm.io/gorm v1.31.1 // indirect
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
+
+replace github.com/goravel/framework => ../goravel/framework
