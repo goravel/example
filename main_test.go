@@ -30,14 +30,29 @@ func TestMainTestSuite(t *testing.T) {
 func (s *MainTestSuite) SetupSuite() {}
 
 func (s *MainTestSuite) TearDownTest() {
-	res := facades.Process().Run("git", "checkout", ".")
-	s.False(res.Failed())
+	// Make sure the app can be built after running the command
+	s.False(facades.Process().Run("./artisan").Failed())
 
-	res = facades.Process().Run("git", "clean", "-fd")
-	s.False(res.Failed())
+	s.False(facades.Process().Run("git", "checkout", ".").Failed())
+	s.False(facades.Process().Run("git", "clean", "-fd").Failed())
+	s.False(facades.Process().Run("go", "mod", "tidy").Failed())
+}
 
-	res = facades.Process().Run("go", "mod", "tidy")
-	s.False(res.Failed())
+func (s *MainTestSuite) TestBuildCommand() {
+	s.Run("Windows", func() {
+		s.NoError(facades.Artisan().Call("build -s -a=amd64 -o=windows -n=goravel_windows.exe"))
+		s.True(file.Exists("goravel_windows.exe"))
+	})
+
+	s.Run("Linux", func() {
+		s.NoError(facades.Artisan().Call("build -s -a=amd64 -o=linux -n=goravel_linux"))
+		s.True(file.Exists("goravel_linux"))
+	})
+
+	s.Run("Darwin", func() {
+		s.NoError(facades.Artisan().Call("build -s -a=amd64 -o=darwin -n=goravel_darwin"))
+		s.True(file.Exists("goravel_darwin"))
+	})
 }
 
 func (s *MainTestSuite) TestMakeCommand() {
