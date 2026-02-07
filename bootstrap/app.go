@@ -12,6 +12,8 @@ import (
 	"github.com/goravel/framework/http/limit"
 	httpmiddleware "github.com/goravel/framework/http/middleware"
 	"github.com/goravel/framework/session/middleware"
+	telemetrygrpc "github.com/goravel/framework/telemetry/instrumentation/grpc"
+	telemetryhttp "github.com/goravel/framework/telemetry/instrumentation/http"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/stats"
 
@@ -50,6 +52,7 @@ func Boot() contractsfoundation.Application {
 			handler.Append(
 				httpmiddleware.Throttle("global"),
 				middleware.StartSession(),
+				telemetryhttp.Telemetry(facades.Config(), facades.Telemetry()),
 			).Recover(func(ctx http.Context, err any) {
 				facades.Log().Error(err)
 				_ = ctx.Response().String(http.StatusInternalServerError, "recover").Abort()
@@ -68,10 +71,16 @@ func Boot() contractsfoundation.Application {
 			}
 		}).
 		WithGrpcServerStatsHandlers(func() []stats.Handler {
-			return []stats.Handler{}
+			return []stats.Handler{
+				telemetrygrpc.NewServerStatsHandler(facades.Config(), facades.Telemetry()),
+			}
 		}).
 		WithGrpcClientStatsHandlers(func() map[string][]stats.Handler {
-			return map[string][]stats.Handler{}
+			return map[string][]stats.Handler{
+				"default": {
+					telemetrygrpc.NewClientStatsHandler(facades.Config(), facades.Telemetry()),
+				},
+			}
 		}).
 		WithPaths(func(paths configuration.Paths) {
 			paths.App("app")
