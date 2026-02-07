@@ -49,7 +49,7 @@ func init() {
 			//
 			// The name of the exporter definition in the "exporters" section below.
 			// Set to "" to disable tracing.
-			"exporter": config.Env("OTEL_TRACES_EXPORTER", "otlptrace"),
+			"exporter": config.Env("OTEL_TRACES_EXPORTER"),
 
 			// Sampler Configuration
 			//
@@ -80,7 +80,7 @@ func init() {
 			//
 			// The name of the exporter definition in the "exporters" section below.
 			// Set to "" to disable metrics.
-			"exporter": config.Env("OTEL_METRICS_EXPORTER", "otlpmetric"),
+			"exporter": config.Env("OTEL_METRICS_EXPORTER"),
 
 			// Reader Configuration
 			//
@@ -106,7 +106,7 @@ func init() {
 			//
 			// The name of the exporter definition in the "exporters" section below.
 			// Set to "" to disable OTel logging.
-			"exporter": config.Env("OTEL_LOGS_EXPORTER", "otlplog"),
+			"exporter": config.Env("OTEL_LOGS_EXPORTER"),
 
 			// Processor Configuration
 			//
@@ -119,6 +119,56 @@ func init() {
 				// Timeout: Max time allowed for export before cancelling.
 				// Format: Duration string (e.g., "30s").
 				"timeout": config.Env("OTEL_LOG_EXPORT_TIMEOUT", "30s"),
+			},
+		},
+
+		// Instrumentation Configuration
+		//
+		// Configures the automatic instrumentation for specific components.
+		"instrumentation": map[string]any{
+			// HTTP Server Instrumentation
+			//
+			// Configures the telemetry middleware for incoming HTTP requests.
+			"http_server": map[string]any{
+				"enabled":          config.Env("OTEL_HTTP_SERVER_ENABLED", true),
+				"excluded_paths":   []string{}, // e.g., ["/health", "/metrics"]
+				"excluded_methods": []string{}, // e.g., ["OPTIONS", "HEAD"]
+			},
+
+			// HTTP Client Instrumentation
+			//
+			// Configures instrumentation for outgoing HTTP requests made through the
+			// application's HTTP client facade. This acts as a global kill switch for
+			// HTTP client telemetry across all clients.
+			//
+			// To disable telemetry for a specific client, set
+			// "http.clients.{client_name}.enable_telemetry" to false for the
+			// corresponding client configuration.
+			"http_client": map[string]any{
+				"enabled": config.Env("OTEL_HTTP_CLIENT_ENABLED", true),
+			},
+
+			// gRPC Server Instrumentation
+			//
+			// Configures the instrumentation for incoming gRPC requests to your server.
+			"grpc_server": map[string]any{
+				"enabled": config.Env("OTEL_GRPC_SERVER_ENABLED", true),
+			},
+
+			// gRPC Client Instrumentation
+			//
+			// Configures the instrumentation for outgoing gRPC calls made by your application.
+			"grpc_client": map[string]any{
+				"enabled": config.Env("OTEL_GRPC_CLIENT_ENABLED", true),
+			},
+
+			// Log Instrumentation
+			//
+			// Configures the instrumentation for the application logger.
+			// Disabling this acts as a global kill switch for sending logs to the OTel exporter,
+			// which can be useful for reducing cost/noise without changing logging config.
+			"log": map[string]any{
+				"enabled": config.Env("OTEL_LOG_ENABLED", true),
 			},
 		},
 
@@ -150,7 +200,11 @@ func init() {
 			"otlpmetric": map[string]any{
 				"driver":   "otlp",
 				"endpoint": config.Env("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT", "http://localhost:4318"),
+
+				// Protocol: "http/protobuf", "http/json" or "grpc".
 				"protocol": config.Env("OTEL_EXPORTER_OTLP_METRICS_PROTOCOL", "http/protobuf"),
+
+				// Set to false to require TLS/SSL.
 				"insecure": config.Env("OTEL_EXPORTER_OTLP_METRICS_INSECURE", true),
 
 				// Timeout: Max time to wait for the backend to acknowledge.
@@ -167,7 +221,11 @@ func init() {
 			"otlplog": map[string]any{
 				"driver":   "otlp",
 				"endpoint": config.Env("OTEL_EXPORTER_OTLP_LOGS_ENDPOINT", "http://localhost:4318"),
+
+				// Protocol: "http/protobuf", "http/json" or "grpc".
 				"protocol": config.Env("OTEL_EXPORTER_OTLP_LOGS_PROTOCOL", "http/protobuf"),
+
+				// Set to false to require TLS/SSL.
 				"insecure": config.Env("OTEL_EXPORTER_OTLP_LOGS_INSECURE", true),
 
 				// Timeout: Max time to wait for the backend to acknowledge.
@@ -185,6 +243,22 @@ func init() {
 			// Prints telemetry data to stdout.
 			"console": map[string]any{
 				"driver": "console",
+
+				// Set to true to pretty print the output.
+				"pretty_print": false,
+			},
+
+			// Custom Exporter
+			//
+			// Use this to provide your own exporter implementation.
+			// The "via" key should contain an instance of your custom exporter.
+			"custom": map[string]any{
+				"driver": "custom",
+
+				// For traces, via should be an instance of go.opentelemetry.io/otel/sdk/trace.SpanExporter or func(context.Context) (sdktrace.SpanExporter, error)
+				// For metrics, via should be an instance of go.opentelemetry.io/otel/sdk/metric.Reader or func(context.Context) (sdkmetric.Reader, error)
+				// For log, via should be an instance of go.opentelemetry.io/otel/sdk/log.Exporter or func(context.Context) (sdklog.Exporter, error)
+				// "via": YourCustomExporterInstance,
 			},
 		},
 	})
