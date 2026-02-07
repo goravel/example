@@ -49,7 +49,7 @@ func init() {
 			//
 			// The name of the exporter definition in the "exporters" section below.
 			// Set to "" to disable tracing.
-			"exporter": config.Env("OTEL_TRACES_EXPORTER", "console"),
+			"exporter": config.Env("OTEL_TRACES_EXPORTER", "otlptrace"),
 
 			// Sampler Configuration
 			//
@@ -80,7 +80,7 @@ func init() {
 			//
 			// The name of the exporter definition in the "exporters" section below.
 			// Set to "" to disable metrics.
-			"exporter": config.Env("OTEL_METRICS_EXPORTER", "console"),
+			"exporter": config.Env("OTEL_METRICS_EXPORTER", "otlpmetric"),
 
 			// Reader Configuration
 			//
@@ -106,7 +106,7 @@ func init() {
 			//
 			// The name of the exporter definition in the "exporters" section below.
 			// Set to "" to disable OTel logging.
-			"exporter": config.Env("OTEL_LOGS_EXPORTER", "console"),
+			"exporter": config.Env("OTEL_LOGS_EXPORTER", "otlplog"),
 
 			// Processor Configuration
 			//
