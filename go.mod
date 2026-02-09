@@ -10,13 +10,13 @@ require (
 	github.com/goravel/cos v1.17.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.17.0
-	github.com/goravel/framework v1.17.1-0.20260203082038-2649a5eced57
+	github.com/goravel/framework v1.17.1-0.20260209063303-182131ae113a
 	github.com/goravel/gin v1.17.0
 	github.com/goravel/minio v1.17.0
 	github.com/goravel/mysql v1.17.0
 	github.com/goravel/oss v1.17.0
 	github.com/goravel/postgres v1.17.0
-	github.com/goravel/redis v1.17.0
+	github.com/goravel/redis v1.17.1-0.20260209063449-3355af77f62f
 	github.com/goravel/s3 v1.17.0
 	github.com/goravel/sqlite v1.17.0
 	github.com/goravel/sqlserver v1.17.0
