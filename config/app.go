@@ -4,7 +4,6 @@ import (
 	"github.com/goravel/framework/support/carbon"
 
 	"goravel/app/facades"
-	"goravel/lang_fs"
 )
 
 // Boot Start all init methods of the current folder to bootstrap all config.
@@ -50,13 +49,6 @@ func init() {
 		// is not available. You may change the value to correspond to any of
 		// the language folders that are provided through your application.
 		"fallback_locale": "cn",
-
-		// Application Lang Path
-		//
-		// The path to the language files for the application. You may change
-		// the path to a different directory if you would like to customize it.
-		"lang_path": "lang",
-		"lang_fs":   lang_fs.Fs,
 
 		// Encryption Key
 		//

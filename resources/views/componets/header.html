@@ -1,0 +1,139 @@
+{{ define "header" }}
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!--   tailwindcss -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.bunny.net" />
+  <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
+
+  <title>{{ or .title "My Bakery" }}</title>
+
+  <style>
+    :root {
+      /* =========================
+         BRAND COLORS
+         ========================= */
+      --color-primary: #03a0e8;
+      --color-primary-light: #4fc3ff;
+      --color-primary-dark: #0277bd;
+
+      /* =========================
+         BAKERY / FOOD TONES
+         ========================= */
+      --color-cream: #fff6e5;
+      --color-wheat: #f3d9b1;
+      --color-butter: #ffd966;
+
+      --color-bread: #d2a679;
+      --color-caramel: #c68c53;
+      --color-chocolate: #6b3e2e;
+
+      /* =========================
+         ACCENT COLORS
+         ========================= */
+      --color-accent-pink: #f7b7c4;
+      /* pastry / dessert */
+      --color-accent-green: #7bc96f;
+      /* fresh / organic */
+      --color-accent-orange: #f4a261;
+
+      /* =========================
+         BACKGROUND COLORS
+         ========================= */
+      --bg-main: #fffaf3;
+      --bg-section: #fff3e0;
+      --bg-card: #ffffff;
+      --bg-footer: #2f2f2f;
+
+      /* =========================
+         TEXT COLORS
+         ========================= */
+      --text-primary: #2b2b2b;
+      --text-secondary: #5f5f5f;
+      --text-muted: #9a9a9a;
+      --text-light: #ffffff;
+
+      /* =========================
+         BORDER & SHADOW
+         ========================= */
+      --border-color: #e6dcd0;
+      --border-radius-sm: 6px;
+      --border-radius-md: 10px;
+      --border-radius-lg: 16px;
+
+      --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.12);
+
+      /* =========================
+         UI STATES
+         ========================= */
+      --success: #6bbf59;
+      --warning: #f4b942;
+      --error: #e63946;
+      --info: #03a0e8;
+
+      /* =========================
+         GRADIENT – BRAND
+         ========================= */
+      --gradient-primary: linear-gradient(135deg,
+          #03a0e8 0%,
+          #4fc3ff 100%);
+
+      --gradient-primary-soft: linear-gradient(135deg,
+          #4fc3ff 0%,
+          #e3f6ff 100%);
+
+      /* =========================
+         GRADIENT – BAKERY / FOOD
+         ========================= */
+      --gradient-cream: linear-gradient(180deg,
+          #fffaf3 0%,
+          #fff3e0 100%);
+
+      --gradient-butter: linear-gradient(135deg,
+          #fff3b0 0%,
+          #ffd966 100%);
+
+      --gradient-wheat: linear-gradient(135deg,
+          #f3d9b1 0%,
+          #e6c08b 100%);
+
+      --gradient-bread: linear-gradient(135deg,
+          #d2a679 0%,
+          #c68c53 100%);
+
+      --gradient-chocolate: linear-gradient(135deg,
+          #6b3e2e 0%,
+          #3e2723 100%);
+
+      /* =========================
+         GRADIENT – ACCENT / CTA
+         ========================= */
+      --gradient-cta: linear-gradient(135deg,
+          #03a0e8 0%,
+          #f4a261 100%);
+
+      --gradient-dessert: linear-gradient(135deg,
+          #f7b7c4 0%,
+          #ffd1dc 100%);
+
+      --gradient-fresh: linear-gradient(135deg,
+          #7bc96f 0%,
+          #b7e4c7 100%);
+
+      /* =========================
+         GRADIENT – DARK / FOOTER
+         ========================= */
+      --gradient-footer: linear-gradient(180deg,
+          #2f2f2f 0%,
+          #1f1f1f 100%
+      }
+  </style>
+</head>
+{{ end }}

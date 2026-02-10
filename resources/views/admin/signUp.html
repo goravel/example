@@ -1,0 +1,55 @@
+{{ define "admin/signUp.html"}} {{ template "header" . }}
+<div class="bg-[var(--color-cream)] flex items-center justify-center h-screen font-sans">
+  <div class="w-full max-w-md bg-[var(--color-bread)] p-8 rounded-lg shadow-[var(--shadow-soft)]">
+    ->
+    <h2 class="text-3xl font-bold text-[var(--color-chocolate)] mb-6 text-center">
+      Admin Register
+    </h2>
+    <p class="text-[var(--color-butter)] text-center mb-8">
+      Create your admin account
+    </p>
+
+    <form class="space-y-5" action="/admin/signUp" method="post">
+      <div>
+        <label class="block text-sm font-medium mb-1 text-[var(--text-primary)]">
+          Name
+        </label>
+        <input name="name" type="text" placeholder="Your name"
+          class="w-full px-4 py-2 rounded-md border border-[var(--border-color)] bg-[var(--color-cream)] focus:outline-none focus:ring-2 focus:ring-[var(--color-butter)]" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1 text-[var(--text-primary)]">
+          Email
+        </label>
+        <input name="email" type="email" placeholder="admin@mybakery.com"
+          class="w-full px-4 py-2 rounded-md border border-[var(--border-color)] bg-[var(--color-cream)] focus:outline-none focus:ring-2 focus:ring-[var(--color-butter)]" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1 text-[var(--text-primary)]">
+          Password
+        </label>
+        <input name="password" type="password" placeholder="••••••••"
+          class="w-full px-4 py-2 rounded-md border border-[var(--border-color)] bg-[var(--color-cream)] focus:outline-none focus:ring-2 focus:ring-[var(--color-butter)]" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1"> Code Rendem </label>
+        <input type="text" name="code_rendem" placeholder="nantik hapus ini dan tambah di settings aja dar"
+          class="w-full px-4 py-2 rounded-md border border-[var(--border-color)] bg-[var(--color-cream)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-light)]" />
+      </div>
+
+      <button type="submit"
+        class="w-full py-3 rounded-md font-semibold bg-[var(--color-chocolate)] text-[var(--text-light)] hover:opacity-90 transition">
+        Register
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-[var(--text-primary)] mt-6">
+      Already have an account?
+      <a href="/admin/signIn" class="text-[var(--color-butter)] hover:underline">Login</a>
+    </p>
+  </div>
+</div>
+
+{{ end }}

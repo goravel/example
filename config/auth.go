@@ -2,6 +2,7 @@ package config
 
 import (
 	"goravel/app/facades"
+	"goravel/app/models"
 )
 
 func init() {
@@ -26,33 +27,34 @@ func init() {
 		// users are actually retrieved out of your database or other storage
 		// mechanisms used by this application to persist your user's data.
 		//
-		// Supported: "jwt", "session"
+		// Supported drivers: "jwt", "session"
 		"guards": map[string]any{
-			"user": map[string]any{
-				"driver":   "jwt",
-				"provider": "user",
+			"users": map[string]any{
+				"driver":      "jwt",
+				"provider":    "users",
+				"ttl":         60,
+				"refresh_ttl": 0,
+				// "secret":      facades.Config().Env("JWT_SECRET", " "),
 			},
-			"admin": map[string]any{
-				"driver":   "jwt",
-				"provider": "user",
-			},
-			"agent": map[string]any{
-				"driver":   "another-jwt",
-				"provider": "agent",
-			},
-			"session": map[string]any{
-				"driver":   "session",
-				"provider": "user",
+			// add admin guard
+			"admins": map[string]any{
+				"driver":      "jwt",
+				"provider":    "admins",
+				"ttl":         60,
+				"refresh_ttl": 0,
+				// "secret":      facades.Config().Env("JWT_SECRET", " "),
 			},
 		},
 
 		// Supported: "orm"
 		"providers": map[string]any{
-			"user": map[string]any{
+			"users": map[string]any{
 				"driver": "orm",
+				"model":  &models.Users{},
 			},
-			"agent": map[string]any{
-				"driver": "another-orm",
+			"admins": map[string]any{
+				"driver": "orm",
+				"model":  &models.Admin{},
 			},
 		},
 	})

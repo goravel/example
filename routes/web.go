@@ -1,76 +1,47 @@
 package routes
 
 import (
-	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/contracts/route"
-	"github.com/goravel/framework/http/middleware"
-	"github.com/goravel/framework/support"
-	"github.com/spf13/cast"
 
 	"goravel/app/facades"
 	"goravel/app/http/controllers"
+	"goravel/app/http/middleware"
 )
 
 func Web() {
-	facades.Route().Get("/", func(ctx http.Context) http.Response {
-		return ctx.Response().View().Make("welcome.tmpl", map[string]any{
-			"version": support.Version,
+
+	userController := controllers.NewUserController()
+	facades.Route().Prefix("/user").Group(func(router route.Router) {
+
+		// auth
+		router.Get("/signIn", userController.SignInView).Name("user.signIn")
+		router.Post("/signIn", userController.SignInPost).Name("user.signIn.post")
+		router.Get("/signUp", userController.SignUpView).Name("user.signup")
+		router.Post("/signUp", userController.SignUpPost).Name("user.signUp.post")
+
+		router.Middleware(middleware.AuthUser()).Group(func(router route.Router) {
+			router.Get("/", userController.Index).Name("user.index")
+
 		})
+
 	})
 
-	// Swagger
-	swaggerController := controllers.NewSwaggerController()
-	facades.Route().Get("/swagger/*any", swaggerController.Index)
-
-	// Single Page Application
-	// 1. Add your single page application to `resources/views/*`
-	// 2. Add route to `/route/web.go`, needs to contain your home page and static routes
-	// 3. Configure nginx based on the /nginx.conf file
-	facades.Route().StaticFile("index.html", "./resources/views/index.html")
-	facades.Route().Static("css", "./resources/views/css")
-
-	// View Nesting
-	// Check the views in `resources/views/admin/*`
-	facades.Route().Middleware(middleware.VerifyCsrfToken()).Get("view", func(ctx http.Context) http.Response {
-		return ctx.Response().View().Make("admin/index.tmpl", map[string]any{
-			"name": "Goravel",
-		})
+	productController := controllers.NewProductController()
+	facades.Route().Prefix("/product").Group(func(router route.Router) {
+		router.Middleware(middleware.AuthUser()).Get("/", productController.Index).Name("product.index")
 	})
 
-	// Session
-	facades.Route().Prefix("session").Group(func(router route.Router) {
-		router.Get("put", func(ctx http.Context) http.Response {
-			ctx.Request().Session().Put("name", "Goravel")
+	adminController := controllers.NewAdminController()
+	facades.Route().Prefix("/admin").Group(func(router route.Router) {
 
-			return ctx.Response().Success().Json(http.Json{
-				"name": cast.ToString(ctx.Request().Session().Get("name")),
-			})
-		})
-		router.Get("get", func(ctx http.Context) http.Response {
-			return ctx.Response().Success().Json(http.Json{
-				"name": ctx.Request().Session().Get("name"),
-			})
-		})
-	})
+		router.Get("/signIn", adminController.SignInView).Name("admin.signIn")
+		router.Post("/signIn", adminController.SignInPost).Name("admin.signIn.post")
+		router.Get("/signUp", adminController.SignUpView).Name("admin.signUp")
+		router.Post("/signUp", adminController.SignUpPost).Name("admin.signUp.post")
 
-	// Cookie
-	facades.Route().Prefix("cookie").Group(func(router route.Router) {
-		router.Get("put", func(ctx http.Context) http.Response {
-			ctx.Response().Cookie(http.Cookie{
-				Name:  "name",
-				Value: "Goravel",
-			})
-
-			return ctx.Response().Success().String("Set cookie: name=Goravel")
+		router.Middleware(middleware.AuthAdmin()).Group(func(router route.Router) {
+			router.Get("/", adminController.Index).Name("admin.index")
 		})
-		router.Get("get", func(ctx http.Context) http.Response {
-			return ctx.Response().Success().Json(http.Json{
-				"name": ctx.Request().Cookie("name"),
-			})
-		})
-	})
 
-	facades.Route().Fallback(func(ctx http.Context) http.Response {
-		return ctx.Response().String(http.StatusNotFound, "fallback")
 	})
 }

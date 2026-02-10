@@ -1,0 +1,49 @@
+{{ define "admin/signIn.html" }}
+<div class="bg-[var(--color-cream)] flex items-center justify-center h-screen font-sans">
+  {{ template "header" . }}
+
+  <div class="w-full max-w-md bg-[var(--color-bread)] p-8 rounded-lg shadow-[var(--shadow-soft)]">
+    <h2 class="text-3xl font-bold text-[var(--color-chocolate)] mb-6 text-center">
+      Admin Login
+    </h2>
+    <p class="text-[var(--color-butter)] text-center mb-8">
+      Welcome back, please login to your admin account
+    </p>
+
+    <form class="space-y-5" action="/admin/signIn" method="post">
+      <div>
+        <label class="block text-sm font-medium mb-1 text-[var(--text-primary)]">
+          Email
+        </label>
+        <input name="email" type="email" placeholder="admin@mybakery.com"
+          class="w-full px-4 py-2 rounded-md border border-[var(--border-color)] bg-[var(--color-cream)] focus:outline-none focus:ring-2 focus:ring-[var(--color-butter)]" />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1 text-[var(--text-primary)]">
+          Password
+        </label>
+        <input name="password" type="password" placeholder="••••••••"
+          class="w-full px-4 py-2 rounded-md border border-[var(--border-color)] bg-[var(--color-cream)] focus:outline-none focus:ring-2 focus:ring-[var(--color-butter)]" />
+      </div>
+
+      <div class="flex items-center justify-between text-sm text-[var(--text-primary)]">
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="accent-[var(--color-butter)]" />
+          Remember me
+        </label>
+        <a href="#" class="text-[var(--color-chocolate)] hover:underline">Forgot password?</a>
+      </div>
+
+      <button type="submit"
+        class="w-full py-3 rounded-md font-semibold bg-[var(--color-chocolate)] text-[var(--text-light)] hover:opacity-90 transition">
+        Login
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-[var(--text-primary)] mt-6">
+      &copy; 2026 MyBakery Admin
+    </p>
+  </div>
+</div>
+{{ end }}
