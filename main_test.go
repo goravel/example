@@ -30,14 +30,12 @@ func TestMainTestSuite(t *testing.T) {
 func (s *MainTestSuite) SetupSuite() {}
 
 func (s *MainTestSuite) TearDownTest() {
-	res := facades.Process().Run("git", "checkout", ".")
-	s.False(res.Failed())
+	// Make sure the app can be built after running the command
+	s.False(facades.Process().Run("./artisan").Failed())
 
-	res = facades.Process().Run("git", "clean", "-fd")
-	s.False(res.Failed())
-
-	res = facades.Process().Run("go", "mod", "tidy")
-	s.False(res.Failed())
+	s.False(facades.Process().Run("git", "checkout", ".").Failed())
+	s.False(facades.Process().Run("git", "clean", "-fd").Failed())
+	s.False(facades.Process().Run("go", "mod", "tidy").Failed())
 }
 
 func (s *MainTestSuite) TestMakeCommand() {
