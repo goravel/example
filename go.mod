@@ -10,7 +10,7 @@ require (
 	github.com/goravel/cos v1.17.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.17.0
-	github.com/goravel/framework v1.17.1-0.20260207193711-16b6ec3ccb18
+	github.com/goravel/framework v1.17.1-0.20260213185034-b6d4be586a85
 	github.com/goravel/gin v1.17.0
 	github.com/goravel/minio v1.17.0
 	github.com/goravel/mysql v1.17.0

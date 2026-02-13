@@ -52,7 +52,7 @@ func Boot() contractsfoundation.Application {
 			handler.Append(
 				httpmiddleware.Throttle("global"),
 				middleware.StartSession(),
-				telemetryhttp.Telemetry(facades.Config(), facades.Telemetry()),
+				telemetryhttp.Telemetry(),
 			).Recover(func(ctx http.Context, err any) {
 				facades.Log().Error(err)
 				_ = ctx.Response().String(http.StatusInternalServerError, "recover").Abort()
@@ -72,13 +72,13 @@ func Boot() contractsfoundation.Application {
 		}).
 		WithGrpcServerStatsHandlers(func() []stats.Handler {
 			return []stats.Handler{
-				telemetrygrpc.NewServerStatsHandler(facades.Config(), facades.Telemetry()),
+				telemetrygrpc.NewServerStatsHandler(),
 			}
 		}).
 		WithGrpcClientStatsHandlers(func() map[string][]stats.Handler {
 			return map[string][]stats.Handler{
 				"default": {
-					telemetrygrpc.NewClientStatsHandler(facades.Config(), facades.Telemetry()),
+					telemetrygrpc.NewClientStatsHandler(),
 				},
 			}
 		}).
