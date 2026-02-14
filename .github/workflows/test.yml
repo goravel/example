@@ -21,6 +21,7 @@ env:
   MINIO_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY_ID }}
   MINIO_ACCESS_KEY_SECRET: ${{ secrets.MINIO_ACCESS_KEY_SECRET }}
   MINIO_BUCKET: ${{ secrets.MINIO_BUCKET }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://localhost:4318"
 jobs:
   ubuntu:
     strategy:
@@ -32,6 +33,10 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
+      - name: Start Telemetry Stack
+        run: |
+          docker-compose up -d prometheus jaeger loki otel-collector
+          sleep 5 # Brief wait for the OTLP port to be ready
       - name: Go mod cache
         uses: actions/cache@v4
         with:
