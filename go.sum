@@ -285,6 +285,8 @@ github.com/goravel/framework v1.17.1-0.20260214084211-6ab8e5ec57d8 h1:jlQBzIWZ84
 github.com/goravel/framework v1.17.1-0.20260214084211-6ab8e5ec57d8/go.mod h1:7SmQi9QREjl/5dntXk9gh+Fn1oyW9FcwXROi27yZQVY=
 github.com/goravel/framework v1.17.1-0.20260214084703-e2dd04e853da h1:MXy7odCMaBPkF+NNYtbtdoyrmMFNeDKl0o2v4MLVI+Q=
 github.com/goravel/framework v1.17.1-0.20260214084703-e2dd04e853da/go.mod h1:7SmQi9QREjl/5dntXk9gh+Fn1oyW9FcwXROi27yZQVY=
+github.com/goravel/framework v1.17.1-0.20260214092358-739df23daad1 h1:ZBuwebXA6KSiWWYFNvmRGWZdOBwOrb1pQelyTPgRk1Y=
+github.com/goravel/framework v1.17.1-0.20260214092358-739df23daad1/go.mod h1:7SmQi9QREjl/5dntXk9gh+Fn1oyW9FcwXROi27yZQVY=
 github.com/goravel/gin v1.17.0 h1:8H66v9GaYJR9UQ7C0VOef25/r8t/BAH9ZxlvxbHprlc=
 github.com/goravel/gin v1.17.0/go.mod h1:n0W6V/H+E0mqO+Gh+UMjeBANZe//lpWJ6X7kF3kwxR8=
 github.com/goravel/minio v1.17.0 h1:WGiPP/KZl/fuDpT9THRM83wjhLCqe1oIAyNVJvVjhS4=

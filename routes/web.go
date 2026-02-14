@@ -13,7 +13,7 @@ import (
 
 func Web() {
 	facades.Route().Get("/", func(ctx http.Context) http.Response {
-		facades.Log().Info("This is an info log")
+		facades.Log().WithContext(ctx).Info("This is an info log")
 
 		resp, err := facades.Http().WithContext(ctx).Get("/grpc/user")
 		if err != nil {
