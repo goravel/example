@@ -67,7 +67,7 @@ func init() {
 
 				// The ratio for "traceidratio" sampling (0.0 to 1.0).
 				// e.g., 0.1 records ~10% of traces.
-				"ratio": config.Env("OTEL_TRACES_SAMPLER_RATIO", 0.05),
+				"ratio": config.Env("OTEL_TRACES_SAMPLER_RATIO", 1.0),
 			},
 		},
 
@@ -89,11 +89,11 @@ func init() {
 			"reader": map[string]any{
 				// Interval: How often metrics are pushed.
 				// Format: Duration string (e.g., "60s", "1m", "500ms").
-				"interval": config.Env("OTEL_METRIC_EXPORT_INTERVAL", "60s"),
+				"interval": config.Env("OTEL_METRIC_EXPORT_INTERVAL", "1s"),
 
 				// Timeout: Max time allowed for export before cancelling.
 				// Format: Duration string (e.g., "30s", "10s").
-				"timeout": config.Env("OTEL_METRIC_EXPORT_TIMEOUT", "30s"),
+				"timeout": config.Env("OTEL_METRIC_EXPORT_TIMEOUT", "10s"),
 			},
 		},
 
@@ -118,7 +118,7 @@ func init() {
 
 				// Timeout: Max time allowed for export before cancelling.
 				// Format: Duration string (e.g., "30s").
-				"timeout": config.Env("OTEL_LOG_EXPORT_TIMEOUT", "30s"),
+				"timeout": config.Env("OTEL_LOG_EXPORT_TIMEOUT", "10s"),
 			},
 		},
 

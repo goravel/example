@@ -1,19 +1,19 @@
 version: '3.8'
 
 services:
-  goravel:
-    build:
-      context: .
-    ports:
-      - "3000:3000"
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      - OTEL_TRACES_EXPORTER=otlptrace
-      - OTEL_METRICS_EXPORTER=otlpmetric
-      - OTEL_LOGS_EXPORTER=otlplog
-    depends_on:
-      - otel-collector
+  # goravel:
+  #   build:
+  #     context: .
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+  #     - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+  #     - OTEL_TRACES_EXPORTER=otlptrace
+  #     - OTEL_METRICS_EXPORTER=otlpmetric
+  #     - OTEL_LOGS_EXPORTER=otlplog
+  #   depends_on:
+  #     - otel-collector
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest

@@ -75,7 +75,7 @@ func init() {
 		"default_client": config.Env("HTTP_CLIENT_DEFAULT", "default"),
 		"clients": map[string]any{
 			"default": map[string]any{
-				"base_url":                config.Env("HTTP_CLIENT_BASE_URL", "http://127.0.0.1:3000"),
+				"base_url":                config.Env("HTTP_CLIENT_BASE_URL", "http://127.0.0.1:8080"),
 				"timeout":                 config.Env("HTTP_CLIENT_TIMEOUT", "30s"),
 				"max_idle_conns":          config.Env("HTTP_CLIENT_MAX_IDLE_CONNS", 100),
 				"max_idle_conns_per_host": config.Env("HTTP_CLIENT_MAX_IDLE_CONNS_PER_HOST", 2),
