@@ -35,8 +35,8 @@ jobs:
           go-version: ${{ matrix.go }}
       - name: Start Telemetry Stack
         run: |
-          docker-compose up -d prometheus jaeger loki otel-collector
-          sleep 5 # Brief wait for the OTLP port to be ready
+          docker compose up -d prometheus jaeger loki otel-collector
+          sleep 5
       - name: Go mod cache
         uses: actions/cache@v4
         with:
