@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"github.com/goravel/framework/contracts/http"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 
 	"goravel/app/facades"
 	"goravel/app/http/requests"
@@ -9,18 +11,27 @@ import (
 )
 
 type UserController struct {
-	//Dependent services
+	errorCounter metric.Int64Counter
 }
 
 func NewUserController() *UserController {
+	meter := facades.Telemetry().MeterProvider().Meter("user_controller")
+
+	// We use an Int64Counter for counting discrete error events
+	errCounter, _ := meter.Int64Counter(
+		"user_controller_errors_total",
+		metric.WithDescription("Total number of errors in user controller"),
+	)
+
 	return &UserController{
-		//Inject services
+		errorCounter: errCounter,
 	}
 }
 
 func (r *UserController) Index(ctx http.Context) http.Response {
 	var users []models.User
 	if err := facades.Orm().Query().Get(&users); err != nil {
+		r.recordError(ctx, "Index", "db_error")
 		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"error": err.Error(),
 		})
@@ -48,11 +59,13 @@ func (r *UserController) Store(ctx http.Context) http.Response {
 	var userCreate requests.UserCreate
 	errors, err := ctx.Request().ValidateRequest(&userCreate)
 	if err != nil {
+		r.recordError(ctx, "Store", "validation_error")
 		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": err.Error(),
 		})
 	}
 	if errors != nil {
+		r.recordError(ctx, "Store", "validation_error")
 		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"message": errors.All(),
 		})
@@ -66,6 +79,7 @@ func (r *UserController) Store(ctx http.Context) http.Response {
 		Tags:   userCreate.Tags,
 	}
 	if err := facades.Orm().Query().Create(&user); err != nil {
+		r.recordError(ctx, "Store", "db_create_error")
 		return ctx.Response().Json(http.StatusBadRequest, http.Json{
 			"error": err.Error(),
 		})
@@ -108,4 +122,11 @@ func (r *UserController) Destroy(ctx http.Context) http.Response {
 	return ctx.Response().Success().Json(http.Json{
 		"rows_affected": result.RowsAffected,
 	})
+}
+
+func (r *UserController) recordError(ctx http.Context, method string, errType string) {
+	r.errorCounter.Add(ctx, 1, metric.WithAttributes(
+		attribute.String("method", method),      // e.g., "Index", "Store"
+		attribute.String("error_type", errType), // e.g., "db_error", "validation_error"
+	))
 }
