@@ -5,24 +5,36 @@ import (
 	"time"
 
 	"github.com/goravel/framework/facades"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+
+	"goravel/tests"
 )
 
-func TestTelemetry(t *testing.T) {
+type TelemetryTestSuite struct {
+	suite.Suite
+	tests.TestCase
+}
+
+func TestTelemetryTestSuite(t *testing.T) {
+	suite.Run(t, &TelemetryTestSuite{})
+}
+
+func (s *TelemetryTestSuite) TestTelemetry() {
 	appName := facades.Config().GetString("app.name")
-	_, err := facades.Http().Get("/user/1")
-	assert.NoError(t, err)
+	resp, err := s.Http(s.T()).Get("/users/1")
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
 
 	time.Sleep(7 * time.Second)
 
-	t.Run("Check Jaeger for Traces", func(t *testing.T) {
+	s.Run("Check Jaeger for Traces", func() {
 		resp, err := facades.Http().Get("http://localhost:16686/api/traces?service=" + appName)
-		assert.NoError(t, err)
+		s.NoError(err)
 
 		var result struct {
 			Data []any `json:"data"`
 		}
-		assert.NoError(t, resp.Bind(&result))
-		assert.NotEmpty(t, result.Data, "Telemetry failed to reach Jaeger")
+		s.NoError(resp.Bind(&result))
+		s.NotEmpty(result.Data, "Telemetry failed to reach Jaeger")
 	})
 }
