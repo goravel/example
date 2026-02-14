@@ -25,12 +25,13 @@ func init() {
 				"driver":     "database",
 				"connection": "sqlite",
 				"queue":      "default",
-				"concurrent": 1,
+				"concurrent": 5,
 			},
 			"redis1": map[string]any{
 				"driver":     "custom",
 				"connection": "default",
 				"queue":      "default",
+				"concurrent": 5,
 				"via": func() (queue.Driver, error) {
 					return redisfacades.Queue("redis1") // The `redis` value is the key of `connections`
 				},
@@ -39,6 +40,7 @@ func init() {
 				"driver":     "custom",
 				"connection": "default",
 				"queue":      "default",
+				"concurrent": 5,
 				"via": func() (queue.Driver, error) {
 					return redisfacades.Queue("redis") // The `redis` value is the key of `connections`
 				},
