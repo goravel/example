@@ -15,7 +15,7 @@ func Web() {
 	facades.Route().Get("/", func(ctx http.Context) http.Response {
 		facades.Log().Info("This is an info log")
 
-		resp, err := facades.Http().Get("/grpc/user")
+		resp, err := facades.Http().WithContext(ctx).Get("/grpc/user")
 		if err != nil {
 			facades.Log().Error("HTTP request error: " + err.Error())
 		} else {
