@@ -62,7 +62,7 @@ func Api() {
 					return err
 				}
 
-				time.Sleep(1 * time.Second)
+				time.Sleep(100 * time.Millisecond)
 			}
 
 			return nil
@@ -150,5 +150,25 @@ func Api() {
 				"url":         ctx.Request().Url(),
 			})
 		}).Name("url.post")
+	})
+
+	facades.Route().Get("telemetry", func(ctx http.Context) http.Response {
+		facades.Log().Channel("otel").WithContext(ctx).Info("test telemetry log")
+
+		resp, err := facades.Http().WithContext(ctx).Get("/grpc/user?token=1")
+		if err != nil {
+			return ctx.Response().Json(http.StatusInternalServerError, http.Json{
+				"error": err.Error(),
+			})
+		}
+
+		body, err := resp.Body()
+		if err != nil {
+			return ctx.Response().Json(http.StatusInternalServerError, http.Json{
+				"error": err.Error(),
+			})
+		}
+
+		return ctx.Response().Success().String(body)
 	})
 }
