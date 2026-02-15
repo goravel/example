@@ -22,7 +22,7 @@ func init() {
 		"channels": map[string]any{
 			"stack": map[string]any{
 				"driver":   "stack",
-				"channels": []string{"single", "daily", "otel"},
+				"channels": []string{"single", "daily"},
 			},
 			"single": map[string]any{
 				"driver":    "single",
