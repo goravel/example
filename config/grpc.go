@@ -20,7 +20,7 @@ func init() {
 				"port": config.Env("GRPC_USER_PORT"),
 				// the group name of UnaryClientInterceptorGroups
 				"interceptors":   []string{},
-				"stats_handlers": []string{},
+				"stats_handlers": []string{"default"},
 			},
 		},
 	})

@@ -8,14 +8,10 @@ import (
 	"goravel/app/models"
 )
 
-type UserController struct {
-	//Dependent services
-}
+type UserController struct{}
 
 func NewUserController() *UserController {
-	return &UserController{
-		//Inject services
-	}
+	return &UserController{}
 }
 
 func (r *UserController) Index(ctx http.Context) http.Response {
