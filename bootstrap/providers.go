@@ -24,7 +24,6 @@ import (
 	"github.com/goravel/framework/translation"
 	"github.com/goravel/framework/validation"
 	"github.com/goravel/framework/view"
-	"github.com/goravel/gin"
 	"github.com/goravel/minio"
 	"github.com/goravel/mysql"
 	"github.com/goravel/oss"
@@ -57,6 +56,7 @@ func Providers() []foundation.ServiceProvider {
 		&schedule.ServiceProvider{},
 		&filesystem.ServiceProvider{},
 		&testing.ServiceProvider{},
+		&fiber.ServiceProvider{},
 		&postgres.ServiceProvider{},
 		&mysql.ServiceProvider{},
 		&sqlserver.ServiceProvider{},
@@ -66,7 +66,5 @@ func Providers() []foundation.ServiceProvider {
 		&oss.ServiceProvider{},
 		&minio.ServiceProvider{},
 		&redis.ServiceProvider{},
-		&gin.ServiceProvider{},
-		&fiber.ServiceProvider{},
 	}
 }
