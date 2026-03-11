@@ -10,7 +10,8 @@ import (
 func init() {
 	config := facades.Config()
 	config.Add("queue", map[string]any{
-		"default": "redis",
+		// Default Queue Connection Name
+		"default": config.Env("QUEUE_CONNECTION", "sync"),
 
 		// Queue Connections
 		//
@@ -39,6 +40,7 @@ func init() {
 				"driver":     "custom",
 				"connection": "default",
 				"queue":      "default",
+				"concurrent": 5,
 				"via": func() (queue.Driver, error) {
 					return redisfacades.Queue("redis") // The `redis` value is the key of `connections`
 				},
