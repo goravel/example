@@ -166,17 +166,12 @@ func (r *AuthController) State(ctx http.Context) http.Response {
 
 	id, idErr := auth.ID()
 
-	var user models.User
-	userErr := auth.User(&user)
-
 	return ctx.Response().Success().Json(http.Json{
-		"check":      auth.Check(),
-		"guard":      guard,
-		"guest":      auth.Guest(),
-		"id":         id,
-		"id_error":   idErr != nil,
-		"user":       user,
-		"user_error": userErr != nil,
+		"check":    auth.Check(),
+		"guard":    guard,
+		"guest":    auth.Guest(),
+		"id":       id,
+		"id_error": idErr != nil,
 	})
 }
 

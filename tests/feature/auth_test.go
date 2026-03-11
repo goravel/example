@@ -19,13 +19,11 @@ func (s *HttpTestSuite) TestAuthContractsByJwt() {
 		Key   string
 	}
 	type StateResponse struct {
-		Check     bool
-		Guard     string
-		Guest     bool
-		ID        string
-		IDError   bool `json:"id_error"`
-		User      models.User
-		UserError bool `json:"user_error"`
+		Check   bool
+		Guard   string
+		Guest   bool
+		ID      string
+		IDError bool `json:"id_error"`
 	}
 	type RefreshResponse struct {
 		Error bool
@@ -61,9 +59,18 @@ func (s *HttpTestSuite) TestAuthContractsByJwt() {
 	s.True(state.Check)
 	s.False(state.Guest)
 	s.False(state.IDError)
-	s.False(state.UserError)
 	s.Equal(cast.ToString(login.User.ID), state.ID)
-	s.Equal(login.User.ID, state.User.ID)
+
+	var info struct {
+		ID   uint
+		User models.User
+	}
+	resp, err = s.Http(s.T()).WithHeader("Authorization", "Bearer "+login.Token).Get("jwt/info")
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+	s.NoError(resp.Bind(&info))
+	s.Equal(login.User.ID, info.ID)
+	s.Equal(login.User.ID, info.User.ID)
 
 	var refresh RefreshResponse
 	resp, err = s.Http(s.T()).WithHeader("Authorization", "Bearer "+login.Token).Post("jwt/refresh", nil)
@@ -89,13 +96,11 @@ func (s *HttpTestSuite) TestAuthContractsBySession() {
 		User  models.User
 	}
 	type StateResponse struct {
-		Check     bool
-		Guard     string
-		Guest     bool
-		ID        string
-		IDError   bool `json:"id_error"`
-		User      models.User
-		UserError bool `json:"user_error"`
+		Check   bool
+		Guard   string
+		Guest   bool
+		ID      string
+		IDError bool `json:"id_error"`
 	}
 	type DriverResponse struct {
 		Error bool
@@ -110,7 +115,6 @@ func (s *HttpTestSuite) TestAuthContractsBySession() {
 	s.False(unauthenticatedState.Check)
 	s.True(unauthenticatedState.Guest)
 	s.True(unauthenticatedState.IDError)
-	s.True(unauthenticatedState.UserError)
 
 	body, err := http.NewBody().SetField("name", "session-login-id").Build()
 	s.Require().NoError(err)
@@ -134,9 +138,18 @@ func (s *HttpTestSuite) TestAuthContractsBySession() {
 	s.True(authenticatedState.Check)
 	s.False(authenticatedState.Guest)
 	s.False(authenticatedState.IDError)
-	s.False(authenticatedState.UserError)
 	s.Equal(cast.ToString(login.User.ID), authenticatedState.ID)
-	s.Equal(login.User.ID, authenticatedState.User.ID)
+
+	var info struct {
+		ID   uint
+		User models.User
+	}
+	resp, err = s.Http(s.T()).WithHeader("Guard", "session").WithCookies(cookies).Get("session/info")
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+	s.NoError(resp.Bind(&info))
+	s.Equal(login.User.ID, info.ID)
+	s.Equal(login.User.ID, info.User.ID)
 
 	var parse DriverResponse
 	resp, err = s.Http(s.T()).WithHeader("Guard", "session").WithCookies(cookies).Post("session/parse", nil)
@@ -165,5 +178,4 @@ func (s *HttpTestSuite) TestAuthContractsBySession() {
 	s.False(loggedOutState.Check)
 	s.True(loggedOutState.Guest)
 	s.True(loggedOutState.IDError)
-	s.True(loggedOutState.UserError)
 }
