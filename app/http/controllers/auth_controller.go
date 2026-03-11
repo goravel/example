@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	contractsauth "github.com/goravel/framework/contracts/auth"
 	"github.com/goravel/framework/contracts/http"
 	"github.com/spf13/cast"
 
@@ -61,6 +62,15 @@ func NewAuthController() *AuthController {
 	}
 }
 
+func (r *AuthController) authDriver(ctx http.Context) (string, contractsauth.GuardDriver) {
+	guard := ctx.Request().Header("Guard")
+	if guard == "" {
+		guard = facades.Config().GetString("auth.defaults.guard")
+	}
+
+	return guard, facades.Auth(ctx).Guard(guard)
+}
+
 func (r *AuthController) LoginByJwt(ctx http.Context) http.Response {
 	var user models.User
 	if err := facades.Orm().Query().FirstOrCreate(&user, models.User{
@@ -94,6 +104,33 @@ func (r *AuthController) LoginByJwt(ctx http.Context) http.Response {
 	})
 }
 
+func (r *AuthController) LoginUsingID(ctx http.Context) http.Response {
+	var user models.User
+	if err := facades.Orm().Query().FirstOrCreate(&user, models.User{
+		Name: ctx.Request().Input("name", "Goravel"),
+	}); err != nil {
+		return ctx.Response().Json(http.StatusInternalServerError, http.Json{
+			"error": err.Error(),
+		})
+	}
+
+	guard, auth := r.authDriver(ctx)
+	token, err := auth.LoginUsingID(user.ID)
+	if err != nil {
+		return ctx.Response().String(http.StatusInternalServerError, err.Error())
+	}
+
+	if token != "" {
+		ctx.Response().Header("Authorization", "Bearer "+token)
+	}
+
+	return ctx.Response().Success().Json(http.Json{
+		"guard": guard,
+		"token": token,
+		"user":  user,
+	})
+}
+
 func (r *AuthController) InfoByJwt(ctx http.Context) http.Response {
 	var (
 		id   string
@@ -121,6 +158,69 @@ func (r *AuthController) InfoByJwt(ctx http.Context) http.Response {
 	return ctx.Response().Success().Json(http.Json{
 		"id":   cast.ToUint(id),
 		"user": user,
+	})
+}
+
+func (r *AuthController) State(ctx http.Context) http.Response {
+	guard, auth := r.authDriver(ctx)
+
+	id, idErr := auth.ID()
+
+	var user models.User
+	userErr := auth.User(&user)
+
+	return ctx.Response().Success().Json(http.Json{
+		"check":      auth.Check(),
+		"guard":      guard,
+		"guest":      auth.Guest(),
+		"id":         id,
+		"id_error":   idErr != nil,
+		"user":       user,
+		"user_error": userErr != nil,
+	})
+}
+
+func (r *AuthController) Parse(ctx http.Context) http.Response {
+	_, auth := r.authDriver(ctx)
+
+	payload, err := auth.Parse(ctx.Request().Header("Authorization"))
+
+	response := http.Json{
+		"error": err != nil,
+	}
+	if payload != nil {
+		response["guard"] = payload.Guard
+		response["key"] = payload.Key
+	}
+
+	return ctx.Response().Success().Json(response)
+}
+
+func (r *AuthController) Refresh(ctx http.Context) http.Response {
+	_, auth := r.authDriver(ctx)
+
+	token, err := auth.Refresh()
+
+	response := http.Json{
+		"error": err != nil,
+		"token": token,
+	}
+
+	if token != "" {
+		ctx.Response().Header("Authorization", "Bearer "+token)
+	}
+
+	return ctx.Response().Success().Json(response)
+}
+
+func (r *AuthController) Logout(ctx http.Context) http.Response {
+	_, auth := r.authDriver(ctx)
+	if err := auth.Logout(); err != nil {
+		return ctx.Response().String(http.StatusInternalServerError, err.Error())
+	}
+
+	return ctx.Response().Success().Json(http.Json{
+		"logged_out": true,
 	})
 }
 

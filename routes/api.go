@@ -17,11 +17,21 @@ func Api() {
 	authController := controllers.NewAuthController()
 	facades.Route().Prefix("jwt").Group(func(route route.Router) {
 		route.Post("login", authController.LoginByJwt)
+		route.Post("login-id", authController.LoginUsingID)
+		route.Post("parse", authController.Parse)
 		route.Middleware(middleware.Jwt()).Get("info", authController.InfoByJwt)
+		route.Middleware(middleware.Jwt()).Get("state", authController.State)
+		route.Middleware(middleware.Jwt()).Post("refresh", authController.Refresh)
+		route.Middleware(middleware.Jwt()).Post("logout", authController.Logout)
 	})
 
 	facades.Route().Prefix("session").Group(func(route route.Router) {
 		route.Post("login", authController.LoginBySession)
+		route.Post("login-id", authController.LoginUsingID)
+		route.Get("state", authController.State)
+		route.Post("parse", authController.Parse)
+		route.Post("refresh", authController.Refresh)
+		route.Post("logout", authController.Logout)
 		route.Middleware(middleware.Session()).Get("info", authController.InfoBySession)
 	})
 
