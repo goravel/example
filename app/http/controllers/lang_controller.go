@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/route"
+	"sync"
 
 	"goravel/app/facades"
 )
@@ -16,11 +18,50 @@ func NewLangController() *LangController {
 	}
 }
 
+// Index lang index
+// @Summary lang index
+// @Description lang index
+// @Tags Lang
+// @Accept json
+// @Success 200 {object} map[string]any
+// @Router /langs [get]
 func (r *LangController) Index(ctx http.Context) http.Response {
 	return ctx.Response().Success().Json(http.Json{
-		"current_locale": facades.App().CurrentLocale(ctx),
-		"name":           facades.Lang(ctx).Get("name"),
-		"fallback":       facades.Lang(ctx).Get("description"),
-		"fs":             facades.Lang(ctx).Get("fs"),
+		"current_locale":	facades.App().CurrentLocale(ctx),
+		"name":			facades.Lang(ctx).Get("name"),
+		"fallback":		facades.Lang(ctx).Get("description"),
+		"fs":			facades.Lang(ctx).Get("fs"),
 	})
+}
+
+var (
+	LangControllerSingleton	*LangController
+	langControllerOnce	sync.Once
+)
+
+func (r *LangController) Singleton() *LangController {
+
+	langControllerOnce.Do(func() {
+		LangControllerSingleton = NewLangController()
+	})
+
+	return LangControllerSingleton
+}
+
+// Routes Lang routes.
+// Example Usage:
+// @api|web.go: controllers.LangControllerSingleton.Routes(nil)
+func (r *LangController) Routes(baseRouter route.Router) {
+	r.Singleton()
+	var LangRouter = baseRouter
+	if LangRouter == nil {
+		LangRouter = facades.Route()
+	}
+	LangRouter.
+		Get(
+			"/langs",
+
+			LangControllerSingleton.
+				Index)
+
 }

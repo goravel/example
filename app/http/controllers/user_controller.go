@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"sync"
+
 	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/route"
 
 	"goravel/app/facades"
 	"goravel/app/http/requests"
@@ -18,6 +21,14 @@ func NewUserController() *UserController {
 	}
 }
 
+// Index user index
+// @Summary user index
+// @Description user index
+// @Tags User
+// @Accept json
+// @Success 200 {object} map[string]any
+// @Failure 400 {object} map[string]any
+// @Router /users [get]
 func (r *UserController) Index(ctx http.Context) http.Response {
 	var users []models.User
 	if err := facades.Orm().Query().Get(&users); err != nil {
@@ -31,6 +42,17 @@ func (r *UserController) Index(ctx http.Context) http.Response {
 	})
 }
 
+// Show user show
+// @Summary user show
+// @Description user show
+// @Tags User
+// @Accept json
+// @Param id query string true "id"
+// @Param id body string true "id"
+// @Param id path string true "id"
+// @Success 200 {object} map[string]any
+// @Failure 400 {object} map[string]any
+// @Router /users/{id} [get]
 func (r *UserController) Show(ctx http.Context) http.Response {
 	var user models.User
 	if err := facades.Orm().Query().Where("id", ctx.Request().Input("id")).First(&user); err != nil {
@@ -44,6 +66,14 @@ func (r *UserController) Show(ctx http.Context) http.Response {
 	})
 }
 
+// Store user store
+// @Summary user store
+// @Description user store
+// @Tags User
+// @Accept json
+// @Success 200 {object} map[string]any
+// @Failure 400 {object} map[string]any
+// @Router /users [post]
 func (r *UserController) Store(ctx http.Context) http.Response {
 	var userCreate requests.UserCreate
 	errors, err := ctx.Request().ValidateRequest(&userCreate)
@@ -76,6 +106,19 @@ func (r *UserController) Store(ctx http.Context) http.Response {
 	})
 }
 
+// Update user update
+// @Summary user update
+// @Description user update
+// @Tags User
+// @Accept json
+// @Param id query string true "id"
+// @Param id body string true "id"
+// @Param name body string true "name"
+// @Param id path string true "id"
+// @Success 200 {object} map[string]any
+// @Failure 400 {object} map[string]any
+// @Router /users/{id} [put]
+// @Router /users/{id} [patch]
 func (r *UserController) Update(ctx http.Context) http.Response {
 	if _, err := facades.Orm().Query().Where("id", ctx.Request().Input("id")).Update(models.User{
 		Name: ctx.Request().Input("name"),
@@ -97,6 +140,17 @@ func (r *UserController) Update(ctx http.Context) http.Response {
 	})
 }
 
+// Destroy user destroy
+// @Summary user destroy
+// @Description user destroy
+// @Tags User
+// @Accept json
+// @Param id query string true "id"
+// @Param id body string true "id"
+// @Param id path string true "id"
+// @Success 200 {object} map[string]any
+// @Failure 400 {object} map[string]any
+// @Router /users/{id} [delete]
 func (r *UserController) Destroy(ctx http.Context) http.Response {
 	result, err := facades.Orm().Query().Where("id", ctx.Request().Input("id")).Delete(&models.User{})
 	if err != nil {
@@ -108,4 +162,66 @@ func (r *UserController) Destroy(ctx http.Context) http.Response {
 	return ctx.Response().Success().Json(http.Json{
 		"rows_affected": result.RowsAffected,
 	})
+}
+
+var (
+	UserControllerSingleton *UserController
+	userControllerOnce      sync.Once
+)
+
+func (r *UserController) Singleton() *UserController {
+
+	userControllerOnce.Do(func() {
+		UserControllerSingleton = NewUserController()
+	})
+
+	return UserControllerSingleton
+}
+
+// Routes User routes.
+// Example Usage:
+// @api|web.go: controllers.UserControllerSingleton.Routes(nil)
+func (r *UserController) Routes(baseRouter route.Router) {
+	r.Singleton()
+	var UserRouter = baseRouter
+	if UserRouter == nil {
+		UserRouter = facades.Route()
+	}
+	UserRouter.
+		Get(
+			"/users",
+
+			UserControllerSingleton.
+				Index)
+	UserRouter.
+		Get(
+			"/users/{id}",
+
+			UserControllerSingleton.
+				Show)
+	UserRouter.
+		Post(
+			"/users",
+
+			UserControllerSingleton.
+				Store)
+	UserRouter.
+		Put(
+			"/users/{id}",
+
+			UserControllerSingleton.
+				Update)
+	UserRouter.
+		Patch(
+			"/users/{id}",
+
+			UserControllerSingleton.
+				Update)
+	UserRouter.
+		Delete(
+			"/users/{id}",
+
+			UserControllerSingleton.
+				Destroy)
+
 }

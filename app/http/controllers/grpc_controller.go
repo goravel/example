@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"fmt"
+	"sync"
 
 	proto "github.com/goravel/example-proto"
 	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/route"
 
 	"goravel/app/facades"
 )
@@ -32,6 +34,14 @@ func NewGrpcController() *GrpcController {
 	}
 }
 
+// User grpc user
+// @Summary grpc user
+// @Description grpc user
+// @Tags Grpc
+// @Accept json
+// @Param token body string true "token"
+// @Success 200 {object} object
+// @Router /grpcs/user [post]
 func (r *GrpcController) User(ctx http.Context) http.Response {
 	resp, err := r.userService.GetUser(ctx, &proto.UserRequest{
 		Token: ctx.Request().Input("token"),
@@ -44,4 +54,29 @@ func (r *GrpcController) User(ctx http.Context) http.Response {
 	}
 
 	return ctx.Response().Success().Json(resp.GetData())
+}
+
+var (
+	GrpcControllerSingleton *GrpcController
+	grpcControllerOnce      sync.Once
+)
+
+func (r *GrpcController) Singleton() *GrpcController {
+
+	grpcControllerOnce.Do(func() {
+		GrpcControllerSingleton = NewGrpcController()
+	})
+
+	return GrpcControllerSingleton
+}
+
+// Routes Grpc routes.
+// Example Usage:
+// @api|web.go: controllers.GrpcControllerSingleton.Routes(nil)
+func (r *GrpcController) Routes(baseRouter route.Router) {
+	r.Singleton()
+	var GrpcRouter = baseRouter
+	if GrpcRouter == nil {
+		GrpcRouter = facades.Route()
+	}
 }

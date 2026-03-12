@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"sync"
+
 	"github.com/goravel/framework/contracts/http"
 	"github.com/spf13/cast"
 
@@ -61,6 +63,15 @@ func NewAuthController() *AuthController {
 	}
 }
 
+// LoginByJwt auth login-by-jwt
+// @Summary auth login-by-jwt
+// @Description auth login-by-jwt
+// @Tags Auth
+// @Accept json
+// @Param name body string false "name" default(Goravel)
+// @Success 200 {object} map[string]any
+// @Failure 500 {object} map[string]any
+// @Router /auths/login-by-jwt [post]
 func (r *AuthController) LoginByJwt(ctx http.Context) http.Response {
 	var user models.User
 	if err := facades.Orm().Query().FirstOrCreate(&user, models.User{
@@ -94,6 +105,13 @@ func (r *AuthController) LoginByJwt(ctx http.Context) http.Response {
 	})
 }
 
+// InfoByJwt auth info-by-jwt
+// @Summary auth info-by-jwt
+// @Description auth info-by-jwt
+// @Tags Auth
+// @Accept json
+// @Success 200 {object} map[string]any
+// @Router /auths/info-by-jwt [post]
 func (r *AuthController) InfoByJwt(ctx http.Context) http.Response {
 	var (
 		id   string
@@ -124,6 +142,15 @@ func (r *AuthController) InfoByJwt(ctx http.Context) http.Response {
 	})
 }
 
+// LoginBySession auth login-by-session
+// @Summary auth login-by-session
+// @Description auth login-by-session
+// @Tags Auth
+// @Accept json
+// @Param name body string false "name" default(Goravel)
+// @Success 200 {object} map[string]any
+// @Failure 500 {object} map[string]any
+// @Router /auths/login-by-session [post]
 func (r *AuthController) LoginBySession(ctx http.Context) http.Response {
 	var user models.User
 	if err := facades.Orm().Query().FirstOrCreate(&user, models.User{
@@ -143,6 +170,13 @@ func (r *AuthController) LoginBySession(ctx http.Context) http.Response {
 	})
 }
 
+// InfoBySession auth info-by-session
+// @Summary auth info-by-session
+// @Description auth info-by-session
+// @Tags Auth
+// @Accept json
+// @Success 200 {object} map[string]any
+// @Router /auths/info-by-session [post]
 func (r *AuthController) InfoBySession(ctx http.Context) http.Response {
 	user := ctx.Value("user").(models.User)
 
@@ -150,4 +184,18 @@ func (r *AuthController) InfoBySession(ctx http.Context) http.Response {
 		"id":   user.ID,
 		"user": user,
 	})
+}
+
+var (
+	AuthControllerSingleton *AuthController
+	authControllerOnce      sync.Once
+)
+
+func (r *AuthController) Singleton() *AuthController {
+
+	authControllerOnce.Do(func() {
+		AuthControllerSingleton = NewAuthController()
+	})
+
+	return AuthControllerSingleton
 }

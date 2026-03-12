@@ -2,7 +2,10 @@ package controllers
 
 import (
 	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/route"
+	"github.com/goravel/framework/facades"
 	"github.com/swaggo/http-swagger/v2"
+	"sync"
 
 	_ "goravel/docs"
 )
@@ -48,9 +51,52 @@ func NewSwaggerController() *SwaggerController {
 //	@Success      200
 //	@Failure      400
 //	@Router       /swagger [get]
+//
+// @Summary swagger index
+// @Description swagger index
+// @Tags Swagger
+// @Router /swaggers [get]
 func (r *SwaggerController) Index(ctx http.Context) http.Response {
 	handler := httpSwagger.Handler()
 	handler(ctx.Response().Writer(), ctx.Request().Origin())
 
 	return nil
+}
+
+var (
+	SwaggerControllerSingleton	*SwaggerController
+	swaggerControllerOnce		sync.Once
+)
+
+func (r *SwaggerController) Singleton() *SwaggerController {
+
+	swaggerControllerOnce.Do(func() {
+		SwaggerControllerSingleton = NewSwaggerController()
+	})
+
+	return SwaggerControllerSingleton
+}
+
+// Routes Swagger routes.
+// Example Usage:
+// @api|web.go: controllers.SwaggerControllerSingleton.Routes(nil)
+func (r *SwaggerController) Routes(baseRouter route.Router) {
+	r.Singleton()
+	var SwaggerRouter = baseRouter
+	if SwaggerRouter == nil {
+		SwaggerRouter = facades.Route()
+	}
+	SwaggerRouter.
+		Get(
+			"/swagger",
+
+			SwaggerControllerSingleton.
+				Index)
+	SwaggerRouter.
+		Get(
+			"/swaggers",
+
+			SwaggerControllerSingleton.
+				Index)
+
 }

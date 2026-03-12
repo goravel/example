@@ -3,8 +3,11 @@ package controllers
 import (
 	"context"
 	"net/http"
+	"sync"
 
 	proto "github.com/goravel/example-proto"
+	"github.com/goravel/framework/contracts/route"
+	"github.com/goravel/framework/facades"
 )
 
 /*********************************
@@ -87,4 +90,28 @@ func (receiver *UserController) GetUser(ctx context.Context, req *proto.UserRequ
 			Token: req.GetToken(),
 		},
 	}, nil
+}
+
+var (
+	UserControllerSingleton *UserController
+	userControllerOnce sync.Once
+)
+func (r *UserController) Singleton() *UserController {
+
+	userControllerOnce.Do(func() {
+		UserControllerSingleton = NewUserController()
+	})
+
+	return UserControllerSingleton
+}
+
+// Routes User routes.
+// Example Usage:
+// @api|web.go: controllers.UserControllerSingleton.Routes(nil)
+func (r *UserController) Routes(baseRouter route.Router) {
+	r.Singleton()
+	var UserRouter = baseRouter
+	if UserRouter == nil {
+		UserRouter = facades.Route()
+	}
 }
