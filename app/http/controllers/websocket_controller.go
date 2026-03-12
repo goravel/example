@@ -3,8 +3,11 @@ package controllers
 import (
 	"fmt"
 	nethttp "net/http"
+	"sync"
 
 	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/route"
+	"github.com/goravel/framework/facades"
 	"github.com/gorilla/websocket"
 )
 
@@ -75,4 +78,28 @@ func (r *WebsocketController) Server(ctx http.Context) http.Response {
 	}
 
 	return nil
+}
+
+var (
+	WebsocketControllerSingleton *WebsocketController
+	websocketControllerOnce sync.Once
+)
+func (r *WebsocketController) Singleton() *WebsocketController {
+
+	websocketControllerOnce.Do(func() {
+		WebsocketControllerSingleton = NewWebsocketController()
+	})
+
+	return WebsocketControllerSingleton
+}
+
+// Routes Websocket routes.
+// Example Usage:
+// @api|web.go: controllers.WebsocketControllerSingleton.Routes(nil)
+func (r *WebsocketController) Routes(baseRouter route.Router) {
+	r.Singleton()
+	var WebsocketRouter = baseRouter
+	if WebsocketRouter == nil {
+		WebsocketRouter = facades.Route()
+	}
 }

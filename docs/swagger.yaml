@@ -1,6 +1,137 @@
+basePath: /
+definitions:
+  models.UserTag:
+    properties:
+      key:
+        type: string
+      value:
+        type: integer
+    type: object
 info:
-  contact: {}
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: https://www.swagger.io/support
+  description: This is a sample server.
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  title: Goravel App
+  version: "1.0"
 paths:
+  /auth/info-by-jwt:
+    post:
+      consumes:
+      - application/json
+      description: auth info-by-jwt
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: auth info-by-jwt
+      tags:
+      - Auth
+  /auth/info-by-session:
+    post:
+      consumes:
+      - application/json
+      description: auth info-by-session
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: auth info-by-session
+      tags:
+      - Auth
+  /auth/login-by-jwt:
+    post:
+      consumes:
+      - application/json
+      description: auth login-by-jwt
+      parameters:
+      - default: Goravel
+        description: name
+        in: body
+        name: name
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: auth login-by-jwt
+      tags:
+      - Auth
+  /auth/login-by-session:
+    post:
+      consumes:
+      - application/json
+      description: auth login-by-session
+      parameters:
+      - default: Goravel
+        description: name
+        in: body
+        name: name
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: auth login-by-session
+      tags:
+      - Auth
+  /db:
+    get:
+      consumes:
+      - application/json
+      description: db index
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: db index
+      tags:
+      - Db
+  /lang:
+    get:
+      consumes:
+      - application/json
+      description: lang index
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: lang index
+      tags:
+      - Lang
   /swagger:
     get:
       consumes:
@@ -14,4 +145,166 @@ paths:
       summary: Summary
       tags:
       - example
+  /user:
+    get:
+      consumes:
+      - application/json
+      description: user index
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: user index
+      tags:
+      - User
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      - application/json
+      - multipart/form-data
+      description: user store
+      parameters:
+      - in: formData
+        name: alias
+        type: string
+      - in: formData
+        name: avatar
+        type: string
+      - in: formData
+        name: mail
+        type: string
+      - in: formData
+        name: name
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: user store
+      tags:
+      - User
+  /user/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: user destroy
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: user destroy
+      tags:
+      - User
+    get:
+      consumes:
+      - application/json
+      description: user show
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: user show
+      tags:
+      - User
+    patch:
+      consumes:
+      - application/json
+      description: user update
+      parameters:
+      - description: name
+        in: body
+        name: name
+        schema:
+          type: string
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: user update
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: user update
+      parameters:
+      - description: name
+        in: body
+        name: name
+        schema:
+          type: string
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: user update
+      tags:
+      - User
+schemes:
+- http
+- https
 swagger: "2.0"

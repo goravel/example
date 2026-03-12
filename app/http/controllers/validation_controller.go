@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"context"
+	"sync"
 
 	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/route"
 	contractsvalidation "github.com/goravel/framework/contracts/validation"
 	"github.com/goravel/framework/support/carbon"
 	"github.com/goravel/framework/validation"
@@ -157,4 +159,28 @@ func (r *ValidationController) Form(ctx http.Context) http.Response {
 		"context": user.Context,
 		"name":    user.Name,
 	})
+}
+
+var (
+	ValidationControllerSingleton *ValidationController
+	validationControllerOnce sync.Once
+)
+func (r *ValidationController) Singleton() *ValidationController {
+
+	validationControllerOnce.Do(func() {
+		ValidationControllerSingleton = NewValidationController()
+	})
+
+	return ValidationControllerSingleton
+}
+
+// Routes Validation routes.
+// Example Usage:
+// @api|web.go: controllers.ValidationControllerSingleton.Routes(nil)
+func (r *ValidationController) Routes(baseRouter route.Router) {
+	r.Singleton()
+	var ValidationRouter = baseRouter
+	if ValidationRouter == nil {
+		ValidationRouter = facades.Route()
+	}
 }

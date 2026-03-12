@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+  swa:gen:
+    cmds:
+      - |
+        swa gen -p main.go -w -m
+        swa gen -p app/http/controllers \
+          -e app/http/controllers/swagger_controller.go,app/http/controllers/grpc_controller.go \
+          -m \
+          -w
+
+  swa:update:
+    cmds:
+      - |
+        swa gen -p app/http/controllers \
+          -e app/http/controllers/swagger_controller.go,app/http/controllers/grpc_controller.go \
+          -m \
+          -w \
+          --update
+  swa:ar:
+    cmds:
+      - |
+        swa add:route -p app/http/controllers \
+          -e app/http/controllers/swagger_controller.go,app/http/controllers/grpc_controller.go
+  docs:gen:
+    cmds:
+      - swag init

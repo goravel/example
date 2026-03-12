@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/route"
+	"sync"
 
 	"goravel/app/facades"
 	"goravel/app/models"
@@ -38,11 +40,19 @@ func NewDBController() *DBController {
 	}
 }
 
+// Index db index
+// @Summary db index
+// @Description db index
+// @Tags Db
+// @Accept json
+// @Success 200 {object} map[string]any
+// @Failure 500 {object} map[string]any
+// @Router /db [get]
 func (r *DBController) Index(ctx http.Context) http.Response {
 	// Create user
 	if err := facades.Orm().Query().Create(&models.User{
-		Name:   "Goravel",
-		Avatar: "logo.png",
+		Name:	"Goravel",
+		Avatar:	"logo.png",
 	}); err != nil {
 		return ctx.Response().Json(http.StatusInternalServerError, http.Json{
 			"error": err.Error(),
@@ -60,4 +70,36 @@ func (r *DBController) Index(ctx http.Context) http.Response {
 	return ctx.Response().Success().Json(http.Json{
 		"length": len(users),
 	})
+}
+
+var (
+	DBControllerSingleton	*DBController
+	dbControllerOnce	sync.Once
+)
+
+func (r *DBController) Singleton() *DBController {
+
+	dbControllerOnce.Do(func() {
+		DBControllerSingleton = NewDBController()
+	})
+
+	return DBControllerSingleton
+}
+
+// Routes DB routes.
+// Example Usage:
+// @api|web.go: controllers.DBControllerSingleton.Routes(nil)
+func (r *DBController) Routes(baseRouter route.Router) {
+	r.Singleton()
+	var DBRouter = baseRouter
+	if DBRouter == nil {
+		DBRouter = facades.Route()
+	}
+	DBRouter.
+		Get(
+			"/db",
+
+			DBControllerSingleton.
+				Index)
+
 }

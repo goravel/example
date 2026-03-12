@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"github.com/goravel/framework/contracts/http"
+	"github.com/goravel/framework/contracts/route"
 	"github.com/spf13/cast"
+	"sync"
 
 	"goravel/app/facades"
 	"goravel/app/models"
@@ -61,6 +63,15 @@ func NewAuthController() *AuthController {
 	}
 }
 
+// LoginByJwt auth login-by-jwt
+// @Summary auth login-by-jwt
+// @Description auth login-by-jwt
+// @Tags Auth
+// @Accept json
+// @Param name body string false "name" default(Goravel)
+// @Success 200 {object} map[string]any
+// @Failure 500 {object} map[string]any
+// @Router /auth/login-by-jwt [post]
 func (r *AuthController) LoginByJwt(ctx http.Context) http.Response {
 	var user models.User
 	if err := facades.Orm().Query().FirstOrCreate(&user, models.User{
@@ -72,8 +83,8 @@ func (r *AuthController) LoginByJwt(ctx http.Context) http.Response {
 	}
 
 	var (
-		token string
-		err   error
+		token	string
+		err	error
 	)
 
 	// Use different guards to login
@@ -94,11 +105,18 @@ func (r *AuthController) LoginByJwt(ctx http.Context) http.Response {
 	})
 }
 
+// InfoByJwt auth info-by-jwt
+// @Summary auth info-by-jwt
+// @Description auth info-by-jwt
+// @Tags Auth
+// @Accept json
+// @Success 200 {object} map[string]any
+// @Router /auth/info-by-jwt [post]
 func (r *AuthController) InfoByJwt(ctx http.Context) http.Response {
 	var (
-		id   string
-		user models.User
-		err  error
+		id	string
+		user	models.User
+		err	error
 	)
 
 	if guard := ctx.Request().Header("Guard"); guard == "" {
@@ -119,11 +137,20 @@ func (r *AuthController) InfoByJwt(ctx http.Context) http.Response {
 	}
 
 	return ctx.Response().Success().Json(http.Json{
-		"id":   cast.ToUint(id),
-		"user": user,
+		"id":	cast.ToUint(id),
+		"user":	user,
 	})
 }
 
+// LoginBySession auth login-by-session
+// @Summary auth login-by-session
+// @Description auth login-by-session
+// @Tags Auth
+// @Accept json
+// @Param name body string false "name" default(Goravel)
+// @Success 200 {object} map[string]any
+// @Failure 500 {object} map[string]any
+// @Router /auth/login-by-session [post]
 func (r *AuthController) LoginBySession(ctx http.Context) http.Response {
 	var user models.User
 	if err := facades.Orm().Query().FirstOrCreate(&user, models.User{
@@ -143,11 +170,65 @@ func (r *AuthController) LoginBySession(ctx http.Context) http.Response {
 	})
 }
 
+// InfoBySession auth info-by-session
+// @Summary auth info-by-session
+// @Description auth info-by-session
+// @Tags Auth
+// @Accept json
+// @Success 200 {object} map[string]any
+// @Router /auth/info-by-session [post]
 func (r *AuthController) InfoBySession(ctx http.Context) http.Response {
 	user := ctx.Value("user").(models.User)
 
 	return ctx.Response().Success().Json(http.Json{
-		"id":   user.ID,
-		"user": user,
+		"id":	user.ID,
+		"user":	user,
 	})
+}
+
+var (
+	AuthControllerSingleton	*AuthController
+	authControllerOnce	sync.Once
+)
+
+func (r *AuthController) Singleton() *AuthController {
+
+	authControllerOnce.Do(func() {
+		AuthControllerSingleton = NewAuthController()
+	})
+
+	return AuthControllerSingleton
+}
+
+// Routes Auth routes.
+// Example Usage:
+// @api|web.go: controllers.AuthControllerSingleton.Routes(nil)
+func (r *AuthController) Routes(baseRouter route.Router) {
+	r.Singleton()
+	var AuthRouter = baseRouter
+	if AuthRouter == nil {
+		AuthRouter = facades.Route()
+	}
+	AuthRouter.
+		Post(
+			"/auth/login-by-jwt",
+
+			AuthControllerSingleton.LoginByJwt)
+	AuthRouter.
+		Post(
+			"/auth/info-by-jwt",
+
+			AuthControllerSingleton.
+				InfoByJwt)
+	AuthRouter.
+		Post(
+			"/auth/login-by-session",
+
+			AuthControllerSingleton.LoginBySession)
+	AuthRouter.
+		Post(
+			"/auth/info-by-session",
+
+			AuthControllerSingleton.InfoBySession)
+
 }
