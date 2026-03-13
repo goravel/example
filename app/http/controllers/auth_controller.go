@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	frameworkauth "github.com/goravel/framework/auth"
+	contractsauth "github.com/goravel/framework/contracts/auth"
 	"github.com/goravel/framework/contracts/http"
 	"github.com/spf13/cast"
 
@@ -94,6 +96,46 @@ func (r *AuthController) LoginByJwt(ctx http.Context) http.Response {
 	})
 }
 
+func (r *AuthController) StatusByJwt(ctx http.Context) http.Response {
+	guardDriver := r.jwtGuard(ctx)
+	token := ctx.Request().Header("Authorization", "")
+
+	response := http.Json{
+		"check": guardDriver.Check(),
+		"guest": guardDriver.Guest(),
+	}
+
+	if token == "" {
+		return ctx.Response().Success().Json(response)
+	}
+
+	payload, err := guardDriver.Parse(token)
+	if payload != nil {
+		response["payload"] = http.Json{
+			"guard": payload.Guard,
+			"key":   payload.Key,
+		}
+	}
+	if err != nil {
+		response["parse_error"] = err.Error()
+		return ctx.Response().Success().Json(response)
+	}
+
+	response["check"] = guardDriver.Check()
+	response["guest"] = guardDriver.Guest()
+
+	if id, err := guardDriver.ID(); err == nil {
+		response["id"] = cast.ToUint(id)
+	}
+
+	var user models.User
+	if err := guardDriver.User(&user); err == nil {
+		response["user"] = user
+	}
+
+	return ctx.Response().Success().Json(response)
+}
+
 func (r *AuthController) InfoByJwt(ctx http.Context) http.Response {
 	var (
 		id   string
@@ -124,6 +166,68 @@ func (r *AuthController) InfoByJwt(ctx http.Context) http.Response {
 	})
 }
 
+func (r *AuthController) RefreshByJwt(ctx http.Context) http.Response {
+	guardDriver := r.jwtGuard(ctx)
+	token := ctx.Request().Header("Authorization", "")
+
+	if token == "" {
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
+			"error": "Authorization header is required",
+		})
+	}
+
+	payload, err := guardDriver.Parse(token)
+	response := http.Json{}
+	if payload != nil {
+		response["payload"] = http.Json{
+			"guard": payload.Guard,
+			"key":   payload.Key,
+		}
+	}
+	if err != nil && err != frameworkauth.ErrorTokenExpired {
+		response["parse_error"] = err.Error()
+		return ctx.Response().Json(http.StatusUnauthorized, response)
+	}
+	if err != nil {
+		response["parse_error"] = err.Error()
+	}
+
+	refreshedToken, err := guardDriver.Refresh()
+	if err != nil {
+		response["refresh_error"] = err.Error()
+		return ctx.Response().Json(http.StatusUnauthorized, response)
+	}
+
+	return ctx.Response().Header("Authorization", "Bearer "+refreshedToken).Success().Json(response)
+}
+
+func (r *AuthController) LogoutByJwt(ctx http.Context) http.Response {
+	guardDriver := r.jwtGuard(ctx)
+	token := ctx.Request().Header("Authorization", "")
+
+	if token == "" {
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
+			"error": "Authorization header is required",
+		})
+	}
+
+	if _, err := guardDriver.Parse(token); err != nil {
+		return ctx.Response().Json(http.StatusUnauthorized, http.Json{
+			"error": err.Error(),
+		})
+	}
+
+	if err := guardDriver.Logout(); err != nil {
+		return ctx.Response().Json(http.StatusUnauthorized, http.Json{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Response().Success().Json(http.Json{
+		"logged_out": true,
+	})
+}
+
 func (r *AuthController) LoginBySession(ctx http.Context) http.Response {
 	var user models.User
 	if err := facades.Orm().Query().FirstOrCreate(&user, models.User{
@@ -143,6 +247,28 @@ func (r *AuthController) LoginBySession(ctx http.Context) http.Response {
 	})
 }
 
+func (r *AuthController) LoginBySessionUsingID(ctx http.Context) http.Response {
+	id := ctx.Request().Input("id", "1")
+
+	if _, err := facades.Auth(ctx).Guard("session").LoginUsingID(id); err != nil {
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
+			"error": err.Error(),
+		})
+	}
+
+	var user models.User
+	if err := facades.Auth(ctx).Guard("session").User(&user); err != nil {
+		return ctx.Response().Json(http.StatusUnauthorized, http.Json{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Response().Header("Guard", "session").Success().Json(http.Json{
+		"id":   user.ID,
+		"user": user,
+	})
+}
+
 func (r *AuthController) InfoBySession(ctx http.Context) http.Response {
 	user := ctx.Value("user").(models.User)
 
@@ -150,4 +276,55 @@ func (r *AuthController) InfoBySession(ctx http.Context) http.Response {
 		"id":   user.ID,
 		"user": user,
 	})
+}
+
+func (r *AuthController) StatusBySession(ctx http.Context) http.Response {
+	guardDriver := facades.Auth(ctx).Guard("session")
+	response := http.Json{
+		"check": guardDriver.Check(),
+		"guest": guardDriver.Guest(),
+	}
+
+	if id, err := guardDriver.ID(); err == nil {
+		response["id"] = cast.ToUint(id)
+
+		var user models.User
+		if err := guardDriver.User(&user); err == nil {
+			response["user"] = user
+		}
+	}
+
+	return ctx.Response().Success().Json(response)
+}
+
+func (r *AuthController) LogoutBySession(ctx http.Context) http.Response {
+	if err := facades.Auth(ctx).Guard("session").Logout(); err != nil {
+		return ctx.Response().Json(http.StatusUnauthorized, http.Json{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Response().Success().Json(http.Json{
+		"logged_out": true,
+	})
+}
+
+func (r *AuthController) UnsupportedBySession(ctx http.Context) http.Response {
+	guardDriver := facades.Auth(ctx).Guard("session")
+	_, parseErr := guardDriver.Parse(ctx.Request().Header("Authorization", ""))
+	_, refreshErr := guardDriver.Refresh()
+
+	return ctx.Response().Success().Json(http.Json{
+		"parse_error":   parseErr.Error(),
+		"refresh_error": refreshErr.Error(),
+	})
+}
+
+func (r *AuthController) jwtGuard(ctx http.Context) contractsauth.GuardDriver {
+	guard := ctx.Request().Header("Guard")
+	if guard == "" {
+		return facades.Auth(ctx)
+	}
+
+	return facades.Auth(ctx).Guard(guard)
 }
