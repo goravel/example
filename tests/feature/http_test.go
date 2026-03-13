@@ -35,7 +35,7 @@ func (s *HttpTestSuite) SetupTest() {
 func (s *HttpTestSuite) TearDownTest() {
 }
 
-func (s *HttpTestSuite) TestAuthByJwt() {
+func (s *HttpTestSuite) TestAuthByJwtBasic() {
 	type Response struct {
 		ID   uint
 		User models.User
@@ -101,7 +101,7 @@ func (s *HttpTestSuite) TestAuthByJwt() {
 	}
 }
 
-func (s *HttpTestSuite) TestAuthBySession() {
+func (s *HttpTestSuite) TestAuthBySessionBasic() {
 	type Response struct {
 		ID   uint
 		User models.User
