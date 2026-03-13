@@ -10,6 +10,7 @@ import (
 	"github.com/goravel/framework/support/http"
 	"github.com/stretchr/testify/suite"
 
+	"goravel/app/facades"
 	"goravel/app/models"
 	"goravel/tests"
 )
@@ -263,6 +264,9 @@ func (s *HttpTestSuite) TestStream() {
 }
 
 func (s *HttpTestSuite) TestThrottle() {
+	// Clear cache to reset throttle count
+	facades.Cache().Flush()
+
 	resp, err := s.Http(s.T()).Get("/throttle")
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
