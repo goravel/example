@@ -279,12 +279,6 @@ github.com/goravel/example-proto v0.0.1 h1:ZxETeKREQWjuJ49bX/Hqj1NLR5Vyj489Ks6dR
 github.com/goravel/example-proto v0.0.1/go.mod h1:I8IPsHr4Ndf7KxmdsRpBR2LQ0Geo48+pjv9IIWf3mZg=
 github.com/goravel/fiber v1.17.0 h1:XMkuz29hJzaN5mW7dK70oc6FfMDUQeYPbrLyBQoiIA8=
 github.com/goravel/fiber v1.17.0/go.mod h1:hu2eLwQ6u8ZDFsVWHeV1q0bh7g7PRQg0VZxceVr29Uc=
-github.com/goravel/file-rotatelogs/v2 v2.4.2 h1:g68AzbePXcm0V2CpUMc9j4qVzcDn7+7aoWSjZ51C0m4=
-github.com/goravel/file-rotatelogs/v2 v2.4.2/go.mod h1:23VuSW8cBS4ax5cmbV+5AaiLpq25b8UJ96IhbAkdo8I=
-github.com/goravel/framework v1.17.1 h1:GTbc9+afV4M6WCMu+Zbh0mCKHvQ5TYbLrIHORHTG5Qc=
-github.com/goravel/framework v1.17.1/go.mod h1:ClgXBsig8R2w+xAJT2TVxpAkazGHFtvVmNBolYT94gQ=
-github.com/goravel/framework v1.17.2-0.20260214094639-2ce411599275 h1:3scg5HXi4a+mj/jb9EHUzvCkmiZz6toA+rWxv0LkIlk=
-github.com/goravel/framework v1.17.2-0.20260214094639-2ce411599275/go.mod h1:bcEQ1Cvo2G9bM6aWWLYa6IiQvpamDe/7sP8FitIXEM8=
 github.com/goravel/framework v1.17.2-0.20260215045043-365219d1eb4e h1:pUys/0n2jtlSvFVxTxeg/aWwIkY53sixMps6AWrdpD0=
 github.com/goravel/framework v1.17.2-0.20260215045043-365219d1eb4e/go.mod h1:bcEQ1Cvo2G9bM6aWWLYa6IiQvpamDe/7sP8FitIXEM8=
 github.com/goravel/gin v1.17.0 h1:8H66v9GaYJR9UQ7C0VOef25/r8t/BAH9ZxlvxbHprlc=
