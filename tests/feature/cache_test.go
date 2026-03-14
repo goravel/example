@@ -11,12 +11,14 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"goravel/app/facades"
+	"goravel/tests"
 )
 
 type contextKey string
 
 type CacheTestSuite struct {
 	suite.Suite
+	tests.TestCase
 }
 
 func TestCacheTestSuite(t *testing.T) {
