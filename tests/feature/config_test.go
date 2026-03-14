@@ -91,6 +91,7 @@ err := facades.Config().UnmarshalKey("tests.config.unmarshal", &config)
 s.Require().NoError(err)
 s.Equal(testConfig{Name: "goravel", Enabled: true, Retries: 3}, config)
 
-err = facades.Config().UnmarshalKey("tests.config.unmarshal", config)
-s.Error(err)
+	err = facades.Config().UnmarshalKey("tests.config.unmarshal", config)
+	s.Error(err)
+	s.ErrorContains(err, "pointer")
 }
