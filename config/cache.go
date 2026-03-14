@@ -3,13 +3,19 @@ package config
 import (
 	"github.com/goravel/framework/contracts/cache"
 	redisfacades "github.com/goravel/redis/facades"
+
 	"goravel/app/facades"
 )
 
 func init() {
 	config := facades.Config()
 	config.Add("cache", map[string]any{
-		"default": "redis",
+		// Default Cache Store
+		//
+		// This option controls the default cache connection that gets used while
+		// using this caching library. This connection is used when another is
+		// not explicitly specified when executing a given caching function.
+		"default": config.Env("CACHE_STORE", "memory"),
 
 		// Cache Stores
 		//
