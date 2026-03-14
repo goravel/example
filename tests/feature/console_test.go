@@ -4,225 +4,28 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goravel/framework/contracts/console"
-	"github.com/goravel/framework/contracts/console/command"
 	"github.com/stretchr/testify/suite"
 
+	"goravel/app/console/commands"
 	"goravel/app/facades"
+	"goravel/tests"
 )
 
 type ConsoleTestSuite struct {
 	suite.Suite
-
-	singleCommand *consoleSingleCommand
-	sliceCommand  *consoleSliceCommand
-}
-
-type consoleSingleCapture struct {
-	OptionBool         bool
-	OptionFloat64      float64
-	OptionFloat64Slice []float64
-	OptionInt          int
-	OptionIntSlice     []int
-	OptionInt64        int64
-	OptionInt64Slice   []int64
-	OptionString       string
-	OptionStringSlice  []string
-
-	OptionDefaultString string
-	OptionDefaultInt    int
-	OptionDefaultBool   bool
-
-	ArgumentFloat32   float32
-	ArgumentFloat64   float64
-	ArgumentInt       int
-	ArgumentInt8      int8
-	ArgumentInt16     int16
-	ArgumentInt32     int32
-	ArgumentInt64     int64
-	ArgumentUint      uint
-	ArgumentUint8     uint8
-	ArgumentUint16    uint16
-	ArgumentUint32    uint32
-	ArgumentUint64    uint64
-	ArgumentTimestamp time.Time
-
-	ArgumentDefaultString string
-	ArgumentDefaultInt    int
-}
-
-type consoleSingleCommand struct {
-	capture *consoleSingleCapture
-}
-
-func (r *consoleSingleCommand) Signature() string {
-	return "test:console-single"
-}
-
-func (r *consoleSingleCommand) Description() string {
-	return "Test console command with single arguments and all flag types"
-}
-
-func (r *consoleSingleCommand) Extend() command.Extend {
-	return command.Extend{
-		Flags: []command.Flag{
-			&command.BoolFlag{Name: "bool"},
-			&command.Float64Flag{Name: "float64"},
-			&command.Float64SliceFlag{Name: "float64-slice"},
-			&command.IntFlag{Name: "int"},
-			&command.IntSliceFlag{Name: "int-slice"},
-			&command.Int64Flag{Name: "int64"},
-			&command.Int64SliceFlag{Name: "int64-slice"},
-			&command.StringFlag{Name: "string"},
-			&command.StringSliceFlag{Name: "string-slice"},
-		},
-		Arguments: []command.Argument{
-			&command.ArgumentFloat32{Name: "float32Arg", Required: true},
-			&command.ArgumentFloat64{Name: "float64Arg", Required: true},
-			&command.ArgumentInt{Name: "intArg", Required: true},
-			&command.ArgumentInt8{Name: "int8Arg", Required: true},
-			&command.ArgumentInt16{Name: "int16Arg", Required: true},
-			&command.ArgumentInt32{Name: "int32Arg", Required: true},
-			&command.ArgumentInt64{Name: "int64Arg", Required: true},
-			&command.ArgumentUint{Name: "uintArg", Required: true},
-			&command.ArgumentUint8{Name: "uint8Arg", Required: true},
-			&command.ArgumentUint16{Name: "uint16Arg", Required: true},
-			&command.ArgumentUint32{Name: "uint32Arg", Required: true},
-			&command.ArgumentUint64{Name: "uint64Arg", Required: true},
-			&command.ArgumentTimestamp{Name: "timestampArg", Required: true, Layouts: []string{time.RFC3339}},
-		},
-	}
-}
-
-func (r *consoleSingleCommand) Handle(ctx console.Context) error {
-	ctx.Comment("console single command")
-	ctx.Info("running single command")
-	ctx.Warning("warning")
-	ctx.Success("success")
-
-	r.capture = &consoleSingleCapture{
-		OptionBool:         ctx.OptionBool("bool"),
-		OptionFloat64:      ctx.OptionFloat64("float64"),
-		OptionFloat64Slice: ctx.OptionFloat64Slice("float64-slice"),
-		OptionInt:          ctx.OptionInt("int"),
-		OptionIntSlice:     ctx.OptionIntSlice("int-slice"),
-		OptionInt64:        ctx.OptionInt64("int64"),
-		OptionInt64Slice:   ctx.OptionInt64Slice("int64-slice"),
-		OptionString:       ctx.Option("string"),
-		OptionStringSlice:  ctx.OptionSlice("string-slice"),
-
-		OptionDefaultString: ctx.Option("missing-option"),
-		OptionDefaultInt:    ctx.OptionInt("missing-option"),
-		OptionDefaultBool:   ctx.OptionBool("missing-option"),
-
-		ArgumentFloat32:   ctx.ArgumentFloat32("float32Arg"),
-		ArgumentFloat64:   ctx.ArgumentFloat64("float64Arg"),
-		ArgumentInt:       ctx.ArgumentInt("intArg"),
-		ArgumentInt8:      ctx.ArgumentInt8("int8Arg"),
-		ArgumentInt16:     ctx.ArgumentInt16("int16Arg"),
-		ArgumentInt32:     ctx.ArgumentInt32("int32Arg"),
-		ArgumentInt64:     ctx.ArgumentInt64("int64Arg"),
-		ArgumentUint:      ctx.ArgumentUint("uintArg"),
-		ArgumentUint8:     ctx.ArgumentUint8("uint8Arg"),
-		ArgumentUint16:    ctx.ArgumentUint16("uint16Arg"),
-		ArgumentUint32:    ctx.ArgumentUint32("uint32Arg"),
-		ArgumentUint64:    ctx.ArgumentUint64("uint64Arg"),
-		ArgumentTimestamp: ctx.ArgumentTimestamp("timestampArg"),
-
-		ArgumentDefaultString: ctx.ArgumentString("missing-argument"),
-		ArgumentDefaultInt:    ctx.ArgumentInt("missing-argument"),
-	}
-
-	return nil
-}
-
-type consoleSliceCapture struct {
-	ArgumentStringSlice    []string
-	ArgumentFloat32Slice   []float32
-	ArgumentFloat64Slice   []float64
-	ArgumentIntSlice       []int
-	ArgumentInt8Slice      []int8
-	ArgumentInt16Slice     []int16
-	ArgumentInt32Slice     []int32
-	ArgumentInt64Slice     []int64
-	ArgumentUintSlice      []uint
-	ArgumentUint8Slice     []uint8
-	ArgumentUint16Slice    []uint16
-	ArgumentUint32Slice    []uint32
-	ArgumentUint64Slice    []uint64
-	ArgumentTimestampSlice []time.Time
-
-	MissingStringSliceIsNil  bool
-	MissingFloat32SliceIsNil bool
-	MissingTimestampIsNil    bool
-}
-
-type consoleSliceCommand struct {
-	capture *consoleSliceCapture
-}
-
-func (r *consoleSliceCommand) Signature() string {
-	return "test:console-slice"
-}
-
-func (r *consoleSliceCommand) Description() string {
-	return "Test console command with slice arguments"
-}
-
-func (r *consoleSliceCommand) Extend() command.Extend {
-	return command.Extend{
-		Arguments: []command.Argument{
-			&command.ArgumentStringSlice{Name: "stringSliceArg", Min: 1, Max: 2},
-			&command.ArgumentFloat32Slice{Name: "float32SliceArg", Min: 1, Max: 2},
-			&command.ArgumentFloat64Slice{Name: "float64SliceArg", Min: 1, Max: 2},
-			&command.ArgumentIntSlice{Name: "intSliceArg", Min: 1, Max: 2},
-			&command.ArgumentInt8Slice{Name: "int8SliceArg", Min: 1, Max: 2},
-			&command.ArgumentInt16Slice{Name: "int16SliceArg", Min: 1, Max: 2},
-			&command.ArgumentInt32Slice{Name: "int32SliceArg", Min: 1, Max: 2},
-			&command.ArgumentInt64Slice{Name: "int64SliceArg", Min: 1, Max: 2},
-			&command.ArgumentUintSlice{Name: "uintSliceArg", Min: 1, Max: 2},
-			&command.ArgumentUint8Slice{Name: "uint8SliceArg", Min: 1, Max: 2},
-			&command.ArgumentUint16Slice{Name: "uint16SliceArg", Min: 1, Max: 2},
-			&command.ArgumentUint32Slice{Name: "uint32SliceArg", Min: 1, Max: 2},
-			&command.ArgumentUint64Slice{Name: "uint64SliceArg", Min: 1, Max: 2},
-			&command.ArgumentTimestampSlice{Name: "timestampSliceArg", Min: 1, Max: 2, Layouts: []string{time.RFC3339}},
-		},
-	}
-}
-
-func (r *consoleSliceCommand) Handle(ctx console.Context) error {
-	r.capture = &consoleSliceCapture{
-		ArgumentStringSlice:    ctx.ArgumentStringSlice("stringSliceArg"),
-		ArgumentFloat32Slice:   ctx.ArgumentFloat32Slice("float32SliceArg"),
-		ArgumentFloat64Slice:   ctx.ArgumentFloat64Slice("float64SliceArg"),
-		ArgumentIntSlice:       ctx.ArgumentIntSlice("intSliceArg"),
-		ArgumentInt8Slice:      ctx.ArgumentInt8Slice("int8SliceArg"),
-		ArgumentInt16Slice:     ctx.ArgumentInt16Slice("int16SliceArg"),
-		ArgumentInt32Slice:     ctx.ArgumentInt32Slice("int32SliceArg"),
-		ArgumentInt64Slice:     ctx.ArgumentInt64Slice("int64SliceArg"),
-		ArgumentUintSlice:      ctx.ArgumentUintSlice("uintSliceArg"),
-		ArgumentUint8Slice:     ctx.ArgumentUint8Slice("uint8SliceArg"),
-		ArgumentUint16Slice:    ctx.ArgumentUint16Slice("uint16SliceArg"),
-		ArgumentUint32Slice:    ctx.ArgumentUint32Slice("uint32SliceArg"),
-		ArgumentUint64Slice:    ctx.ArgumentUint64Slice("uint64SliceArg"),
-		ArgumentTimestampSlice: ctx.ArgumentTimestampSlice("timestampSliceArg"),
-
-		MissingStringSliceIsNil:  ctx.ArgumentStringSlice("missing-slice") == nil,
-		MissingFloat32SliceIsNil: ctx.ArgumentFloat32Slice("missing-slice") == nil,
-		MissingTimestampIsNil:    ctx.ArgumentTimestampSlice("missing-slice") == nil,
-	}
-
-	return nil
+	tests.TestCase
 }
 
 func TestConsoleTestSuite(t *testing.T) {
 	suite.Run(t, new(ConsoleTestSuite))
 }
 
-func (s *ConsoleTestSuite) SetupSuite() {
-	s.singleCommand = &consoleSingleCommand{}
-	s.sliceCommand = &consoleSliceCommand{}
-	facades.Artisan().Register([]console.Command{s.singleCommand, s.sliceCommand})
+func (s *ConsoleTestSuite) SetupTest() {
+	commands.ResetTestConsoleCaptures()
+}
+
+func (s *ConsoleTestSuite) TearDownTest() {
+	commands.ResetTestConsoleCaptures()
 }
 
 func (s *ConsoleTestSuite) TestRunSingleCommand() {
@@ -243,7 +46,7 @@ func (s *ConsoleTestSuite) TestRunSingleCommand() {
 	}, false)
 	s.NoError(err)
 
-	capture := s.singleCommand.capture
+	capture := commands.TestConsoleSingleLatest
 	s.Require().NotNil(capture)
 
 	s.True(capture.OptionBool)
@@ -301,7 +104,7 @@ func (s *ConsoleTestSuite) TestRunSliceCommand() {
 	}, false)
 	s.NoError(err)
 
-	capture := s.sliceCommand.capture
+	capture := commands.TestConsoleSliceLatest
 	s.Require().NotNil(capture)
 
 	s.Equal([]string{"a", "b"}, capture.ArgumentStringSlice)
@@ -332,7 +135,7 @@ func (s *ConsoleTestSuite) TestCallSingleCommand() {
 	err := facades.Artisan().Call("test:console-single --string=call 1.25 2.5 3 4 5 6 7 8 9 10 11 12 " + timestamp.Format(time.RFC3339))
 	s.NoError(err)
 
-	capture := s.singleCommand.capture
+	capture := commands.TestConsoleSingleLatest
 	s.Require().NotNil(capture)
 	s.Equal("call", capture.OptionString)
 	s.InDelta(float32(1.25), capture.ArgumentFloat32, 0.00001)
