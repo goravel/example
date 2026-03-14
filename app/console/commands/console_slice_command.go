@@ -7,17 +7,17 @@ import (
 	"github.com/goravel/framework/contracts/console/command"
 )
 
-type TestConsoleSliceCommand struct{}
+type ConsoleSliceCommand struct{}
 
-func (r *TestConsoleSliceCommand) Signature() string {
+func (r *ConsoleSliceCommand) Signature() string {
 	return "test:console-slice"
 }
 
-func (r *TestConsoleSliceCommand) Description() string {
+func (r *ConsoleSliceCommand) Description() string {
 	return "Test console command with slice arguments"
 }
 
-func (r *TestConsoleSliceCommand) Extend() command.Extend {
+func (r *ConsoleSliceCommand) Extend() command.Extend {
 	return command.Extend{
 		Arguments: []command.Argument{
 			&command.ArgumentStringSlice{Name: "stringSliceArg", Min: 1, Max: 2},
@@ -38,8 +38,8 @@ func (r *TestConsoleSliceCommand) Extend() command.Extend {
 	}
 }
 
-func (r *TestConsoleSliceCommand) Handle(ctx console.Context) error {
-	SetTestConsoleSliceLatest(&TestConsoleSliceCapture{
+func (r *ConsoleSliceCommand) Handle(ctx console.Context) error {
+	SetConsoleSliceLatest(&ConsoleSliceCapture{
 		ArgumentStringSlice:    ctx.ArgumentStringSlice("stringSliceArg"),
 		ArgumentFloat32Slice:   ctx.ArgumentFloat32Slice("float32SliceArg"),
 		ArgumentFloat64Slice:   ctx.ArgumentFloat64Slice("float64SliceArg"),

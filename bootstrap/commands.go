@@ -8,7 +8,7 @@ import (
 
 func Commands() []console.Command {
 	return []console.Command{
-		&commands.TestConsoleSingleCommand{},
-		&commands.TestConsoleSliceCommand{},
+		&commands.ConsoleSingleCommand{},
+		&commands.ConsoleSliceCommand{},
 	}
 }

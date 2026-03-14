@@ -7,17 +7,17 @@ import (
 	"github.com/goravel/framework/contracts/console/command"
 )
 
-type TestConsoleSingleCommand struct{}
+type ConsoleSingleCommand struct{}
 
-func (r *TestConsoleSingleCommand) Signature() string {
+func (r *ConsoleSingleCommand) Signature() string {
 	return "test:console-single"
 }
 
-func (r *TestConsoleSingleCommand) Description() string {
+func (r *ConsoleSingleCommand) Description() string {
 	return "Test console command with single arguments and all flag types"
 }
 
-func (r *TestConsoleSingleCommand) Extend() command.Extend {
+func (r *ConsoleSingleCommand) Extend() command.Extend {
 	return command.Extend{
 		Flags: []command.Flag{
 			&command.BoolFlag{Name: "bool"},
@@ -48,13 +48,13 @@ func (r *TestConsoleSingleCommand) Extend() command.Extend {
 	}
 }
 
-func (r *TestConsoleSingleCommand) Handle(ctx console.Context) error {
+func (r *ConsoleSingleCommand) Handle(ctx console.Context) error {
 	ctx.Comment("console single command")
 	ctx.Info("running single command")
 	ctx.Warning("warning")
 	ctx.Success("success")
 
-	SetTestConsoleSingleLatest(&TestConsoleSingleCapture{
+	SetConsoleSingleLatest(&ConsoleSingleCapture{
 		OptionBool:         ctx.OptionBool("bool"),
 		OptionFloat64:      ctx.OptionFloat64("float64"),
 		OptionFloat64Slice: ctx.OptionFloat64Slice("float64-slice"),

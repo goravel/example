@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type TestConsoleSingleCapture struct {
+type ConsoleSingleCapture struct {
 	OptionBool         bool
 	OptionFloat64      float64
 	OptionFloat64Slice []float64
@@ -38,7 +38,7 @@ type TestConsoleSingleCapture struct {
 	ArgumentDefaultInt    int
 }
 
-type TestConsoleSliceCapture struct {
+type ConsoleSliceCapture struct {
 	ArgumentStringSlice    []string
 	ArgumentFloat32Slice   []float32
 	ArgumentFloat64Slice   []float64
@@ -60,43 +60,43 @@ type TestConsoleSliceCapture struct {
 }
 
 var (
-	testConsoleSingleLatest *TestConsoleSingleCapture
-	testConsoleSliceLatest  *TestConsoleSliceCapture
-	testConsoleCaptureMutex sync.RWMutex
+	consoleSingleLatest *ConsoleSingleCapture
+	consoleSliceLatest  *ConsoleSliceCapture
+	consoleCaptureMutex sync.RWMutex
 )
 
-func ResetTestConsoleCaptures() {
-	testConsoleCaptureMutex.Lock()
-	defer testConsoleCaptureMutex.Unlock()
+func ResetConsoleCaptures() {
+	consoleCaptureMutex.Lock()
+	defer consoleCaptureMutex.Unlock()
 
-	testConsoleSingleLatest = nil
-	testConsoleSliceLatest = nil
+	consoleSingleLatest = nil
+	consoleSliceLatest = nil
 }
 
-func SetTestConsoleSingleLatest(capture *TestConsoleSingleCapture) {
-	testConsoleCaptureMutex.Lock()
-	defer testConsoleCaptureMutex.Unlock()
+func SetConsoleSingleLatest(capture *ConsoleSingleCapture) {
+	consoleCaptureMutex.Lock()
+	defer consoleCaptureMutex.Unlock()
 
-	testConsoleSingleLatest = capture
+	consoleSingleLatest = capture
 }
 
-func GetTestConsoleSingleLatest() *TestConsoleSingleCapture {
-	testConsoleCaptureMutex.RLock()
-	defer testConsoleCaptureMutex.RUnlock()
+func GetConsoleSingleLatest() *ConsoleSingleCapture {
+	consoleCaptureMutex.RLock()
+	defer consoleCaptureMutex.RUnlock()
 
-	return testConsoleSingleLatest
+	return consoleSingleLatest
 }
 
-func SetTestConsoleSliceLatest(capture *TestConsoleSliceCapture) {
-	testConsoleCaptureMutex.Lock()
-	defer testConsoleCaptureMutex.Unlock()
+func SetConsoleSliceLatest(capture *ConsoleSliceCapture) {
+	consoleCaptureMutex.Lock()
+	defer consoleCaptureMutex.Unlock()
 
-	testConsoleSliceLatest = capture
+	consoleSliceLatest = capture
 }
 
-func GetTestConsoleSliceLatest() *TestConsoleSliceCapture {
-	testConsoleCaptureMutex.RLock()
-	defer testConsoleCaptureMutex.RUnlock()
+func GetConsoleSliceLatest() *ConsoleSliceCapture {
+	consoleCaptureMutex.RLock()
+	defer consoleCaptureMutex.RUnlock()
 
-	return testConsoleSliceLatest
+	return consoleSliceLatest
 }
