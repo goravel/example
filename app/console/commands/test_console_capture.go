@@ -60,8 +60,8 @@ type TestConsoleSliceCapture struct {
 }
 
 var (
-	TestConsoleSingleLatest *TestConsoleSingleCapture
-	TestConsoleSliceLatest  *TestConsoleSliceCapture
+	testConsoleSingleLatest *TestConsoleSingleCapture
+	testConsoleSliceLatest  *TestConsoleSliceCapture
 	testConsoleCaptureMutex sync.RWMutex
 )
 
@@ -69,34 +69,34 @@ func ResetTestConsoleCaptures() {
 	testConsoleCaptureMutex.Lock()
 	defer testConsoleCaptureMutex.Unlock()
 
-	TestConsoleSingleLatest = nil
-	TestConsoleSliceLatest = nil
+	testConsoleSingleLatest = nil
+	testConsoleSliceLatest = nil
 }
 
 func SetTestConsoleSingleLatest(capture *TestConsoleSingleCapture) {
 	testConsoleCaptureMutex.Lock()
 	defer testConsoleCaptureMutex.Unlock()
 
-	TestConsoleSingleLatest = capture
+	testConsoleSingleLatest = capture
 }
 
 func GetTestConsoleSingleLatest() *TestConsoleSingleCapture {
 	testConsoleCaptureMutex.RLock()
 	defer testConsoleCaptureMutex.RUnlock()
 
-	return TestConsoleSingleLatest
+	return testConsoleSingleLatest
 }
 
 func SetTestConsoleSliceLatest(capture *TestConsoleSliceCapture) {
 	testConsoleCaptureMutex.Lock()
 	defer testConsoleCaptureMutex.Unlock()
 
-	TestConsoleSliceLatest = capture
+	testConsoleSliceLatest = capture
 }
 
 func GetTestConsoleSliceLatest() *TestConsoleSliceCapture {
 	testConsoleCaptureMutex.RLock()
 	defer testConsoleCaptureMutex.RUnlock()
 
-	return TestConsoleSliceLatest
+	return testConsoleSliceLatest
 }
