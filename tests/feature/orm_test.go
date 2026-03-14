@@ -38,6 +38,51 @@ func (s *OrmTestSuite) TestCreate() {
 	})
 }
 
+func (s *OrmTestSuite) TestFirstOrCreate() {
+	var created models.User
+	s.Require().NoError(facades.Orm().Query().FirstOrCreate(&created, models.User{
+		Name: "first-or-create",
+	}))
+	s.NotZero(created.ID)
+	s.Equal("first-or-create", created.Name)
+
+	var existing models.User
+	s.Require().NoError(facades.Orm().Query().FirstOrCreate(&existing, models.User{
+		Name: "first-or-create",
+	}, models.User{
+		Avatar: "new-avatar.png",
+	}))
+	s.Equal(created.ID, existing.ID)
+	s.Equal("", existing.Avatar)
+
+	count, err := facades.Orm().Query().Model(&models.User{}).Where("name", "first-or-create").Count()
+	s.Require().NoError(err)
+	s.Equal(int64(1), count)
+}
+
+func (s *OrmTestSuite) TestUpdateOrCreate() {
+	var created models.User
+	s.Require().NoError(facades.Orm().Query().UpdateOrCreate(&created, map[string]any{
+		"name": "update-or-create",
+	}, map[string]any{
+		"avatar": "old-avatar.png",
+	}))
+	s.NotZero(created.ID)
+
+	var updated models.User
+	s.Require().NoError(facades.Orm().Query().UpdateOrCreate(&updated, map[string]any{
+		"name": "update-or-create",
+	}, map[string]any{
+		"avatar": "new-avatar.png",
+	}))
+	s.Equal(created.ID, updated.ID)
+	s.Equal("new-avatar.png", updated.Avatar)
+
+	count, err := facades.Orm().Query().Model(&models.User{}).Where("name", "update-or-create").Count()
+	s.Require().NoError(err)
+	s.Equal(int64(1), count)
+}
+
 func (s *OrmTestSuite) TestRestore() {
 	s.Require().NoError(facades.Orm().Query().Model(&models.User{}).Create(map[string]any{"name": "restore"}))
 
