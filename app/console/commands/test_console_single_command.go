@@ -7,17 +7,17 @@ import (
 	"github.com/goravel/framework/contracts/console/command"
 )
 
-type TestConsoleSingle struct{}
+type TestConsoleSingleCommand struct{}
 
-func (r *TestConsoleSingle) Signature() string {
+func (r *TestConsoleSingleCommand) Signature() string {
 	return "test:console-single"
 }
 
-func (r *TestConsoleSingle) Description() string {
+func (r *TestConsoleSingleCommand) Description() string {
 	return "Test console command with single arguments and all flag types"
 }
 
-func (r *TestConsoleSingle) Extend() command.Extend {
+func (r *TestConsoleSingleCommand) Extend() command.Extend {
 	return command.Extend{
 		Flags: []command.Flag{
 			&command.BoolFlag{Name: "bool"},
@@ -48,13 +48,13 @@ func (r *TestConsoleSingle) Extend() command.Extend {
 	}
 }
 
-func (r *TestConsoleSingle) Handle(ctx console.Context) error {
+func (r *TestConsoleSingleCommand) Handle(ctx console.Context) error {
 	ctx.Comment("console single command")
 	ctx.Info("running single command")
 	ctx.Warning("warning")
 	ctx.Success("success")
 
-	TestConsoleSingleLatest = &TestConsoleSingleCapture{
+	SetTestConsoleSingleLatest(&TestConsoleSingleCapture{
 		OptionBool:         ctx.OptionBool("bool"),
 		OptionFloat64:      ctx.OptionFloat64("float64"),
 		OptionFloat64Slice: ctx.OptionFloat64Slice("float64-slice"),
@@ -85,7 +85,7 @@ func (r *TestConsoleSingle) Handle(ctx console.Context) error {
 
 		ArgumentDefaultString: ctx.ArgumentString("missing-argument"),
 		ArgumentDefaultInt:    ctx.ArgumentInt("missing-argument"),
-	}
+	})
 
 	return nil
 }

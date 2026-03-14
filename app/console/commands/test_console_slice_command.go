@@ -7,17 +7,17 @@ import (
 	"github.com/goravel/framework/contracts/console/command"
 )
 
-type TestConsoleSlice struct{}
+type TestConsoleSliceCommand struct{}
 
-func (r *TestConsoleSlice) Signature() string {
+func (r *TestConsoleSliceCommand) Signature() string {
 	return "test:console-slice"
 }
 
-func (r *TestConsoleSlice) Description() string {
+func (r *TestConsoleSliceCommand) Description() string {
 	return "Test console command with slice arguments"
 }
 
-func (r *TestConsoleSlice) Extend() command.Extend {
+func (r *TestConsoleSliceCommand) Extend() command.Extend {
 	return command.Extend{
 		Arguments: []command.Argument{
 			&command.ArgumentStringSlice{Name: "stringSliceArg", Min: 1, Max: 2},
@@ -38,8 +38,8 @@ func (r *TestConsoleSlice) Extend() command.Extend {
 	}
 }
 
-func (r *TestConsoleSlice) Handle(ctx console.Context) error {
-	TestConsoleSliceLatest = &TestConsoleSliceCapture{
+func (r *TestConsoleSliceCommand) Handle(ctx console.Context) error {
+	SetTestConsoleSliceLatest(&TestConsoleSliceCapture{
 		ArgumentStringSlice:    ctx.ArgumentStringSlice("stringSliceArg"),
 		ArgumentFloat32Slice:   ctx.ArgumentFloat32Slice("float32SliceArg"),
 		ArgumentFloat64Slice:   ctx.ArgumentFloat64Slice("float64SliceArg"),
@@ -58,7 +58,7 @@ func (r *TestConsoleSlice) Handle(ctx console.Context) error {
 		MissingStringSliceIsNil:  ctx.ArgumentStringSlice("missing-slice") == nil,
 		MissingFloat32SliceIsNil: ctx.ArgumentFloat32Slice("missing-slice") == nil,
 		MissingTimestampIsNil:    ctx.ArgumentTimestampSlice("missing-slice") == nil,
-	}
+	})
 
 	return nil
 }

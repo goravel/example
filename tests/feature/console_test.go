@@ -46,7 +46,7 @@ func (s *ConsoleTestSuite) TestRunSingleCommand() {
 	}, false)
 	s.NoError(err)
 
-	capture := commands.TestConsoleSingleLatest
+	capture := commands.GetTestConsoleSingleLatest()
 	s.Require().NotNil(capture)
 
 	s.True(capture.OptionBool)
@@ -104,7 +104,7 @@ func (s *ConsoleTestSuite) TestRunSliceCommand() {
 	}, false)
 	s.NoError(err)
 
-	capture := commands.TestConsoleSliceLatest
+	capture := commands.GetTestConsoleSliceLatest()
 	s.Require().NotNil(capture)
 
 	s.Equal([]string{"a", "b"}, capture.ArgumentStringSlice)
@@ -135,7 +135,7 @@ func (s *ConsoleTestSuite) TestCallSingleCommand() {
 	err := facades.Artisan().Call("test:console-single --string=call 1.25 2.5 3 4 5 6 7 8 9 10 11 12 " + timestamp.Format(time.RFC3339))
 	s.NoError(err)
 
-	capture := commands.TestConsoleSingleLatest
+	capture := commands.GetTestConsoleSingleLatest()
 	s.Require().NotNil(capture)
 	s.Equal("call", capture.OptionString)
 	s.InDelta(float32(1.25), capture.ArgumentFloat32, 0.00001)

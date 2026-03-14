@@ -1,6 +1,9 @@
 package commands
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 type TestConsoleSingleCapture struct {
 	OptionBool         bool
@@ -59,9 +62,41 @@ type TestConsoleSliceCapture struct {
 var (
 	TestConsoleSingleLatest *TestConsoleSingleCapture
 	TestConsoleSliceLatest  *TestConsoleSliceCapture
+	testConsoleCaptureMutex sync.RWMutex
 )
 
 func ResetTestConsoleCaptures() {
+	testConsoleCaptureMutex.Lock()
+	defer testConsoleCaptureMutex.Unlock()
+
 	TestConsoleSingleLatest = nil
 	TestConsoleSliceLatest = nil
+}
+
+func SetTestConsoleSingleLatest(capture *TestConsoleSingleCapture) {
+	testConsoleCaptureMutex.Lock()
+	defer testConsoleCaptureMutex.Unlock()
+
+	TestConsoleSingleLatest = capture
+}
+
+func GetTestConsoleSingleLatest() *TestConsoleSingleCapture {
+	testConsoleCaptureMutex.RLock()
+	defer testConsoleCaptureMutex.RUnlock()
+
+	return TestConsoleSingleLatest
+}
+
+func SetTestConsoleSliceLatest(capture *TestConsoleSliceCapture) {
+	testConsoleCaptureMutex.Lock()
+	defer testConsoleCaptureMutex.Unlock()
+
+	TestConsoleSliceLatest = capture
+}
+
+func GetTestConsoleSliceLatest() *TestConsoleSliceCapture {
+	testConsoleCaptureMutex.RLock()
+	defer testConsoleCaptureMutex.RUnlock()
+
+	return TestConsoleSliceLatest
 }
