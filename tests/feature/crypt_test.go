@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"goravel/app/facades"
+	"goravel/tests"
 )
 
 type CryptTestSuite struct {
 	suite.Suite
+	tests.TestCase
 }
 
 func TestCryptTestSuite(t *testing.T) {
