@@ -68,6 +68,36 @@ func (s *MigrationTestSuite) TestMigrate() {
 	s.True(facades.Schema().HasTable("users"))
 }
 
+func (s *MigrationTestSuite) TestSchemaInspectors() {
+	s.True(facades.Schema().HasTable("users"))
+	s.True(facades.Schema().HasColumn("users", "mail"))
+	s.True(facades.Schema().HasColumns("users", []string{"id", "name", "alias", "mail"}))
+
+	columnListing := facades.Schema().GetColumnListing("users")
+	s.Contains(columnListing, "name")
+	s.Contains(columnListing, "alias")
+
+	tableListing := facades.Schema().GetTableListing()
+	s.Contains(tableListing, "users")
+
+	indexes, err := facades.Schema().GetIndexes("jobs")
+	s.Require().NoError(err)
+	s.NotEmpty(indexes)
+}
+
+func (s *MigrationTestSuite) TestSeederAndDatabaseConsoleCommands() {
+	s.NotNil(facades.Seeder().GetSeeder("DatabaseSeeder"))
+	s.NotEmpty(facades.Seeder().GetSeeders())
+
+	s.Require().NoError(facades.Artisan().Call("migrate:status"))
+	s.Require().NoError(facades.Artisan().Call("db:seed"))
+	s.Require().NoError(facades.Artisan().Call("db:wipe"))
+	s.False(facades.Schema().HasTable("users"))
+
+	s.Require().NoError(facades.Artisan().Call("migrate"))
+	s.True(facades.Schema().HasTable("users"))
+}
+
 func (s *MigrationTestSuite) TestTableComment() {
 	if facades.Schema().Orm().Config().Driver == sqlite.Name || facades.Schema().Orm().Config().Driver == sqlserver.Name {
 		s.T().Skip("sqlite and sqlserver does not support table comment")

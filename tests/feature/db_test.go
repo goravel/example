@@ -126,6 +126,38 @@ func (s *DBTestSuite) TestFirstOrAndFindOrFail() {
 	s.Require().Error(err)
 }
 
+func (s *DBTestSuite) TestUpdateOrInsertAndPluck() {
+	_, err := facades.DB().Table("users").Insert([]map[string]any{
+		{"name": "alpha"},
+		{"name": "beta"},
+	})
+	s.Require().NoError(err)
+
+	_, err = facades.DB().Table("users").UpdateOrInsert(
+		map[string]any{"name": "alpha"},
+		map[string]any{"avatar": "alpha.png"},
+	)
+	s.Require().NoError(err)
+
+	_, err = facades.DB().Table("users").UpdateOrInsert(
+		map[string]any{"name": "gamma"},
+		map[string]any{"avatar": "gamma.png"},
+	)
+	s.Require().NoError(err)
+
+	var names []string
+	s.Require().NoError(facades.DB().Table("users").OrderBy("id").Pluck("name", &names))
+	s.Equal([]string{"alpha", "beta", "gamma"}, names)
+
+	var avatar string
+	s.Require().NoError(facades.DB().Table("users").Where("name", "alpha").Value("avatar", &avatar))
+	s.Equal("alpha.png", avatar)
+
+	count, err := facades.DB().Table("users").Count()
+	s.Require().NoError(err)
+	s.Equal(int64(3), count)
+}
+
 // TODO use orm.BaseModel when https://github.com/goravel/framework/pull/976 is merged
 type User struct {
 	ID        uint             `db:"id"`

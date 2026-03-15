@@ -1,8 +1,10 @@
 package feature
 
 import (
+	"errors"
 	"testing"
 
+	ormcontract "github.com/goravel/framework/contracts/database/orm"
 	"github.com/stretchr/testify/suite"
 
 	"goravel/app/facades"
@@ -79,6 +81,60 @@ func (s *OrmTestSuite) TestUpdateOrCreate() {
 	s.Equal("new-avatar.png", updated.Avatar)
 
 	count, err := facades.Orm().Query().Model(&models.User{}).Where("name", "update-or-create").Count()
+	s.Require().NoError(err)
+	s.Equal(int64(1), count)
+}
+
+func (s *OrmTestSuite) TestFirstOrNew() {
+	s.Require().NoError(facades.Orm().Query().Model(&models.User{}).Create(map[string]any{
+		"name":   "first-or-new",
+		"avatar": "exists.png",
+	}))
+
+	var existing models.User
+	s.Require().NoError(facades.Orm().Query().FirstOrNew(&existing, map[string]any{
+		"name": "first-or-new",
+	}, map[string]any{
+		"avatar": "new.png",
+	}))
+	s.NotZero(existing.ID)
+	s.Equal("exists.png", existing.Avatar)
+
+	var missing models.User
+	s.Require().NoError(facades.Orm().Query().FirstOrNew(&missing, map[string]any{
+		"name": "first-or-new-missing",
+	}, map[string]any{
+		"avatar": "missing.png",
+	}))
+	s.Zero(missing.ID)
+	s.Equal("first-or-new-missing", missing.Name)
+	s.Equal("missing.png", missing.Avatar)
+
+	count, err := facades.Orm().Query().Model(&models.User{}).Where("name", "first-or-new-missing").Count()
+	s.Require().NoError(err)
+	s.Equal(int64(0), count)
+}
+
+func (s *OrmTestSuite) TestTransaction() {
+	err := facades.Orm().Transaction(func(tx ormcontract.Query) error {
+		if err := tx.Model(&models.User{}).Create(map[string]any{"name": "orm-tx-rollback"}); err != nil {
+			return err
+		}
+
+		return errors.New("rollback")
+	})
+	s.Require().Error(err)
+
+	count, err := facades.Orm().Query().Model(&models.User{}).Where("name", "orm-tx-rollback").Count()
+	s.Require().NoError(err)
+	s.Equal(int64(0), count)
+
+	err = facades.Orm().Transaction(func(tx ormcontract.Query) error {
+		return tx.Model(&models.User{}).Create(map[string]any{"name": "orm-tx-commit"})
+	})
+	s.Require().NoError(err)
+
+	count, err = facades.Orm().Query().Model(&models.User{}).Where("name", "orm-tx-commit").Count()
 	s.Require().NoError(err)
 	s.Equal(int64(1), count)
 }
