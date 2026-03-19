@@ -48,6 +48,7 @@ func Boot() contractsfoundation.Application {
 		}).
 		WithCommands(Commands).
 		WithJobs(Jobs).
+		WithFilters(Filters).
 		WithRules(Rules).
 		WithMiddleware(func(handler configuration.Middleware) {
 			handler.Append(

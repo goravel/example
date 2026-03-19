@@ -29,7 +29,7 @@ func (s *TelemetryTestSuite) SetupSuite() {
 	resp.AssertSuccessful()
 
 	// Wait for telemetry data to be exported
-	time.Sleep(2 * time.Second)
+	time.Sleep(11 * time.Second)
 }
 
 func (s *TelemetryTestSuite) TearDownSuite() {

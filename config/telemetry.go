@@ -89,7 +89,7 @@ func init() {
 			"reader": map[string]any{
 				// Interval: How often metrics are pushed.
 				// Format: Duration string (e.g., "60s", "1m", "500ms").
-				"interval": config.Env("OTEL_METRIC_EXPORT_INTERVAL", "1s"),
+				"interval": config.Env("OTEL_METRIC_EXPORT_INTERVAL", "10s"),
 
 				// Timeout: Max time allowed for export before cancelling.
 				// Format: Duration string (e.g., "30s", "10s").
@@ -114,7 +114,7 @@ func init() {
 			"processor": map[string]any{
 				// Interval: How often logs are flushed.
 				// Format: Duration string (e.g., "1s", "500ms").
-				"interval": config.Env("OTEL_LOG_EXPORT_INTERVAL", "1s"),
+				"interval": config.Env("OTEL_LOG_EXPORT_INTERVAL", "10s"),
 
 				// Timeout: Max time allowed for export before cancelling.
 				// Format: Duration string (e.g., "30s").

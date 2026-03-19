@@ -7,6 +7,7 @@ import (
 	contractsvalidation "github.com/goravel/framework/contracts/validation"
 	"github.com/goravel/framework/support/carbon"
 	"github.com/goravel/framework/validation"
+	"github.com/spf13/cast"
 
 	"goravel/app/facades"
 	"goravel/app/http/requests"
@@ -156,5 +157,41 @@ func (r *ValidationController) Form(ctx http.Context) http.Response {
 	return ctx.Response().Success().Json(http.Json{
 		"context": user.Context,
 		"name":    user.Name,
+	})
+}
+
+func (r *ValidationController) Upload(ctx http.Context) http.Response {
+	rule := cast.ToString(ctx.Request().Input("rule"))
+	message := cast.ToString(ctx.Request().Input("message"))
+	if rule == "" {
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
+			"message": "rule is required",
+		})
+	}
+
+	options := make([]contractsvalidation.Option, 0)
+	if message != "" {
+		options = append(options, validation.Messages(map[string]string{
+			"f." + rule: message,
+		}))
+	}
+
+	validator, err := ctx.Request().Validate(map[string]string{
+		"f": rule,
+	}, options...)
+	if err != nil {
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
+			"message": err.Error(),
+		})
+	}
+
+	if validator.Fails() {
+		return ctx.Response().Json(http.StatusBadRequest, http.Json{
+			"message": validator.Errors().All(),
+		})
+	}
+
+	return ctx.Response().Success().Json(http.Json{
+		"ok": true,
 	})
 }
