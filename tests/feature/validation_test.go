@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/goravel/framework/support/http"
 	"github.com/goravel/framework/validation"
-	"github.com/spf13/cast"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -216,29 +216,42 @@ func (s *ValidationTestSuite) TestFilters() {
 			failRule: "eq:" + out,
 			message:  alias + " failed",
 			passAssert: func(t *testing.T, actual any) {
-				require.Equal(t, out, cast.ToString(actual))
+				require.IsType(t, "", actual)
+				require.Equal(t, out, actual)
 			},
 		}
 	}
 
 	tests := []filterCase{
-		{name: "int", filter: "int", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "int failed", passAssert: func(t *testing.T, actual any) { require.Equal(t, 12, cast.ToInt(actual)) }},
-		{name: "toInt", filter: "toInt", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "toInt failed", passAssert: func(t *testing.T, actual any) { require.Equal(t, 12, cast.ToInt(actual)) }},
-		{name: "uint", filter: "uint", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "uint failed", passAssert: func(t *testing.T, actual any) { require.Equal(t, 12, cast.ToInt(actual)) }},
-		{name: "toUint", filter: "toUint", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "toUint failed", passAssert: func(t *testing.T, actual any) { require.Equal(t, 12, cast.ToInt(actual)) }},
-		{name: "int64", filter: "int64", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "int64 failed", passAssert: func(t *testing.T, actual any) { require.Equal(t, int64(12), cast.ToInt64(actual)) }},
-		{name: "toInt64", filter: "toInt64", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "toInt64 failed", passAssert: func(t *testing.T, actual any) { require.Equal(t, int64(12), cast.ToInt64(actual)) }},
-		{name: "float", filter: "float", passData: map[string]any{"f": "1.5"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "float failed", passAssert: func(t *testing.T, actual any) { require.InDelta(t, 1.5, cast.ToFloat64(actual), 0.00001) }},
-		{name: "toFloat", filter: "toFloat", passData: map[string]any{"f": "1.5"}, passRule: "eq:1.5", failData: map[string]any{"f": "2.5"}, failRule: "eq:1.5", message: "toFloat failed", passAssert: func(t *testing.T, actual any) { require.InDelta(t, 1.5, cast.ToFloat64(actual), 0.00001) }},
-		{name: "bool", filter: "bool", passData: map[string]any{"f": "true"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "bool failed", passAssert: func(t *testing.T, actual any) { require.Equal(t, true, cast.ToBool(actual)) }},
-		{name: "toBool", filter: "toBool", passData: map[string]any{"f": "true"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "toBool failed", passAssert: func(t *testing.T, actual any) { require.Equal(t, true, cast.ToBool(actual)) }},
+		{name: "int", filter: "int", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "int failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, int(0), actual); require.Equal(t, 12, actual) }},
+		{name: "toInt", filter: "toInt", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "toInt failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, int(0), actual); require.Equal(t, 12, actual) }},
+		{name: "uint", filter: "uint", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "uint failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, uint(0), actual); require.Equal(t, uint(12), actual) }},
+		{name: "toUint", filter: "toUint", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "toUint failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, uint(0), actual); require.Equal(t, uint(12), actual) }},
+		{name: "int64", filter: "int64", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "int64 failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, int64(0), actual)
+			require.Equal(t, int64(12), actual)
+		}},
+		{name: "toInt64", filter: "toInt64", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "toInt64 failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, int64(0), actual)
+			require.Equal(t, int64(12), actual)
+		}},
+		{name: "float", filter: "float", passData: map[string]any{"f": "1.5"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "float failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, float64(0), actual)
+			require.InDelta(t, 1.5, actual, 0.00001)
+		}},
+		{name: "toFloat", filter: "toFloat", passData: map[string]any{"f": "1.5"}, passRule: "eq:1.5", failData: map[string]any{"f": "2.5"}, failRule: "eq:1.5", message: "toFloat failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, "", actual)
+			require.Equal(t, "1.5", actual)
+		}},
+		{name: "bool", filter: "bool", passData: map[string]any{"f": "true"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "bool failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, false, actual); require.Equal(t, true, actual) }},
+		{name: "toBool", filter: "toBool", passData: map[string]any{"f": "true"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "toBool failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, false, actual); require.Equal(t, true, actual) }},
 		stringEqCase("trim", "  Goravel  ", "Goravel", "  Laravel  "),
 		stringEqCase("trimSpace", "  Goravel  ", "Goravel", "  Laravel  "),
 		stringEqCase("ltrim", "  Goravel", "Goravel", "  Laravel"),
 		stringEqCase("trimLeft", "  Goravel", "Goravel", "  Laravel"),
 		stringEqCase("rtrim", "Goravel  ", "Goravel", "Laravel  "),
 		stringEqCase("trimRight", "Goravel  ", "Goravel", "Laravel  "),
-		{name: "integer", filter: "integer", passData: map[string]any{"f": "12"}, passRule: "eq:12", failData: map[string]any{"f": "13"}, failRule: "eq:12", message: "integer failed", passAssert: func(t *testing.T, actual any) { require.Equal(t, 12, cast.ToInt(actual)) }},
+		{name: "integer", filter: "integer", passData: map[string]any{"f": "12"}, passRule: "eq:12", failData: map[string]any{"f": "13"}, failRule: "eq:12", message: "integer failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, "", actual); require.Equal(t, "12", actual) }},
 		stringEqCase("lower", "GoRavel", "goravel", "LarAvel"),
 		stringEqCase("lowercase", "GoRavel", "goravel", "LarAvel"),
 		stringEqCase("upper", "GoRavel", "GORAVEL", "Laravel"),
@@ -253,16 +266,52 @@ func (s *ValidationTestSuite) TestFilters() {
 		stringEqCase("camelCase", "goravel_framework", "goravelFramework", "laravel_framework"),
 		stringEqCase("snake", "goravelFramework", "goravel_framework", "laravelFramework"),
 		stringEqCase("snakeCase", "goravelFramework", "goravel_framework", "laravelFramework"),
-		{name: "escapeJs", filter: "escapeJs", passData: map[string]any{"f": `"`}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "escapeJs failed"},
-		{name: "escapeJS", filter: "escapeJS", passData: map[string]any{"f": `"`}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "escapeJS failed"},
-		{name: "escapeHtml", filter: "escapeHtml", passData: map[string]any{"f": "<b>x</b>"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "escapeHtml failed"},
-		{name: "escapeHTML", filter: "escapeHTML", passData: map[string]any{"f": "<b>x</b>"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "escapeHTML failed"},
-		{name: "str2ints", filter: "str2ints", passData: map[string]any{"f": "1,2,3"}, passRule: "len:3", failData: map[string]any{"f": "1,2"}, failRule: "len:3", message: "str2ints failed", passAssert: func(t *testing.T, actual any) { require.Equal(t, []int{1, 2, 3}, cast.ToIntSlice(actual)) }},
-		{name: "strToInts", filter: "strToInts", passData: map[string]any{"f": "1,2,3"}, passRule: "len:3", failData: map[string]any{"f": "1,2"}, failRule: "len:3", message: "strToInts failed", passAssert: func(t *testing.T, actual any) { require.Equal(t, []int{1, 2, 3}, cast.ToIntSlice(actual)) }},
-		{name: "str2time", filter: "str2time", passData: map[string]any{"f": "2024-01-02 03:04:05"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "str2time failed", passAssert: func(t *testing.T, actual any) { require.False(t, cast.ToTime(actual).IsZero()) }},
-		{name: "strToTime", filter: "strToTime", passData: map[string]any{"f": "2024-01-02 03:04:05"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "strToTime failed", passAssert: func(t *testing.T, actual any) { require.False(t, cast.ToTime(actual).IsZero()) }},
-		{name: "str2arr", filter: "str2arr", passData: map[string]any{"f": "a,b"}, passRule: "len:2", failData: map[string]any{"f": "a"}, failRule: "len:2", message: "str2arr failed", passAssert: func(t *testing.T, actual any) { require.Equal(t, []string{"a", "b"}, cast.ToStringSlice(actual)) }},
-		{name: "str2array", filter: "str2array", passData: map[string]any{"f": "a,b"}, passRule: "len:2", failData: map[string]any{"f": "a"}, failRule: "len:2", message: "str2array failed", passAssert: func(t *testing.T, actual any) { require.Equal(t, []string{"a", "b"}, cast.ToStringSlice(actual)) }},
+		{name: "escapeJs", filter: "escapeJs", passData: map[string]any{"f": `"`}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "escapeJs failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, "", actual)
+			escaped := actual.(string)
+			require.NotEqual(t, `"`, escaped)
+			require.Contains(t, escaped, `\`)
+		}},
+		{name: "escapeJS", filter: "escapeJS", passData: map[string]any{"f": `"`}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "escapeJS failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, "", actual)
+			escaped := actual.(string)
+			require.NotEqual(t, `"`, escaped)
+			require.Contains(t, escaped, `\`)
+		}},
+		{name: "escapeHtml", filter: "escapeHtml", passData: map[string]any{"f": "<b>x</b>"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "escapeHtml failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, "", actual)
+			escaped := actual.(string)
+			require.Equal(t, "&lt;b&gt;x&lt;/b&gt;", escaped)
+		}},
+		{name: "escapeHTML", filter: "escapeHTML", passData: map[string]any{"f": "<b>x</b>"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "escapeHTML failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, "", actual)
+			escaped := actual.(string)
+			require.Equal(t, "&lt;b&gt;x&lt;/b&gt;", escaped)
+		}},
+		{name: "str2ints", filter: "str2ints", passData: map[string]any{"f": "1,2,3"}, passRule: "len:3", failData: map[string]any{"f": "1,2"}, failRule: "len:3", message: "str2ints failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, []int{}, actual)
+			require.Equal(t, []int{1, 2, 3}, actual)
+		}},
+		{name: "strToInts", filter: "strToInts", passData: map[string]any{"f": "1,2,3"}, passRule: "len:3", failData: map[string]any{"f": "1,2"}, failRule: "len:3", message: "strToInts failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, []int{}, actual)
+			require.Equal(t, []int{1, 2, 3}, actual)
+		}},
+		{name: "str2time", filter: "str2time", passData: map[string]any{"f": "2024-01-02 03:04:05"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "str2time failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, time.Time{}, actual)
+			require.False(t, actual.(time.Time).IsZero())
+		}},
+		{name: "strToTime", filter: "strToTime", passData: map[string]any{"f": "2024-01-02 03:04:05"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "strToTime failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, time.Time{}, actual)
+			require.False(t, actual.(time.Time).IsZero())
+		}},
+		{name: "str2arr", filter: "str2arr", passData: map[string]any{"f": "a,b"}, passRule: "len:2", failData: map[string]any{"f": "a"}, failRule: "len:2", message: "str2arr failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, []string{}, actual)
+			require.Equal(t, []string{"a", "b"}, actual)
+		}},
+		{name: "str2array", filter: "str2array", passData: map[string]any{"f": "a,b"}, passRule: "len:2", failData: map[string]any{"f": "a"}, failRule: "len:2", message: "str2array failed", passAssert: func(t *testing.T, actual any) {
+			require.IsType(t, []string{}, actual)
+			require.Equal(t, []string{"a", "b"}, actual)
+		}},
 	}
 
 	for _, tt := range tests {
