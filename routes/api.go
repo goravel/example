@@ -45,6 +45,7 @@ func Api() {
 	facades.Route().Post("/validation/json", validationController.Json)
 	facades.Route().Post("/validation/request", validationController.Request)
 	facades.Route().Post("/validation/form", validationController.Form)
+	facades.Route().Post("/validation/upload", validationController.Upload)
 
 	// Localization
 	langController := controllers.NewLangController()
