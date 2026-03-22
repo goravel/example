@@ -35,9 +35,12 @@ air
  ********************************/
 
 type User struct {
-	Context string           `json:"context" form:"context"`
-	Name    string           `json:"name" form:"name"`
-	Date    *carbon.DateTime `json:"date" form:"date"`
+	Context string                    `json:"context" form:"context"`
+	Name    string                    `json:"name" form:"name"`
+	Date    *carbon.DateTime          `json:"date" form:"date"`
+	Age     int                       `json:"age" form:"age"`
+	Items   []requests.ValidationItem `json:"items" form:"items"`
+	Meta    map[string]any            `json:"meta" form:"meta"`
 }
 
 type ValidationController struct {
@@ -52,10 +55,13 @@ func NewValidationController() *ValidationController {
 
 func (r *ValidationController) Json(ctx http.Context) http.Response {
 	ctx.WithValue("ctx", "context")
-	validator, err := ctx.Request().Validate(map[string]string{
-		"context": "required",
-		"name":    "required",
-		"date":    "required|date",
+	validator, err := ctx.Request().Validate(map[string]any{
+		"context":      "required",
+		"name":         "required",
+		"date":         "required|date",
+		"items.*.name": "sometimes|required|string",
+		"meta":         "sometimes|map",
+		"meta.name":    "sometimes|required|string",
 	}, validation.PrepareForValidation(func(ctx context.Context, data contractsvalidation.Data) error {
 		if c, exist := data.Get("context"); exist {
 			// Test getting value from context: ValidationController.Request
@@ -84,11 +90,16 @@ func (r *ValidationController) Json(ctx http.Context) http.Response {
 		})
 	}
 
-	return ctx.Response().Success().Json(http.Json{
+	response := http.Json{
 		"context": user.Context,
 		"name":    user.Name,
 		"date":    user.Date.ToDateTimeString(),
-	})
+		"age":     user.Age,
+		"items":   user.Items,
+		"meta":    user.Meta,
+	}
+
+	return ctx.Response().Success().Json(response)
 }
 
 func (r *ValidationController) Request(ctx http.Context) http.Response {
@@ -108,14 +119,19 @@ func (r *ValidationController) Request(ctx http.Context) http.Response {
 		})
 	}
 
-	return ctx.Response().Success().Json(http.Json{
+	response := http.Json{
 		"context": validationCreate.Context,
 		"name":    validationCreate.Name,
 		"tags":    validationCreate.Tags,
 		"scores":  validationCreate.Scores,
+		"items":   validationCreate.Items,
+		"meta":    validationCreate.Meta,
 		"date":    validationCreate.Date.ToDateTimeString(),
 		"code":    validationCreate.Code,
-	})
+		"age":     validationCreate.Age,
+	}
+
+	return ctx.Response().Success().Json(response)
 }
 
 func (r *ValidationController) Form(ctx http.Context) http.Response {
@@ -123,7 +139,8 @@ func (r *ValidationController) Form(ctx http.Context) http.Response {
 	validator, err := facades.Validation().Make(ctx, map[string]any{
 		"context": ctx.Request().Input("context"),
 		"name":    ctx.Request().Input("name"),
-	}, map[string]string{
+		"age":     ctx.Request().Input("age"),
+	}, map[string]any{
 		"context": "required",
 		"name":    "required",
 	}, validation.PrepareForValidation(func(ctx context.Context, data contractsvalidation.Data) error {
@@ -157,6 +174,7 @@ func (r *ValidationController) Form(ctx http.Context) http.Response {
 	return ctx.Response().Success().Json(http.Json{
 		"context": user.Context,
 		"name":    user.Name,
+		"age":     user.Age,
 	})
 }
 
@@ -176,7 +194,7 @@ func (r *ValidationController) Upload(ctx http.Context) http.Response {
 		}))
 	}
 
-	validator, err := ctx.Request().Validate(map[string]string{
+	validator, err := ctx.Request().Validate(map[string]any{
 		"f": rule,
 	}, options...)
 	if err != nil {

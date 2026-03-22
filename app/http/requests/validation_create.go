@@ -8,26 +8,36 @@ import (
 )
 
 type ValidationCreate struct {
-	Context string        `form:"context" json:"context"`
-	Name    string        `form:"name" json:"name"`
-	Tags    []string      `form:"tags" json:"tags"`
-	Scores  []int         `form:"scores" json:"scores"`
-	Date    carbon.Carbon `form:"date" json:"date"`
-	Code    int           `form:"code" json:"code"`
+	Context string           `form:"context" json:"context"`
+	Name    string           `form:"name" json:"name"`
+	Tags    []string         `form:"tags" json:"tags"`
+	Scores  []int            `form:"scores" json:"scores"`
+	Items   []ValidationItem `form:"items" json:"items"`
+	Meta    map[string]any   `form:"meta" json:"meta"`
+	Date    carbon.Carbon    `form:"date" json:"date"`
+	Code    int              `form:"code" json:"code"`
+	Age     int              `form:"age" json:"age"`
+}
+
+type ValidationItem struct {
+	Name string `form:"name" json:"name"`
 }
 
 func (r *ValidationCreate) Authorize(ctx http.Context) error {
 	return nil
 }
 
-func (r *ValidationCreate) Rules(ctx http.Context) map[string]string {
-	return map[string]string{
-		"name":     "required",
-		"context":  "required",
-		"tags.*":   "required|string",
-		"scores.*": "required|int",
-		"date":     "required|date",
-		"code":     `required|regex:^\d{4,6}$`,
+func (r *ValidationCreate) Rules(ctx http.Context) map[string]any {
+	return map[string]any{
+		"name":         "required",
+		"context":      "required",
+		"tags.*":       "required|string",
+		"scores.*":     "required|int",
+		"items.*.name": "sometimes|required|string",
+		"meta":         "sometimes|map",
+		"meta.name":    "sometimes|required|string",
+		"date":         "required|date",
+		"code":         `required|regex:^\d{4,6}$`,
 	}
 }
 
@@ -55,8 +65,8 @@ func (r *ValidationCreate) PrepareForValidation(ctx http.Context, data validatio
 	return nil
 }
 
-func (r *ValidationCreate) Filters(ctx http.Context) map[string]string {
-	return map[string]string{
+func (r *ValidationCreate) Filters(ctx http.Context) map[string]any {
+	return map[string]any{
 		"name": "trim",
 	}
 }

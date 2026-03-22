@@ -9,6 +9,5 @@ import (
 func Rules() []validation.Rule {
 	return []validation.Rule{
 		&rules.Exists{},
-		&rules.NotExists{},
 	}
 }
