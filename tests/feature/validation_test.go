@@ -569,7 +569,6 @@ func (s *ValidationTestSuite) TestValidateMake() {
 		validator, err := facades.Validation().Make(context.Background(), map[string]any{
 			"context": "ctx",
 			"name":    " Goravel ",
-			"date":    "2024-07-08 18:33:32",
 			"tags":    []any{"tag1", "tag2"},
 			"scores":  []any{1, 2},
 			"items": []any{
@@ -595,10 +594,15 @@ func (s *ValidationTestSuite) TestValidateMake() {
 			"code":         `required|regex:^\d{4,6}$`,
 		}, validation.Filters(map[string]any{
 			"name": "trim",
+		}), validation.Messages(map[string]string{
+			"date.required": "date is required",
 		}))
 		s.Require().NoError(err)
 		s.True(validator.Fails())
 		s.Equal(map[string]map[string]string{
+			"date": {
+				"required": "date is required",
+			},
 			"items.1.name": {
 				"required": "The items.1.name field is required.",
 			},
