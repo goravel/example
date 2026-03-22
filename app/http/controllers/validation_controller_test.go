@@ -9,6 +9,8 @@ import (
 	"github.com/goravel/gin"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+
+	"goravel/app/http/requests"
 )
 
 type ValidationControllerTestSuite struct {
@@ -35,10 +37,13 @@ func (s *ValidationControllerTestSuite) TestJson() {
 	mockValidator := mockFactory.ValidationValidator()
 	mockContext.EXPECT().WithValue("ctx", "context").Once()
 	mockContext.EXPECT().Request().Return(mockRequest).Once()
-	mockRequest.EXPECT().Validate(map[string]string{
-		"context": "required",
-		"name":    "required",
-		"date":    "required|date",
+	mockRequest.EXPECT().Validate(map[string]any{
+		"context":      "required",
+		"name":         "required",
+		"date":         "required|date",
+		"items.*.name": "sometimes|required|string",
+		"meta":         "sometimes|map",
+		"meta.name":    "sometimes|required|string",
 	}, mock.AnythingOfType("validation.Option")).Return(mockValidator, nil).Once()
 	mockValidator.EXPECT().Fails().Return(false).Once()
 	var user User
@@ -46,6 +51,9 @@ func (s *ValidationControllerTestSuite) TestJson() {
 		user.(*User).Context = "ctx_context"
 		user.(*User).Name = "Goravel"
 		user.(*User).Date = carbon.NewDateTime(carbon.Parse("2024-07-08 22:34:31"))
+		user.(*User).Age = 1
+		user.(*User).Items = []requests.ValidationItem{{Name: "item1"}}
+		user.(*User).Meta = map[string]any{"source": "api"}
 	}).Return(nil).Once()
 	mockContext.EXPECT().Response().Return(mockResponse).Once()
 	mockResponseStatus := mockFactory.ResponseStatus()
@@ -56,6 +64,9 @@ func (s *ValidationControllerTestSuite) TestJson() {
 		"context": "ctx_context",
 		"name":    "Goravel",
 		"date":    "2024-07-08 22:34:31",
+		"age":     1,
+		"items":   []requests.ValidationItem{{Name: "item1"}},
+		"meta":    map[string]any{"source": "api"},
 	}).Return(resp).Once()
 
 	s.Equal(resp, NewValidationController().Json(mockContext))

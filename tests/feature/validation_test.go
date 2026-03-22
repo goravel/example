@@ -32,17 +32,15 @@ func (s *ValidationTestSuite) SetupTest() {
 	s.RefreshDatabase()
 }
 
-type ruleCase struct {
-	name     string
-	rule     string
-	errRule  string
-	passData map[string]any
-	failData map[string]any
-	message  string
-}
-
 func (s *ValidationTestSuite) TestRules() {
-	cases := []ruleCase{
+	cases := []struct {
+		name     string
+		rule     string
+		errRule  string
+		passData map[string]any
+		failData map[string]any
+		message  string
+	}{
 		{name: "required", rule: "required", errRule: "required", passData: map[string]any{"f": "ok"}, failData: map[string]any{"f": ""}, message: "required failed"},
 		{name: "required_if", rule: "required_if:cond,yes", errRule: "required_if", passData: map[string]any{"cond": "yes", "f": "ok"}, failData: map[string]any{"cond": "yes", "f": ""}, message: "required_if failed"},
 		{name: "required_unless", rule: "required_unless:cond,no", errRule: "required_unless", passData: map[string]any{"cond": "yes", "f": "ok"}, failData: map[string]any{"cond": "yes", "f": ""}, message: "required_unless failed"},
@@ -102,14 +100,14 @@ func (s *ValidationTestSuite) TestRules() {
 
 	for _, tc := range cases {
 		s.Run(tc.name, func() {
-			validator, err := facades.Validation().Make(context.Background(), tc.passData, map[string]string{
+			validator, err := facades.Validation().Make(context.Background(), tc.passData, map[string]any{
 				"f": tc.rule,
 			})
 			s.Require().NoError(err)
 			s.Require().NotNil(validator)
 			s.False(validator.Fails(), tc.name+" pass case")
 
-			validator, err = facades.Validation().Make(context.Background(), tc.failData, map[string]string{
+			validator, err = facades.Validation().Make(context.Background(), tc.failData, map[string]any{
 				"f": tc.rule,
 			}, validation.Messages(map[string]string{
 				"f." + tc.errRule: tc.message,
@@ -194,18 +192,18 @@ func (s *ValidationTestSuite) TestImageRule() {
 	s.Contains(content, "image failed")
 }
 
-type filterCase struct {
-	name       string
-	filter     string
-	passData   map[string]any
-	passRule   string
-	failData   map[string]any
-	failRule   string
-	message    string
-	passAssert func(*testing.T, any)
-}
-
 func (s *ValidationTestSuite) TestFilters() {
+	type filterCase struct {
+		name       string
+		filter     string
+		passData   map[string]any
+		passRule   string
+		failData   map[string]any
+		failRule   string
+		message    string
+		passAssert func(*testing.T, any)
+	}
+
 	stringEqCase := func(alias, in, out, failIn string) filterCase {
 		return filterCase{
 			name:     alias,
@@ -223,35 +221,35 @@ func (s *ValidationTestSuite) TestFilters() {
 	}
 
 	tests := []filterCase{
-		{name: "int", filter: "int", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "int failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, int(0), actual); require.Equal(t, 12, actual) }},
-		{name: "toInt", filter: "toInt", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "toInt failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, int(0), actual); require.Equal(t, 12, actual) }},
-		{name: "uint", filter: "uint", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "uint failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, uint(0), actual); require.Equal(t, uint(12), actual) }},
-		{name: "toUint", filter: "toUint", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "toUint failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, uint(0), actual); require.Equal(t, uint(12), actual) }},
-		{name: "int64", filter: "int64", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "int64 failed", passAssert: func(t *testing.T, actual any) {
+		{name: "int", filter: "int", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": "13"}, failRule: "eq:12", message: "int failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, int(0), actual); require.Equal(t, 12, actual) }},
+		{name: "toInt", filter: "toInt", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": "13"}, failRule: "eq:12", message: "toInt failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, int(0), actual); require.Equal(t, 12, actual) }},
+		{name: "uint", filter: "uint", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": "13"}, failRule: "eq:12", message: "uint failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, uint(0), actual); require.Equal(t, uint(12), actual) }},
+		{name: "toUint", filter: "toUint", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": "13"}, failRule: "eq:12", message: "toUint failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, uint(0), actual); require.Equal(t, uint(12), actual) }},
+		{name: "int64", filter: "int64", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": "13"}, failRule: "eq:12", message: "int64 failed", passAssert: func(t *testing.T, actual any) {
 			require.IsType(t, int64(0), actual)
 			require.Equal(t, int64(12), actual)
 		}},
-		{name: "toInt64", filter: "toInt64", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "toInt64 failed", passAssert: func(t *testing.T, actual any) {
+		{name: "toInt64", filter: "toInt64", passData: map[string]any{"f": "12"}, passRule: "required", failData: map[string]any{"f": "13"}, failRule: "eq:12", message: "toInt64 failed", passAssert: func(t *testing.T, actual any) {
 			require.IsType(t, int64(0), actual)
 			require.Equal(t, int64(12), actual)
 		}},
-		{name: "float", filter: "float", passData: map[string]any{"f": "1.5"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "float failed", passAssert: func(t *testing.T, actual any) {
+		{name: "float", filter: "float", passData: map[string]any{"f": "1.5"}, passRule: "required", failData: map[string]any{"f": "2.5"}, failRule: "eq:1.5", message: "float failed", passAssert: func(t *testing.T, actual any) {
 			require.IsType(t, float64(0), actual)
 			require.InDelta(t, 1.5, actual, 0.00001)
 		}},
 		{name: "toFloat", filter: "toFloat", passData: map[string]any{"f": "1.5"}, passRule: "eq:1.5", failData: map[string]any{"f": "2.5"}, failRule: "eq:1.5", message: "toFloat failed", passAssert: func(t *testing.T, actual any) {
-			require.IsType(t, "", actual)
-			require.Equal(t, "1.5", actual)
+			require.IsType(t, float64(0), actual)
+			require.InDelta(t, 1.5, actual, 0.00001)
 		}},
-		{name: "bool", filter: "bool", passData: map[string]any{"f": "true"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "bool failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, false, actual); require.Equal(t, true, actual) }},
-		{name: "toBool", filter: "toBool", passData: map[string]any{"f": "true"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "toBool failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, false, actual); require.Equal(t, true, actual) }},
+		{name: "bool", filter: "bool", passData: map[string]any{"f": "true"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "accepted", message: "bool failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, false, actual); require.Equal(t, true, actual) }},
+		{name: "toBool", filter: "toBool", passData: map[string]any{"f": "true"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "accepted", message: "toBool failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, false, actual); require.Equal(t, true, actual) }},
 		stringEqCase("trim", "  Goravel  ", "Goravel", "  Laravel  "),
 		stringEqCase("trimSpace", "  Goravel  ", "Goravel", "  Laravel  "),
 		stringEqCase("ltrim", "  Goravel", "Goravel", "  Laravel"),
 		stringEqCase("trimLeft", "  Goravel", "Goravel", "  Laravel"),
 		stringEqCase("rtrim", "Goravel  ", "Goravel", "Laravel  "),
 		stringEqCase("trimRight", "Goravel  ", "Goravel", "Laravel  "),
-		{name: "integer", filter: "integer", passData: map[string]any{"f": "12"}, passRule: "eq:12", failData: map[string]any{"f": "13"}, failRule: "eq:12", message: "integer failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, "", actual); require.Equal(t, "12", actual) }},
+		{name: "integer", filter: "integer", passData: map[string]any{"f": "12"}, passRule: "eq:12", failData: map[string]any{"f": "13"}, failRule: "eq:12", message: "integer failed", passAssert: func(t *testing.T, actual any) { require.IsType(t, int(0), actual); require.Equal(t, 12, actual) }},
 		stringEqCase("lower", "GoRavel", "goravel", "LarAvel"),
 		stringEqCase("lowercase", "GoRavel", "goravel", "LarAvel"),
 		stringEqCase("upper", "GoRavel", "GORAVEL", "Laravel"),
@@ -296,11 +294,11 @@ func (s *ValidationTestSuite) TestFilters() {
 			require.IsType(t, []int{}, actual)
 			require.Equal(t, []int{1, 2, 3}, actual)
 		}},
-		{name: "str2time", filter: "str2time", passData: map[string]any{"f": "2024-01-02 03:04:05"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "str2time failed", passAssert: func(t *testing.T, actual any) {
+		{name: "str2time", filter: "str2time", passData: map[string]any{"f": "2024-01-02 03:04:05"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "after:2020-01-01", message: "str2time failed", passAssert: func(t *testing.T, actual any) {
 			require.IsType(t, time.Time{}, actual)
 			require.False(t, actual.(time.Time).IsZero())
 		}},
-		{name: "strToTime", filter: "strToTime", passData: map[string]any{"f": "2024-01-02 03:04:05"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "required", message: "strToTime failed", passAssert: func(t *testing.T, actual any) {
+		{name: "strToTime", filter: "strToTime", passData: map[string]any{"f": "2024-01-02 03:04:05"}, passRule: "required", failData: map[string]any{"f": ""}, failRule: "after:2020-01-01", message: "strToTime failed", passAssert: func(t *testing.T, actual any) {
 			require.IsType(t, time.Time{}, actual)
 			require.False(t, actual.(time.Time).IsZero())
 		}},
@@ -316,9 +314,9 @@ func (s *ValidationTestSuite) TestFilters() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			validator, err := facades.Validation().Make(context.Background(), tt.passData, map[string]string{
+			validator, err := facades.Validation().Make(context.Background(), tt.passData, map[string]any{
 				"f": tt.passRule,
-			}, validation.Filters(map[string]string{
+			}, validation.Filters(map[string]any{
 				"f": tt.filter,
 			}))
 			s.Require().NoError(err)
@@ -334,9 +332,9 @@ func (s *ValidationTestSuite) TestFilters() {
 				tt.passAssert(s.T(), data.F)
 			}
 
-			validator, err = facades.Validation().Make(context.Background(), tt.failData, map[string]string{
+			validator, err = facades.Validation().Make(context.Background(), tt.failData, map[string]any{
 				"f": tt.failRule,
-			}, validation.Filters(map[string]string{
+			}, validation.Filters(map[string]any{
 				"f": tt.filter,
 			}), validation.Messages(map[string]string{
 				"f." + ruleKey(tt.failRule): tt.message,
@@ -358,51 +356,26 @@ func (s *ValidationTestSuite) TestCustomRule() {
 
 	validator, err := facades.Validation().Make(context.Background(), map[string]any{
 		"f": "Goravel",
-	}, map[string]string{
-		"f": "exists:users,name",
+	}, map[string]any{
+		"f": "custom_exists:users,name",
 	}, validation.Messages(map[string]string{
-		"f.exists": "exists failed",
+		"f.custom_exists": "custom_exists failed",
 	}))
 	s.Require().NoError(err)
 	s.False(validator.Fails())
 
 	validator, err = facades.Validation().Make(context.Background(), map[string]any{
 		"f": "Unknown",
-	}, map[string]string{
-		"f": "exists:users,name",
+	}, map[string]any{
+		"f": "custom_exists:users,name",
 	}, validation.Messages(map[string]string{
-		"f.exists": "exists failed",
+		"f.custom_exists": "custom_exists failed",
 	}))
 	s.Require().NoError(err)
 	s.True(validator.Fails())
 	s.Equal(map[string]map[string]string{
 		"f": {
-			"exists": "exists failed",
-		},
-	}, validator.Errors().All())
-
-	validator, err = facades.Validation().Make(context.Background(), map[string]any{
-		"f": "Unknown",
-	}, map[string]string{
-		"f": "not_exists:users,name",
-	}, validation.Messages(map[string]string{
-		"f.not_exists": "not_exists failed",
-	}))
-	s.Require().NoError(err)
-	s.False(validator.Fails())
-
-	validator, err = facades.Validation().Make(context.Background(), map[string]any{
-		"f": "Goravel",
-	}, map[string]string{
-		"f": "not_exists:users,name",
-	}, validation.Messages(map[string]string{
-		"f.not_exists": "not_exists failed",
-	}))
-	s.Require().NoError(err)
-	s.True(validator.Fails())
-	s.Equal(map[string]map[string]string{
-		"f": {
-			"not_exists": "not_exists failed",
+			"custom_exists": "custom_exists failed",
 		},
 	}, validator.Errors().All())
 }
@@ -410,9 +383,9 @@ func (s *ValidationTestSuite) TestCustomRule() {
 func (s *ValidationTestSuite) TestCustomFilter() {
 	validator, err := facades.Validation().Make(context.Background(), map[string]any{
 		"f": "goravel",
-	}, map[string]string{
+	}, map[string]any{
 		"f": "eq:goravel_suffix",
-	}, validation.Filters(map[string]string{
+	}, validation.Filters(map[string]any{
 		"f": "append_suffix:_suffix",
 	}), validation.Messages(map[string]string{
 		"f.eq": "append_suffix failed",
@@ -422,9 +395,9 @@ func (s *ValidationTestSuite) TestCustomFilter() {
 
 	validator, err = facades.Validation().Make(context.Background(), map[string]any{
 		"f": "goravel",
-	}, map[string]string{
+	}, map[string]any{
 		"f": "eq:goravel_fail",
-	}, validation.Filters(map[string]string{
+	}, validation.Filters(map[string]any{
 		"f": "append_suffix:_suffix",
 	}), validation.Messages(map[string]string{
 		"f.eq": "append_suffix failed",
@@ -438,42 +411,201 @@ func (s *ValidationTestSuite) TestCustomFilter() {
 	}, validator.Errors().All())
 }
 
-func (s *ValidationTestSuite) TestTypes() {
-	s.Run("Validate", func() {
-		resp, err := s.Http(s.T()).Post("/validation/json", strings.NewReader(`{"context":"ctx","name":"Goravel","date":"2024-07-08 18:33:32"}`))
+func (s *ValidationTestSuite) TestValidateJson() {
+	s.Run("success", func() {
+		resp, err := s.Http(s.T()).Post("/validation/json", strings.NewReader(`{"context":"ctx","name":"Goravel","date":"2024-07-08 18:33:32","age":1,"items":[{"name":"item1"},{"name":"item2"}],"meta":{"name":"api","source":"api","trace":"abc"}}`))
 		s.Require().NoError(err)
 		resp.AssertSuccessful()
 
-		resp, err = s.Http(s.T()).Post("/validation/json", strings.NewReader(`{"context":"ctx","name":""}`))
+		result, err := resp.Json()
 		s.Require().NoError(err)
-		resp.AssertBadRequest()
-		content, err := resp.Content()
-		s.Require().NoError(err)
-		s.Equal("{\"message\":{\"date\":{\"required\":\"date is required to not be empty\"},\"name\":{\"required\":\"name is required to not be empty\"}}}", content)
+		s.Equal(map[string]any{
+			"context": "ctx_context",
+			"name":    "Goravel",
+			"date":    "2024-07-08 18:33:32",
+			"age":     float64(1),
+			"items":   []any{map[string]any{"name": "item1"}, map[string]any{"name": "item2"}},
+			"meta":    map[string]any{"name": "api", "source": "api", "trace": "abc"},
+		}, result)
 	})
 
-	s.Run("ValidateRequest", func() {
-		resp, err := s.Http(s.T()).Post("/validation/request", strings.NewReader(`{"name":" Goravel ","context":"ctx","date":"2024-07-08 18:33:32","tags":["tag1","tag2"],"scores":[1,2],"code":123456}`))
+	s.Run("fail", func() {
+		resp, err := s.Http(s.T()).Post("/validation/json", strings.NewReader(`{"context":"ctx","name":"Goravel","date":"2024-07-08 18:33:32","age":1,"items":[{"name":"item1"},{"name":""}],"meta":{"name":"","source":"api","trace":"abc"}}`))
+		s.Require().NoError(err)
+		resp.AssertBadRequest()
+
+		result, err := resp.Json()
+		s.Require().NoError(err)
+		s.Equal(map[string]any{
+			"items.1.name": map[string]any{
+				"required": "The items.1.name field is required.",
+			},
+			"meta.name": map[string]any{
+				"required": "The meta.name field is required.",
+			},
+		}, result["message"])
+	})
+}
+
+func (s *ValidationTestSuite) TestValidateForm() {
+	s.Run("success", func() {
+		payload, err := http.NewBody().SetField("context", "ctx").SetField("name", "Goravel").SetField("age", 1).Build()
+		s.Require().NoError(err)
+		resp, err := s.Http(s.T()).WithHeader("Content-Type", payload.ContentType()).Post("/validation/form", payload.Reader())
 		s.Require().NoError(err)
 		resp.AssertSuccessful()
 
-		resp, err = s.Http(s.T()).Post("/validation/request", strings.NewReader(`{"context":"ctx","date":"1","tags":"tag1","scores":1,"code":1234567}`))
-		s.Require().NoError(err)
-		resp.AssertBadRequest()
 		content, err := resp.Content()
 		s.Require().NoError(err)
-		s.Equal("{\"message\":{\"code\":{\"regex\":\"code value does not pass the regex check\"},\"date\":{\"date\":\"date value should be a date string\"},\"name\":{\"required\":\"name is required to not be empty\"}}}", content)
+		s.Equal("{\"age\":1,\"context\":\"ctx_context\",\"name\":\"Goravel\"}", content)
 	})
 
-	s.Run("ValidationMake", func() {
-		validator, err := facades.Validation().Make(context.Background(), map[string]any{"f": "  goravel  "}, map[string]string{"f": "eq:goravel"}, validation.Filters(map[string]string{"f": "trim"}), validation.Messages(map[string]string{"f.eq": "make failed"}))
+	s.Run("fail", func() {
+		payload, err := http.NewBody().SetField("context", "ctx").SetField("name", "").SetField("age", 1).Build()
+		s.Require().NoError(err)
+		resp, err := s.Http(s.T()).WithHeader("Content-Type", payload.ContentType()).Post("/validation/form", payload.Reader())
+		s.Require().NoError(err)
+		resp.AssertBadRequest()
+
+		content, err := resp.Content()
+		s.Require().NoError(err)
+		s.Equal("{\"message\":{\"name\":{\"required\":\"The name field is required.\"}}}", content)
+	})
+}
+
+func (s *ValidationTestSuite) TestValidateRequest() {
+	s.Run("success", func() {
+		resp, err := s.Http(s.T()).Post("/validation/request", strings.NewReader(`{"name":" Goravel ","context":"ctx","date":"2024-07-08 18:33:32","tags":["tag1","tag2"],"scores":[1,2],"items":[{"name":"item1"},{"name":"item2"}],"meta":{"name":"api","source":"api","trace":"abc"},"code":123456,"age":1}`))
+		s.Require().NoError(err)
+		resp.AssertSuccessful()
+
+		result, err := resp.Json()
+		s.Require().NoError(err)
+		s.Equal(map[string]any{
+			"context": "ctx_context",
+			"name":    "Goravel",
+			"date":    "2024-07-08 18:33:32",
+			"tags":    []any{"tag1", "tag2"},
+			"scores":  []any{float64(1), float64(2)},
+			"items":   []any{map[string]any{"name": "item1"}, map[string]any{"name": "item2"}},
+			"meta":    map[string]any{"name": "api", "source": "api", "trace": "abc"},
+			"code":    float64(123456),
+			"age":     float64(1),
+		}, result)
+	})
+
+	s.Run("fail", func() {
+		resp, err := s.Http(s.T()).Post("/validation/request", strings.NewReader(`{"name":" Goravel ","context":"ctx","date":"2024-07-08 18:33:32","tags":["tag1","tag2"],"scores":[1,2],"items":[{"name":"item1"},{"name":""}],"meta":{"name":"","source":"api","trace":"abc"},"code":123456,"age":1}`))
+		s.Require().NoError(err)
+		resp.AssertBadRequest()
+
+		result, err := resp.Json()
+		s.Require().NoError(err)
+		s.Equal(map[string]any{
+			"items.1.name": map[string]any{
+				"required": "The items.1.name field is required.",
+			},
+			"meta.name": map[string]any{
+				"required": "The meta.name field is required.",
+			},
+		}, result["message"])
+	})
+}
+
+func (s *ValidationTestSuite) TestValidateMake() {
+	s.Run("success", func() {
+		validator, err := facades.Validation().Make(context.Background(), map[string]any{
+			"context": "ctx",
+			"name":    " Goravel ",
+			"date":    "2024-07-08 18:33:32",
+			"tags":    []any{"tag1", "tag2"},
+			"scores":  []any{1, 2},
+			"items": []any{
+				map[string]any{"name": "item1"},
+				map[string]any{"name": "item2"},
+			},
+			"meta": map[string]any{
+				"name":   "api",
+				"source": "api",
+				"trace":  "abc",
+			},
+			"code": 123456,
+			"age":  1,
+		}, map[string]any{
+			"name":         "required",
+			"context":      "required",
+			"tags.*":       "required|string",
+			"scores.*":     "required|int",
+			"items.*.name": "sometimes|required|string",
+			"meta":         "sometimes|map",
+			"meta.name":    "sometimes|required|string",
+			"date":         "required|date",
+			"code":         `required|regex:^\d{4,6}$`,
+		}, validation.Filters(map[string]any{
+			"name": "trim",
+		}))
 		s.Require().NoError(err)
 		s.False(validator.Fails())
+		s.Equal(map[string]any{
+			"context": "ctx",
+			"name":    "Goravel",
+			"date":    "2024-07-08 18:33:32",
+			"tags":    []any{"tag1", "tag2"},
+			"scores":  []any{1, 2},
+			"items": []any{
+				map[string]any{"name": "item1"},
+				map[string]any{"name": "item2"},
+			},
+			"meta": map[string]any{
+				"name":   "api",
+				"source": "api",
+				"trace":  "abc",
+			},
+			"code": 123456,
+		}, validator.Validated())
+	})
 
-		validator, err = facades.Validation().Make(context.Background(), map[string]any{"f": "  laravel  "}, map[string]string{"f": "eq:goravel"}, validation.Filters(map[string]string{"f": "trim"}), validation.Messages(map[string]string{"f.eq": "make failed"}))
+	s.Run("fail", func() {
+		validator, err := facades.Validation().Make(context.Background(), map[string]any{
+			"context": "ctx",
+			"name":    " Goravel ",
+			"date":    "2024-07-08 18:33:32",
+			"tags":    []any{"tag1", "tag2"},
+			"scores":  []any{1, 2},
+			"items": []any{
+				map[string]any{"name": "item1"},
+				map[string]any{"name": ""},
+			},
+			"meta": map[string]any{
+				"name":   "",
+				"source": "api",
+				"trace":  "abc",
+			},
+			"code": 123456,
+			"age":  1,
+		}, map[string]any{
+			"name":         "required",
+			"context":      "required",
+			"tags.*":       "required|string",
+			"scores.*":     "required|int",
+			"items.*.name": "sometimes|required|string",
+			"meta":         "sometimes|map",
+			"meta.name":    "sometimes|required|string",
+			"date":         "required|date",
+			"code":         `required|regex:^\d{4,6}$`,
+		}, validation.Filters(map[string]any{
+			"name": "trim",
+		}))
 		s.Require().NoError(err)
 		s.True(validator.Fails())
-		s.Equal(map[string]map[string]string{"f": {"eq": "make failed"}}, validator.Errors().All())
+		s.Equal(map[string]map[string]string{
+			"items.1.name": {
+				"required": "The items.1.name field is required.",
+			},
+			"meta.name": {
+				"required": "The meta.name field is required.",
+			},
+		}, validator.Errors().All())
 	})
 }
 

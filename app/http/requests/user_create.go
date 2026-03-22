@@ -18,8 +18,8 @@ func (r *UserCreate) Authorize(ctx http.Context) error {
 	return nil
 }
 
-func (r *UserCreate) Rules(ctx http.Context) map[string]string {
-	return map[string]string{
+func (r *UserCreate) Rules(ctx http.Context) map[string]any {
+	return map[string]any{
 		"name": "required",
 	}
 }
