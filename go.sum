@@ -291,8 +291,8 @@ github.com/goravel/example-proto v0.0.1 h1:ZxETeKREQWjuJ49bX/Hqj1NLR5Vyj489Ks6dR
 github.com/goravel/example-proto v0.0.1/go.mod h1:I8IPsHr4Ndf7KxmdsRpBR2LQ0Geo48+pjv9IIWf3mZg=
 github.com/goravel/fiber v1.17.1-0.20260319150449-0a18b9c6e22b h1:peMAbfUTyQJCtA4wABmOowETE8N5v6i0GEy3vqVWeCg=
 github.com/goravel/fiber v1.17.1-0.20260319150449-0a18b9c6e22b/go.mod h1:vVfU2LnxhCXOE1QH9U0/bFPBfIvbqCD3xyDkSm4wmVM=
-github.com/goravel/framework v1.17.2-0.20260322042944-d61a6cc1601e h1:WXtXYc9lWIbpkbnGiPH4GtWopNh5KZaPEk/wipWPvDI=
-github.com/goravel/framework v1.17.2-0.20260322042944-d61a6cc1601e/go.mod h1:2/eF2HWF3MFE1AIVnY5e+zebNCsawnMJRT14NzSiq/I=
+github.com/goravel/framework v1.17.2-0.20260329082340-b250edc75e66 h1:b5FFDlVunxxalmqmqvkLcGip2ji1RYpsyByKKvv3EhQ=
+github.com/goravel/framework v1.17.2-0.20260329082340-b250edc75e66/go.mod h1:MksvSJ0GQTfVgIIbAqOPs7S3hQGtVCCfWhZSQNVSsBA=
 github.com/goravel/gin v1.17.1-0.20260319150458-6d1543fdf889 h1:P1wUP46zVOoD3wXFrydvoBs3q8SfJO7Gk7TU6emKNZE=
 github.com/goravel/gin v1.17.1-0.20260319150458-6d1543fdf889/go.mod h1:GsI8Ep1tfePcLHSx0vVtj+k3PLwpn/rUs4tKDFaH7b0=
 github.com/goravel/minio v1.17.0 h1:WGiPP/KZl/fuDpT9THRM83wjhLCqe1oIAyNVJvVjhS4=
@@ -772,8 +772,8 @@ google.golang.org/genproto/googleapis/api v0.0.0-20260209200024-4cfbd4190f57 h1:
 google.golang.org/genproto/googleapis/api v0.0.0-20260209200024-4cfbd4190f57/go.mod h1:kSJwQxqmFXeo79zOmbrALdflXQeAYcUbgS7PbpMknCY=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171 h1:ggcbiqK8WWh6l1dnltU4BgWGIGo+EVYxCaAPih/zQXQ=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20260226221140-a57be14db171/go.mod h1:4Hqkh8ycfw05ld/3BWL7rJOSfebL2Q+DVDeRgYgxUU8=
-google.golang.org/grpc v1.79.2 h1:fRMD94s2tITpyJGtBBn7MkMseNpOZU8ZxgC3MMBaXRU=
-google.golang.org/grpc v1.79.2/go.mod h1:KmT0Kjez+0dde/v2j9vzwoAScgEPx/Bw1CYChhHLrHQ=
+google.golang.org/grpc v1.79.3 h1:sybAEdRIEtvcD68Gx7dmnwjZKlyfuc61Dyo9pGXXkKE=
+google.golang.org/grpc v1.79.3/go.mod h1:KmT0Kjez+0dde/v2j9vzwoAScgEPx/Bw1CYChhHLrHQ=
 google.golang.org/protobuf v1.36.11 h1:fV6ZwhNocDyBLK0dj+fg8ektcVegBBuEolpbTQyBNVE=
 google.golang.org/protobuf v1.36.11/go.mod h1:HTf+CrKn2C3g5S8VImy6tdcUvCska2kB7j23XfzDpco=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=

@@ -3,7 +3,6 @@ package feature
 import (
 	"io"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/goravel/framework/support/color"
 	"github.com/goravel/framework/support/file"
+	"github.com/goravel/framework/support/path"
 	"github.com/goravel/mysql"
 	"github.com/goravel/sqlite"
 	"github.com/goravel/sqlserver"
@@ -129,9 +129,15 @@ func (s *MigrationTestSuite) TestCommandMigrateRefresh() {
 	s.True(s.columnExists("users", "mail"))
 
 	s.NoError(facades.Artisan().Call("--no-ansi migrate:refresh --step 1"))
+
 	afterStepRefresh, err := s.migrationCount()
 	s.NoError(err)
-	s.Equal(total-1, afterStepRefresh)
+	s.Equal(total, afterStepRefresh)
+
+	lastBatch, err := s.latestMigrationBatch()
+	s.NoError(err)
+	s.Equal(lastBatch, 2)
+
 	s.True(facades.Schema().HasTable("users"))
 	s.True(s.columnExists("users", "mail"))
 }
@@ -193,7 +199,7 @@ func (s *MigrationTestSuite) TestCommandMigrateStatus() {
 	s.Contains(ranOutput, "Batch / Status")
 	s.Contains(ranOutput, "20210101000001_create_users_table")
 	s.Contains(ranOutput, "20210101000002_create_jobs_table")
-	s.Contains(ranOutput, "20250331111908_add_columns_to_users_table")
+	s.Contains(ranOutput, "20250330911908_add_columns_to_users_table")
 	s.Contains(ranOutput, "20250331093125_alert_columns_of_users_table")
 	s.Contains(ranOutput, "Ran")
 
@@ -204,29 +210,31 @@ func (s *MigrationTestSuite) TestCommandMigrateStatus() {
 	s.Contains(pendingOutput, "Batch / Status")
 	s.Contains(pendingOutput, "20210101000001_create_users_table")
 	s.Contains(pendingOutput, "20210101000002_create_jobs_table")
-	s.Contains(pendingOutput, "20250331111908_add_columns_to_users_table")
+	s.Contains(pendingOutput, "20250330911908_add_columns_to_users_table")
 	s.Contains(pendingOutput, "20250331093125_alert_columns_of_users_table")
 	s.Contains(pendingOutput, "Pending")
 }
 
 func (s *MigrationTestSuite) TestCommandMakeMigration() {
-	root := s.projectRoot()
-	snapshotAndRestoreBootstrapMigrations(s.T(), root)
+	migrationsPath := path.Bootstrap("migrations.go")
+	originalContent, err := os.ReadFile(migrationsPath)
+	if err != nil {
+		s.T().Fatalf("read %s failed: %v", migrationsPath, err)
+	}
 
-	wd, err := os.Getwd()
-	s.Require().NoError(err)
-	s.Require().NoError(os.Chdir(root))
 	s.T().Cleanup(func() {
-		s.NoError(os.Chdir(wd))
+		if err := os.WriteFile(migrationsPath, originalContent, 0o644); err != nil {
+			s.T().Fatalf("restore %s failed: %v", migrationsPath, err)
+		}
 	})
+
+	beforeFiles := s.listMigrationFiles()
 
 	driver := facades.Orm().Config().Driver
 	migrationName := "test_" + driver + "_" + cast.ToString(time.Now().UnixNano())
-	beforeFiles := s.listMigrationFiles(root)
-
 	s.NoError(facades.Artisan().Call("--no-ansi make:migration " + migrationName))
 
-	afterFiles := s.listMigrationFiles(root)
+	afterFiles := s.listMigrationFiles()
 	var createdFiles []string
 	for item := range afterFiles {
 		if _, ok := beforeFiles[item]; !ok {
@@ -235,7 +243,8 @@ func (s *MigrationTestSuite) TestCommandMakeMigration() {
 	}
 
 	s.Require().NotEmpty(createdFiles)
-	migrationPath := filepath.Join(root, "database", "migrations", createdFiles[0])
+
+	migrationPath := path.Migration(createdFiles[0])
 	s.Require().FileExists(migrationPath)
 
 	s.T().Cleanup(func() {
@@ -250,12 +259,11 @@ func (s *MigrationTestSuite) TestCommandMakeMigration() {
 	re := regexp.MustCompile(`type\s+(M[^\s]+)\s+struct`)
 	matches := re.FindStringSubmatch(string(content))
 	s.Require().Len(matches, 2)
-	structName := matches[1]
 
-	bootstrapContent, err := os.ReadFile(filepath.Join(root, "bootstrap", "migrations.go"))
+	structName := matches[1]
+	updatedBootstrap, err := os.ReadFile(migrationsPath)
 	s.Require().NoError(err)
-	updatedBootstrap := string(bootstrapContent)
-	s.Contains(updatedBootstrap, "&migrations."+structName+"{}")
+	s.Contains(string(updatedBootstrap), "&migrations."+structName+"{}")
 }
 
 func (s *MigrationTestSuite) TestTableComment() {
@@ -282,7 +290,7 @@ func (s *MigrationTestSuite) latestMigrationBatch() (int, error) {
 	table := facades.Config().GetString("database.migrations.table")
 
 	var batch int
-	err := facades.DB().Table(table).OrderByDesc("batch").Limit(1).Pluck("batch", &batch)
+	err := facades.DB().Table(table).OrderByDesc("batch").Limit(1).Value("batch", &batch)
 	if err != nil {
 		return 0, err
 	}
@@ -300,8 +308,8 @@ func (s *MigrationTestSuite) captureArtisanOutput(command string) string {
 	})
 }
 
-func (s *MigrationTestSuite) listMigrationFiles(root string) map[string]struct{} {
-	migrationDir := filepath.Join(root, "database", "migrations")
+func (s *MigrationTestSuite) listMigrationFiles() map[string]struct{} {
+	migrationDir := path.Migration()
 	entries, err := os.ReadDir(migrationDir)
 	s.NoError(err)
 
@@ -316,36 +324,4 @@ func (s *MigrationTestSuite) listMigrationFiles(root string) map[string]struct{}
 	}
 
 	return files
-}
-
-func (s *MigrationTestSuite) projectRoot() string {
-	dir, err := os.Getwd()
-	s.Require().NoError(err)
-
-	for {
-		if file.Exists(filepath.Join(dir, "go.mod")) && file.Exists(filepath.Join(dir, "bootstrap", "migrations.go")) {
-			return dir
-		}
-
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			s.T().Fatal("cannot locate project root from current working directory")
-		}
-
-		dir = parent
-	}
-}
-
-func snapshotAndRestoreBootstrapMigrations(t *testing.T, root string) {
-	path := filepath.Join(root, "bootstrap", "migrations.go")
-	original, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("read %s failed: %v", path, err)
-	}
-
-	t.Cleanup(func() {
-		if err := os.WriteFile(path, original, 0o644); err != nil {
-			t.Fatalf("restore %s failed: %v", path, err)
-		}
-	})
 }
