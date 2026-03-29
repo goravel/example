@@ -291,8 +291,8 @@ github.com/goravel/example-proto v0.0.1 h1:ZxETeKREQWjuJ49bX/Hqj1NLR5Vyj489Ks6dR
 github.com/goravel/example-proto v0.0.1/go.mod h1:I8IPsHr4Ndf7KxmdsRpBR2LQ0Geo48+pjv9IIWf3mZg=
 github.com/goravel/fiber v1.17.1-0.20260319150449-0a18b9c6e22b h1:peMAbfUTyQJCtA4wABmOowETE8N5v6i0GEy3vqVWeCg=
 github.com/goravel/fiber v1.17.1-0.20260319150449-0a18b9c6e22b/go.mod h1:vVfU2LnxhCXOE1QH9U0/bFPBfIvbqCD3xyDkSm4wmVM=
-github.com/goravel/framework v1.17.2-0.20260329082340-b250edc75e66 h1:b5FFDlVunxxalmqmqvkLcGip2ji1RYpsyByKKvv3EhQ=
-github.com/goravel/framework v1.17.2-0.20260329082340-b250edc75e66/go.mod h1:MksvSJ0GQTfVgIIbAqOPs7S3hQGtVCCfWhZSQNVSsBA=
+github.com/goravel/framework v1.17.2-0.20260329093411-aab3d970acfa h1:J4pK2lyIOmUre/YszgyLbkOXqm1t2+mU4HqTv6X64gA=
+github.com/goravel/framework v1.17.2-0.20260329093411-aab3d970acfa/go.mod h1:MksvSJ0GQTfVgIIbAqOPs7S3hQGtVCCfWhZSQNVSsBA=
 github.com/goravel/gin v1.17.1-0.20260319150458-6d1543fdf889 h1:P1wUP46zVOoD3wXFrydvoBs3q8SfJO7Gk7TU6emKNZE=
 github.com/goravel/gin v1.17.1-0.20260319150458-6d1543fdf889/go.mod h1:GsI8Ep1tfePcLHSx0vVtj+k3PLwpn/rUs4tKDFaH7b0=
 github.com/goravel/minio v1.17.0 h1:WGiPP/KZl/fuDpT9THRM83wjhLCqe1oIAyNVJvVjhS4=
