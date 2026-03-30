@@ -103,6 +103,8 @@ func (s *DatabaseCommandsTestSuite) TestCommandMakeSeeder() {
 		s.T().Fatalf("read %s failed: %v", seedersBootstrapPath, err)
 	}
 
+	s.NotContains(string(seedersBootstrapContent), "&seeders.TestDbCommandSeeder{}")
+
 	s.NoError(file.Remove(seederPath))
 
 	s.T().Cleanup(func() {
