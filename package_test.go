@@ -163,7 +163,9 @@ func TestInstallAndUninstallLocalPackage(t *testing.T) {
 	assert.True(t, file.Exists(path.Base("packages", "example")))
 	assert.True(t, file.Exists(path.Base("packages", "example", "setup", "setup.go")))
 
-	assert.False(t, facades.Process().Run("go run . artisan package:install goravel/packages/example").Failed())
+	result := facades.Process().Run("go run . artisan package:install goravel/packages/example")
+	assert.NoError(t, result.Error())
+	assert.False(t, result.Failed())
 	assert.True(t, file.Contain(path.Bootstrap("providers.go"), "&example.ServiceProvider{},"))
 	assert.True(t, file.Contain(path.Bootstrap("providers.go"), "goravel/packages/example"))
 

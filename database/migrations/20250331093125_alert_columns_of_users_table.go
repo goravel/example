@@ -27,5 +27,11 @@ func (r *M20250331093125AlertColumnsOfUsersTable) Up() error {
 
 // Down Reverse the migrations.
 func (r *M20250331093125AlertColumnsOfUsersTable) Down() error {
+	if facades.Schema().HasTable("users") {
+		return facades.Schema().Table("users", func(table schema.Blueprint) {
+			table.RenameColumn("mail", "email")
+		})
+	}
+
 	return nil
 }

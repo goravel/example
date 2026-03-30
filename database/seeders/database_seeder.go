@@ -1,5 +1,10 @@
 package seeders
 
+import (
+	"goravel/app/facades"
+	"goravel/app/models"
+)
+
 type DatabaseSeeder struct {
 }
 
@@ -10,5 +15,8 @@ func (s *DatabaseSeeder) Signature() string {
 
 // Run executes the seeder logic.
 func (s *DatabaseSeeder) Run() error {
-	return nil
+	return facades.Orm().Query().Create(&models.User{
+		Name: "migration",
+		Mail: "migration@goravel.dev",
+	})
 }
