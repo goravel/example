@@ -1,7 +1,6 @@
 package feature
 
 import (
-	"io"
 	"os"
 	"regexp"
 	"strings"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/spf13/cast"
 
-	"github.com/goravel/framework/support/color"
 	"github.com/goravel/framework/support/file"
 	"github.com/goravel/framework/support/path"
 	"github.com/goravel/mysql"
@@ -194,7 +192,8 @@ func (s *MigrationTestSuite) TestCommandMigrateRollback() {
 }
 
 func (s *MigrationTestSuite) TestCommandMigrateStatus() {
-	ranOutput := s.captureArtisanOutput("--no-ansi migrate:status")
+	ranOutput, err := s.CaptureArtisanOutput("--no-ansi migrate:status")
+	s.NoError(err)
 	s.Contains(ranOutput, "Migration name")
 	s.Contains(ranOutput, "Batch / Status")
 	s.Contains(ranOutput, "20210101000001_create_users_table")
@@ -205,7 +204,8 @@ func (s *MigrationTestSuite) TestCommandMigrateStatus() {
 
 	s.NoError(facades.Artisan().Call("--no-ansi migrate:reset"))
 
-	pendingOutput := s.captureArtisanOutput("--no-ansi migrate:status")
+	pendingOutput, err := s.CaptureArtisanOutput("--no-ansi migrate:status")
+	s.NoError(err)
 	s.Contains(pendingOutput, "Migration name")
 	s.Contains(pendingOutput, "Batch / Status")
 	s.Contains(pendingOutput, "20210101000001_create_users_table")
@@ -300,12 +300,6 @@ func (s *MigrationTestSuite) latestMigrationBatch() (int, error) {
 
 func (s *MigrationTestSuite) columnExists(table, column string) bool {
 	return facades.Schema().HasColumn(table, column)
-}
-
-func (s *MigrationTestSuite) captureArtisanOutput(command string) string {
-	return color.CaptureOutput(func(_ io.Writer) {
-		s.NoError(facades.Artisan().Call(command))
-	})
 }
 
 func (s *MigrationTestSuite) listMigrationFiles() map[string]struct{} {
