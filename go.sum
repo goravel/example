@@ -303,8 +303,8 @@ github.com/goravel/oss v1.17.1-0.20260316041853-7cb11e498cb9 h1:kqMV+eHCLvzzr77p
 github.com/goravel/oss v1.17.1-0.20260316041853-7cb11e498cb9/go.mod h1:QlfBcmeY4mxqgF0Z3RyDiLjIED19OSp8TIv0W5Dlci0=
 github.com/goravel/postgres v1.17.2-0.20260328141505-d15c51ef0b70 h1:um8GCBQmJWMmpkW2mTKPe5IS7FawcBMsvAQG4+/N6lE=
 github.com/goravel/postgres v1.17.2-0.20260328141505-d15c51ef0b70/go.mod h1:gxXkU3s83cberkcDAgOeltddFhtTKEI+RR3UhGlEiWE=
-github.com/goravel/redis v1.17.1-0.20260316034345-e4cd4745fd56 h1:CfxwNA3dPqYPeFOJT5e+Z6Vwz79eLQSfqPFmja/704A=
-github.com/goravel/redis v1.17.1-0.20260316034345-e4cd4745fd56/go.mod h1:fuxKxHRwqTWXfXDplomeVdbM2lVmPSdikIONRWGvwYQ=
+github.com/goravel/redis v1.17.1-0.20260209063449-3355af77f62f h1:pwkX8aIl6RLxH5CUPEwSG0FSDdVoaS8kYj+m+m6XKz0=
+github.com/goravel/redis v1.17.1-0.20260209063449-3355af77f62f/go.mod h1:qz5LA4aa19o1s1sedY2Z9fmPgU41TWXHIFDKyZOClvM=
 github.com/goravel/s3 v1.17.1-0.20260406013458-b802a3c6ebb2 h1:BycBYsloUklRJICJFJSSjJwklwI0qIr7yOwwfp3x8qQ=
 github.com/goravel/s3 v1.17.1-0.20260406013458-b802a3c6ebb2/go.mod h1:ly432GBazn/Z06JMPZcstxcPpjE9E5gl+3Hc2Ygz4CA=
 github.com/goravel/sqlite v1.17.1-0.20260328141412-2036b1ebff36 h1:r7KCjeXGwm9IYxjtMmlH0ZtjJyGaTcENz57fTxDTgGE=

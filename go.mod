@@ -16,7 +16,7 @@ require (
 	github.com/goravel/mysql v1.17.2-0.20260328140940-c52993f25694
 	github.com/goravel/oss v1.17.1-0.20260316041853-7cb11e498cb9
 	github.com/goravel/postgres v1.17.2-0.20260328141505-d15c51ef0b70
-	github.com/goravel/redis v1.17.1-0.20260316034345-e4cd4745fd56
+	github.com/goravel/redis v1.17.1-0.20260209063449-3355af77f62f
 	github.com/goravel/s3 v1.17.1-0.20260406013458-b802a3c6ebb2
 	github.com/goravel/sqlite v1.17.1-0.20260328141412-2036b1ebff36
 	github.com/goravel/sqlserver v1.17.2-0.20260328141251-3f22017223f8
