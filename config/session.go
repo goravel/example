@@ -12,12 +12,7 @@ import (
 func init() {
 	config := facades.Config()
 	config.Add("session", map[string]any{
-		// Default Session Driver
-		//
-		// This option controls the default session "driver" that will be used on
-		// requests. By default, we will use the lightweight file session driver, but you
-		// may specify any of the other wonderful drivers provided here.
-		"default": config.Env("SESSION_DRIVER", "file"),
+		"default": "redis",
 
 		// Session drivers
 		// Available Drivers: "file", "custom"

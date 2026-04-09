@@ -16,8 +16,7 @@ import (
 func init() {
 	config := facades.Config()
 	config.Add("http", map[string]any{
-		// HTTP Driver
-		"default": "gin",
+		"default": "fiber",
 		// HTTP Drivers
 		"drivers": map[string]any{
 			"gin": map[string]any{
