@@ -19,11 +19,11 @@ func init() {
 		// Database connections
 		"connections": map[string]any{
 			"postgres": map[string]any{
-				"host":     config.Env("DB_HOST", "127.0.0.1"),
-				"port":     config.Env("DB_PORT", 5432),
-				"database": config.Env("DB_DATABASE", "forge"),
-				"username": config.Env("DB_USERNAME", ""),
-				"password": config.Env("DB_PASSWORD", ""),
+				"host":     config.Env("DB_HOST"),
+				"port":     config.Env("DB_PORT"),
+				"database": config.Env("DB_DATABASE"),
+				"username": config.Env("DB_USERNAME"),
+				"password": config.Env("DB_PASSWORD"),
 				"sslmode":  "disable",
 				"singular": false,
 				"prefix":   "",
@@ -33,11 +33,11 @@ func init() {
 				},
 			},
 			"mysql": map[string]any{
-				"host":     config.Env("DB_HOST", "127.0.0.1"),
-				"port":     config.Env("DB_PORT", 3306),
-				"database": config.Env("DB_DATABASE", "forge"),
-				"username": config.Env("DB_USERNAME", ""),
-				"password": config.Env("DB_PASSWORD", ""),
+				"host":     config.Env("DB_HOST"),
+				"port":     config.Env("DB_PORT"),
+				"database": config.Env("DB_DATABASE"),
+				"username": config.Env("DB_USERNAME"),
+				"password": config.Env("DB_PASSWORD"),
 				"charset":  "utf8mb4",
 				"prefix":   "",
 				"singular": false,
@@ -46,11 +46,11 @@ func init() {
 				},
 			},
 			"sqlserver": map[string]any{
-				"host":     config.Env("DB_HOST", "127.0.0.1"),
-				"port":     config.Env("DB_PORT", 3306),
-				"database": config.Env("DB_DATABASE", "forge"),
-				"username": config.Env("DB_USERNAME", ""),
-				"password": config.Env("DB_PASSWORD", ""),
+				"host":     config.Env("DB_HOST"),
+				"port":     config.Env("DB_PORT"),
+				"database": config.Env("DB_DATABASE"),
+				"username": config.Env("DB_USERNAME"),
+				"password": config.Env("DB_PASSWORD"),
 				"charset":  "utf8mb4",
 				"prefix":   "",
 				"singular": false,
@@ -112,7 +112,7 @@ func init() {
 			"driver": "default",
 			"table":  "migrations",
 		},
-
+		// Redis connections
 		"redis": map[string]any{
 			"default": map[string]any{
 				"host":     config.Env("REDIS_HOST", ""),

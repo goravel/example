@@ -58,6 +58,7 @@ func Providers() []foundation.ServiceProvider {
 		&schedule.ServiceProvider{},
 		&filesystem.ServiceProvider{},
 		&testing.ServiceProvider{},
+		&telemetry.ServiceProvider{},
 		&postgres.ServiceProvider{},
 		&mysql.ServiceProvider{},
 		&sqlserver.ServiceProvider{},
@@ -69,6 +70,5 @@ func Providers() []foundation.ServiceProvider {
 		&redis.ServiceProvider{},
 		&gin.ServiceProvider{},
 		&fiber.ServiceProvider{},
-		&telemetry.ServiceProvider{},
 	}
 }

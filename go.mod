@@ -7,17 +7,17 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/gofiber/fiber/v2 v2.52.12
 	github.com/gofiber/template/html/v2 v2.1.3
-	github.com/goravel/cos v1.17.0
+	github.com/goravel/cos v1.17.1-0.20260323021954-3ddc163693ee
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.17.1-0.20260319150449-0a18b9c6e22b
-	github.com/goravel/framework v1.17.2-0.20260408110243-4838a69e4bdd
+	github.com/goravel/framework v1.17.2
 	github.com/goravel/gin v1.17.1-0.20260319150458-6d1543fdf889
-	github.com/goravel/minio v1.17.0
+	github.com/goravel/minio v1.17.1-0.20260406054609-93d9a56045ac
 	github.com/goravel/mysql v1.17.2-0.20260328140940-c52993f25694
-	github.com/goravel/oss v1.17.0
+	github.com/goravel/oss v1.17.1-0.20260316041853-7cb11e498cb9
 	github.com/goravel/postgres v1.17.2-0.20260328141505-d15c51ef0b70
-	github.com/goravel/redis v1.17.0
-	github.com/goravel/s3 v1.17.0
+	github.com/goravel/redis v1.17.1-0.20260316034345-e4cd4745fd56
+	github.com/goravel/s3 v1.17.1-0.20260406013458-b802a3c6ebb2
 	github.com/goravel/sqlite v1.17.1-0.20260328141412-2036b1ebff36
 	github.com/goravel/sqlserver v1.17.2-0.20260328141251-3f22017223f8
 	github.com/gorilla/websocket v1.5.0
