@@ -82,6 +82,24 @@ func Api() {
 		return ctx.Response().String(http.StatusOK, "ok")
 	})
 
+	facades.Route().Get("timeout-isolated", func(ctx http.Context) http.Response {
+		token := ctx.Request().Query("token", "missing")
+
+		select {
+		case <-time.After(4 * time.Second):
+			return ctx.Response().Success().String("late:" + token)
+		case <-ctx.Done():
+			return ctx.Response().Status(http.StatusRequestTimeout).String("Request Timeout")
+		}
+	})
+	facades.Route().Get("timeout-after", func(ctx http.Context) http.Response {
+		time.Sleep(1500 * time.Millisecond)
+
+		return ctx.Response().Success().Json(http.Json{
+			"token": ctx.Request().Query("token", "missing"),
+		})
+	})
+
 	facades.Route().Get("panic", func(ctx http.Context) http.Response {
 		panic("test panic")
 	})
