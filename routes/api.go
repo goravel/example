@@ -12,7 +12,11 @@ import (
 	"goravel/app/http/middleware"
 )
 
+const timeoutIsolationBuffer = 500 * time.Millisecond
+
 func Api() {
+	timeoutIsolationDelay, timeoutAfterDelay := timeoutIsolationDurations()
+
 	// Auth
 	authController := controllers.NewAuthController()
 	facades.Route().Prefix("jwt").Group(func(route route.Router) {
@@ -84,16 +88,18 @@ func Api() {
 
 	facades.Route().Get("timeout-isolated", func(ctx http.Context) http.Response {
 		token := ctx.Request().Query("token", "missing")
+		timer := time.NewTimer(timeoutIsolationDelay)
+		defer stopTimer(timer)
 
 		select {
-		case <-time.After(4 * time.Second):
+		case <-timer.C:
 			return ctx.Response().Success().String("late:" + token)
 		case <-ctx.Done():
-			return nil
+			return ctx.Response().Status(http.StatusRequestTimeout).String("Request Timeout")
 		}
 	})
 	facades.Route().Get("timeout-after", func(ctx http.Context) http.Response {
-		time.Sleep(1500 * time.Millisecond)
+		time.Sleep(timeoutAfterDelay)
 
 		return ctx.Response().Success().Json(http.Json{
 			"token": ctx.Request().Query("token", "missing"),
@@ -197,4 +203,24 @@ func Api() {
 
 		return ctx.Response().Success().String(body)
 	})
+}
+
+func timeoutIsolationDurations() (time.Duration, time.Duration) {
+	requestTimeout := time.Duration(facades.Config().GetInt("http.request_timeout", 3)) * time.Second
+	if requestTimeout <= 0 {
+		requestTimeout = 3 * time.Second
+	}
+
+	return requestTimeout + timeoutIsolationBuffer, requestTimeout - timeoutIsolationBuffer
+}
+
+func stopTimer(timer *time.Timer) {
+	if timer.Stop() {
+		return
+	}
+
+	select {
+	case <-timer.C:
+	default:
+	}
 }
