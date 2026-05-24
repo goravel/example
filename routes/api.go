@@ -89,7 +89,7 @@ func Api() {
 		case <-time.After(4 * time.Second):
 			return ctx.Response().Success().String("late:" + token)
 		case <-ctx.Done():
-			return ctx.Response().Status(http.StatusRequestTimeout).String("Request Timeout")
+			return nil
 		}
 	})
 	facades.Route().Get("timeout-after", func(ctx http.Context) http.Response {
