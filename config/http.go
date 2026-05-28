@@ -2,8 +2,8 @@ package config
 
 import (
 	"github.com/gin-gonic/gin/render"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/template/html/v2"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/template/html/v3"
 	fiberfacades "github.com/goravel/fiber/facades"
 	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/support/path"
