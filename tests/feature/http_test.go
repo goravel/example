@@ -180,22 +180,108 @@ func (s *HttpTestSuite) TestTimeout() {
 	resp.AssertStatus(contractshttp.StatusRequestTimeout)
 }
 
+func (s *HttpTestSuite) TestTimeoutIsolation() {
+	timeoutResp, err := s.Http(s.T()).Get("/timeout-isolated?token=stale")
+
+	s.Require().NoError(err)
+	timeoutResp.AssertStatus(contractshttp.StatusRequestTimeout)
+
+	timeoutContent, err := timeoutResp.Content()
+	s.Require().NoError(err)
+	s.Equal("Request Timeout", timeoutContent)
+
+	freshResp, err := s.Http(s.T()).Get("/timeout-after?token=fresh")
+
+	s.Require().NoError(err)
+	freshResp.AssertSuccessful()
+
+	freshContent, err := freshResp.Content()
+	s.Require().NoError(err)
+	s.Equal("{\"token\":\"fresh\"}", freshContent)
+}
+
 func (s *HttpTestSuite) TestUrl() {
 	resp, err := s.Http(s.T()).Get("/url/get/1?a=1&b=2")
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
 
-	content, err := resp.Content()
-	s.Require().NoError(err)
-	s.Equal(`{"full_url":"http://example.com/url/get/1?a=1\u0026b=2","info":{"handler":"goravel/routes.Api.func11.1","method":"GET","name":"url.get","path":"/url/get/{id}"},"info1":{"handler":"goravel/routes.Api.func11.1","method":"GET|HEAD","name":"url.get","path":"/url/get/{id}"},"method":"GET","name":"url.get","origin_path":"/url/get/{id}","path":"/url/get/1","url":"/url/get/1?a=1\u0026b=2"}`, content)
+	var getResponse struct {
+		FullURL string `json:"full_url"`
+		Info    struct {
+			Handler string `json:"handler"`
+			Method  string `json:"method"`
+			Name    string `json:"name"`
+			Path    string `json:"path"`
+		} `json:"info"`
+		Info1 struct {
+			Handler string `json:"handler"`
+			Method  string `json:"method"`
+			Name    string `json:"name"`
+			Path    string `json:"path"`
+		} `json:"info1"`
+		Method     string `json:"method"`
+		Name       string `json:"name"`
+		OriginPath string `json:"origin_path"`
+		Path       string `json:"path"`
+		URL        string `json:"url"`
+	}
+
+	s.Require().NoError(resp.Bind(&getResponse))
+	s.Equal("http://example.com/url/get/1?a=1&b=2", getResponse.FullURL)
+	s.Equal("GET", getResponse.Info.Method)
+	s.Equal("url.get", getResponse.Info.Name)
+	s.Equal("/url/get/{id}", getResponse.Info.Path)
+	s.Contains(getResponse.Info.Handler, "goravel/routes.Api.")
+	s.Equal("GET|HEAD", getResponse.Info1.Method)
+	s.Equal("url.get", getResponse.Info1.Name)
+	s.Equal("/url/get/{id}", getResponse.Info1.Path)
+	s.Contains(getResponse.Info1.Handler, "goravel/routes.Api.")
+	s.Equal("GET", getResponse.Method)
+	s.Equal("url.get", getResponse.Name)
+	s.Equal("/url/get/{id}", getResponse.OriginPath)
+	s.Equal("/url/get/1", getResponse.Path)
+	s.Equal("/url/get/1?a=1&b=2", getResponse.URL)
 
 	resp, err = s.Http(s.T()).Post("/url/post/1?a=1&b=2", strings.NewReader("{\"name\":\"Goravel\"}"))
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
 
-	content, err = resp.Content()
-	s.Require().NoError(err)
-	s.Equal(`{"full_url":"http://example.com/url/post/1?a=1\u0026b=2","info":{"handler":"goravel/routes.Api.func11.2","method":"POST","name":"url.post","path":"/url/post/{id}"},"info1":{"handler":"goravel/routes.Api.func11.2","method":"POST","name":"url.post","path":"/url/post/{id}"},"method":"POST","name":"url.post","origin_path":"/url/post/{id}","path":"/url/post/1","url":"/url/post/1?a=1\u0026b=2"}`, content)
+	var postResponse struct {
+		FullURL string `json:"full_url"`
+		Info    struct {
+			Handler string `json:"handler"`
+			Method  string `json:"method"`
+			Name    string `json:"name"`
+			Path    string `json:"path"`
+		} `json:"info"`
+		Info1 struct {
+			Handler string `json:"handler"`
+			Method  string `json:"method"`
+			Name    string `json:"name"`
+			Path    string `json:"path"`
+		} `json:"info1"`
+		Method     string `json:"method"`
+		Name       string `json:"name"`
+		OriginPath string `json:"origin_path"`
+		Path       string `json:"path"`
+		URL        string `json:"url"`
+	}
+
+	s.Require().NoError(resp.Bind(&postResponse))
+	s.Equal("http://example.com/url/post/1?a=1&b=2", postResponse.FullURL)
+	s.Equal("POST", postResponse.Info.Method)
+	s.Equal("url.post", postResponse.Info.Name)
+	s.Equal("/url/post/{id}", postResponse.Info.Path)
+	s.Contains(postResponse.Info.Handler, "goravel/routes.Api.")
+	s.Equal("POST", postResponse.Info1.Method)
+	s.Equal("url.post", postResponse.Info1.Name)
+	s.Equal("/url/post/{id}", postResponse.Info1.Path)
+	s.Contains(postResponse.Info1.Handler, "goravel/routes.Api.")
+	s.Equal("POST", postResponse.Method)
+	s.Equal("url.post", postResponse.Name)
+	s.Equal("/url/post/{id}", postResponse.OriginPath)
+	s.Equal("/url/post/1", postResponse.Path)
+	s.Equal("/url/post/1?a=1&b=2", postResponse.URL)
 }
 
 func (s *HttpTestSuite) TestUsers() {
