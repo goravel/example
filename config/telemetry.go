@@ -194,6 +194,14 @@ func init() {
 				// Timeout: Max time to wait for the backend to acknowledge.
 				// Format: Duration string (e.g., "10s", "500ms").
 				"timeout": config.Env("OTEL_EXPORTER_OTLP_TRACES_TIMEOUT", "10s"),
+
+				// TLS certificate file paths. Set "ca" and use an https:// endpoint
+				// with insecure=false to reach a TLS-enabled collector.
+				"tls": map[string]any{
+					"ca":   config.Env("OTEL_EXPORTER_OTLP_TRACES_CERTIFICATE", ""),
+					"cert": config.Env("OTEL_EXPORTER_OTLP_TRACES_CLIENT_CERTIFICATE", ""),
+					"key":  config.Env("OTEL_EXPORTER_OTLP_TRACES_CLIENT_KEY", ""),
+				},
 			},
 
 			// OTLP Metric Exporter
@@ -215,6 +223,14 @@ func init() {
 				// - "cumulative": Standard for Prometheus (counts never reset).
 				// - "delta": Standard for Datadog/StatsD (counts per interval).
 				"metric_temporality": config.Env("OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY", "cumulative"),
+
+				// TLS certificate file paths. Set "ca" and use an https:// endpoint
+				// with insecure=false to reach a TLS-enabled collector.
+				"tls": map[string]any{
+					"ca":   config.Env("OTEL_EXPORTER_OTLP_METRICS_CERTIFICATE", ""),
+					"cert": config.Env("OTEL_EXPORTER_OTLP_METRICS_CLIENT_CERTIFICATE", ""),
+					"key":  config.Env("OTEL_EXPORTER_OTLP_METRICS_CLIENT_KEY", ""),
+				},
 			},
 
 			// OTLP Log Exporter
@@ -231,6 +247,14 @@ func init() {
 				// Timeout: Max time to wait for the backend to acknowledge.
 				// Format: Duration string (e.g., "10s", "500ms").
 				"timeout": config.Env("OTEL_EXPORTER_OTLP_LOGS_TIMEOUT", "10s"),
+
+				// TLS certificate file paths. Set "ca" and use an https:// endpoint
+				// with insecure=false to reach a TLS-enabled collector.
+				"tls": map[string]any{
+					"ca":   config.Env("OTEL_EXPORTER_OTLP_LOGS_CERTIFICATE", ""),
+					"cert": config.Env("OTEL_EXPORTER_OTLP_LOGS_CLIENT_CERTIFICATE", ""),
+					"key":  config.Env("OTEL_EXPORTER_OTLP_LOGS_CLIENT_KEY", ""),
+				},
 			},
 
 			// Console Exporter (Debugging)
