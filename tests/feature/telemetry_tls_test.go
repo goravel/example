@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"fmt"
 	"math/big"
 	"net"
 	"net/url"
@@ -109,11 +110,20 @@ func (s *TelemetryTLSTestSuite) TestMetrics() {
 	s.Contains(body, tlsServiceName)
 }
 
-// Logs are not asserted here: the otel log channel caches its handler
-// process-wide, so after TelemetryTestSuite has used it once, records
-// emitted after the restart in SetupSuite no longer reach the exporter.
-// The TLS transport itself is shared by all three signals and is covered
-// by the trace and metric assertions above.
+func (s *TelemetryTLSTestSuite) TestLogs() {
+	end := time.Now().UnixNano()
+	start := time.Now().Add(-5 * time.Minute).UnixNano()
+	query := url.QueryEscape(`{service_name="` + tlsServiceName + `"}`)
+
+	resp, err := facades.Http().Get(fmt.Sprintf(
+		"http://localhost:3100/loki/api/v1/query_range?query=%s&start=%d&end=%d", query, start, end))
+	s.NoError(err)
+
+	body, err := resp.Body()
+	s.NoError(err)
+
+	s.Contains(body, "test telemetry log")
+}
 
 // generateCollectorCerts writes a throwaway CA and a localhost server
 // certificate for the TLS collector into dir and returns the CA path.
