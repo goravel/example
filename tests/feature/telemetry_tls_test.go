@@ -30,6 +30,7 @@ type TelemetryTLSTestSuite struct {
 	suite.Suite
 	tests.TestCase
 	originalConfig map[string]any
+	certsDir       string
 }
 
 func TestTelemetryTLSTestSuite(t *testing.T) {
@@ -39,6 +40,7 @@ func TestTelemetryTLSTestSuite(t *testing.T) {
 func (s *TelemetryTLSTestSuite) SetupSuite() {
 	certsDir, err := filepath.Abs("../../tests/testdata/otel-tls")
 	s.Require().NoError(err)
+	s.certsDir = certsDir
 
 	caPath, err := generateCollectorCerts(certsDir)
 	s.Require().NoError(err)
@@ -84,7 +86,8 @@ func (s *TelemetryTLSTestSuite) TearDownSuite() {
 	}
 	s.NoError(facades.App().Restart())
 
-	s.False(facades.Process().Path("../../").Run("docker compose down").Failed())
+	s.False(facades.Process().Path("../../").Run("docker compose --profile tls down").Failed())
+	s.NoError(os.RemoveAll(s.certsDir))
 }
 
 func (s *TelemetryTLSTestSuite) TestTraces() {
