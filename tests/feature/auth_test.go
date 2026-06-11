@@ -1,7 +1,6 @@
 package feature
 
 import (
-	nethttp "net/http"
 	"strconv"
 	"testing"
 
@@ -246,7 +245,7 @@ func (s *AuthTestSuite) TestSessionStatusLoginUsingIDLogoutAndUnsupportedMethods
 	resp.AssertSuccessful()
 	s.NoError(resp.Bind(&login))
 
-	cookies := latestCookies(resp.Cookies())
+	cookies := resp.Cookies()
 	s.Require().NotEmpty(cookies)
 
 	// Step 5: Verify the authenticated session status and user info.
@@ -297,7 +296,7 @@ func (s *AuthTestSuite) TestSessionStatusLoginUsingIDLogoutAndUnsupportedMethods
 	s.Equal(login.User.ID, loginByID.ID)
 	s.Equal(login.User.Name, loginByID.User.Name)
 
-	loginByIDCookies := latestCookies(resp.Cookies())
+	loginByIDCookies := resp.Cookies()
 	s.Require().NotEmpty(loginByIDCookies)
 
 	resp, err = s.Http(s.T()).WithCookies(loginByIDCookies).Get("session/status")
@@ -315,26 +314,6 @@ func (s *AuthTestSuite) TestSessionStatusLoginUsingIDLogoutAndUnsupportedMethods
 	s.NoError(resp.Bind(&info))
 	s.Equal(login.User.ID, info.ID)
 	s.Equal(login.User.Name, info.User.Name)
-}
-
-// latestCookies keeps the last cookie per name, as a browser does when a
-// response sets the same cookie twice (the session ID rotates on login).
-func latestCookies(cookies []*nethttp.Cookie) []*nethttp.Cookie {
-	byName := make(map[string]*nethttp.Cookie, len(cookies))
-	var names []string
-	for _, cookie := range cookies {
-		if _, ok := byName[cookie.Name]; !ok {
-			names = append(names, cookie.Name)
-		}
-		byName[cookie.Name] = cookie
-	}
-
-	result := make([]*nethttp.Cookie, 0, len(names))
-	for _, name := range names {
-		result = append(result, byName[name])
-	}
-
-	return result
 }
 
 func uintFromString(value string) uint {

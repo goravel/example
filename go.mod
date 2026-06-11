@@ -11,7 +11,7 @@ require (
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.17.1-0.20260524040519-047523ffa71c
 	github.com/goravel/framework v1.17.2
-	github.com/goravel/gin v1.17.1-0.20260524040513-e1372c698db3
+	github.com/goravel/gin v1.17.1-0.20260611134216-db683f379979
 	github.com/goravel/minio v1.17.1-0.20260406054609-93d9a56045ac
 	github.com/goravel/mysql v1.17.2-0.20260328140940-c52993f25694
 	github.com/goravel/oss v1.17.1-0.20260316041853-7cb11e498cb9

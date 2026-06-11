@@ -289,6 +289,8 @@ github.com/goravel/framework v1.17.2-0.20260610071514-89408709dd39 h1:LRpcRTvnBh
 github.com/goravel/framework v1.17.2-0.20260610071514-89408709dd39/go.mod h1:PC9D6+MoC3af0oKo2NBh61pyTFoNqopHEq0OLpMU0Ko=
 github.com/goravel/gin v1.17.1-0.20260524040513-e1372c698db3 h1:Zy4XPyzWYUKOXQFlUnLtNXY39reh+LCucTAc40TykaQ=
 github.com/goravel/gin v1.17.1-0.20260524040513-e1372c698db3/go.mod h1:92/izGQ6edpy5p314VjaiDy4NrD37k6bvegGCnTzlEo=
+github.com/goravel/gin v1.17.1-0.20260611134216-db683f379979 h1:Qom1i02QYlRUgu95eMxaNY+JRPTJxB+7JTDKp8G6YXM=
+github.com/goravel/gin v1.17.1-0.20260611134216-db683f379979/go.mod h1:mQkTyL0F4caujuZriXHqvjiwNiKIfh9YLkvXnwy1U2k=
 github.com/goravel/minio v1.17.1-0.20260406054609-93d9a56045ac h1:umDvd9hciZVHvlmRVAioXpT+kUojwc2MO30wcnshHh0=
 github.com/goravel/minio v1.17.1-0.20260406054609-93d9a56045ac/go.mod h1:kcnWmIaUPCNU4cGNY3AvW9kYToTPGdhQk232k1o+lTg=
 github.com/goravel/mysql v1.17.2-0.20260328140940-c52993f25694 h1:+bAo7xKhITp0hqZWHaNqRt6wN50jxhktBHNhCWjAedI=
