@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goravel/framework/errors"
 	"github.com/goravel/framework/facades"
 	"github.com/stretchr/testify/require"
 )
@@ -90,7 +91,7 @@ func httpReady(url string) func() error {
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer errors.Ignore(resp.Body.Close)
 		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("%s returned %d", url, resp.StatusCode)
 		}

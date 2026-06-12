@@ -21,10 +21,10 @@ func TestPoll(t *testing.T) {
 		var hits atomic.Int32
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			if hits.Add(1) < 3 {
-				fmt.Fprint(w, "warming up")
+				_, _ = fmt.Fprint(w, "warming up")
 				return
 			}
-			fmt.Fprint(w, "trace-a trace-b")
+			_, _ = fmt.Fprint(w, "trace-a trace-b")
 		}))
 		defer server.Close()
 
@@ -37,7 +37,7 @@ func TestPoll(t *testing.T) {
 
 	t.Run("times out with last body", func(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-			fmt.Fprint(w, "empty result")
+			_, _ = fmt.Fprint(w, "empty result")
 		}))
 		defer server.Close()
 

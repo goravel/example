@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/goravel/framework/errors"
 )
 
 var (
@@ -73,7 +75,7 @@ func fetch(target string) string {
 	if err != nil {
 		return err.Error()
 	}
-	defer resp.Body.Close()
+	defer errors.Ignore(resp.Body.Close)
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
