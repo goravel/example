@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -53,7 +54,14 @@ func EnsureStack(t *testing.T, services ...string) {
 		require.True(t, ok, "no readiness probe for service "+service)
 	}
 
-	result := facades.Process().Path(composeDir()).Run("docker compose up -d " + strings.Join(services, " "))
+	// The TLS collector is gated behind the "tls" compose profile; enable it
+	// so the up command matches the "--profile tls down" in TeardownStack.
+	profile := ""
+	if slices.Contains(services, ServiceCollectorTLS) {
+		profile = "--profile tls "
+	}
+
+	result := facades.Process().Path(composeDir()).Run("docker compose " + profile + "up -d " + strings.Join(services, " "))
 	require.False(t, result.Failed(), result.ErrorOutput())
 
 	for _, service := range services {

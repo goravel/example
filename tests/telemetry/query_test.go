@@ -12,10 +12,7 @@ import (
 )
 
 func TestPoll(t *testing.T) {
-	defer func(interval, timeout time.Duration) {
-		awaitInterval, awaitTimeout = interval, timeout
-	}(awaitInterval, awaitTimeout)
-	awaitInterval, awaitTimeout = 10*time.Millisecond, 300*time.Millisecond
+	interval, timeout := 10*time.Millisecond, 300*time.Millisecond
 
 	t.Run("returns once all substrings appear", func(t *testing.T) {
 		var hits atomic.Int32
@@ -28,7 +25,7 @@ func TestPoll(t *testing.T) {
 		}))
 		defer server.Close()
 
-		body, ok := poll(func() string { return server.URL }, []string{"trace-a", "trace-b"})
+		body, ok := poll(func() string { return server.URL }, []string{"trace-a", "trace-b"}, interval, timeout)
 
 		assert.True(t, ok)
 		assert.Contains(t, body, "trace-a")
@@ -41,7 +38,7 @@ func TestPoll(t *testing.T) {
 		}))
 		defer server.Close()
 
-		body, ok := poll(func() string { return server.URL }, []string{"never"})
+		body, ok := poll(func() string { return server.URL }, []string{"never"}, interval, timeout)
 
 		assert.False(t, ok)
 		assert.Equal(t, "empty result", body)

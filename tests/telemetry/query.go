@@ -11,7 +11,7 @@ import (
 	"github.com/goravel/framework/errors"
 )
 
-var (
+const (
 	awaitInterval = 2 * time.Second
 	awaitTimeout  = 60 * time.Second
 )
@@ -50,14 +50,14 @@ func AwaitLogs(t *testing.T, logQL string, want ...string) {
 func await(t *testing.T, target func() string, want []string) {
 	t.Helper()
 
-	body, ok := poll(target, want)
+	body, ok := poll(target, want, awaitInterval, awaitTimeout)
 	if !ok {
 		t.Fatalf("telemetry not found at %s\nwant: %q\nlast response: %s", target(), want, body)
 	}
 }
 
-func poll(target func() string, want []string) (string, bool) {
-	deadline := time.Now().Add(awaitTimeout)
+func poll(target func() string, want []string, interval, timeout time.Duration) (string, bool) {
+	deadline := time.Now().Add(timeout)
 	for {
 		body := fetch(target())
 		if containsAll(body, want) {
@@ -66,7 +66,7 @@ func poll(target func() string, want []string) (string, bool) {
 		if time.Now().After(deadline) {
 			return body, false
 		}
-		time.Sleep(awaitInterval)
+		time.Sleep(interval)
 	}
 }
 
