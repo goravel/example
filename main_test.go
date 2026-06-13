@@ -45,6 +45,26 @@ func (s *MainTestSuite) TestMakeCommand() {
 	s.True(file.Contains(path.Bootstrap("app.go"), "WithCommands(Commands)."))
 }
 
+func (s *MainTestSuite) TestMakeAgent() {
+	s.NoError(facades.Artisan().Call("make:agent TestAgent"))
+
+	agentPath := path.App("ai", "agents", "test_agent.go")
+	s.True(file.Exists(agentPath))
+	s.True(file.Contains(agentPath, "type TestAgent struct"))
+	s.True(file.Contains(agentPath, "func (r *TestAgent) Instructions() string"))
+	s.True(file.Contains(agentPath, "func (r *TestAgent) Tools() []ai.Tool"))
+}
+
+func (s *MainTestSuite) TestMakeTool() {
+	s.NoError(facades.Artisan().Call("make:tool TestTool"))
+
+	toolPath := path.App("ai", "tools", "test_tool.go")
+	s.True(file.Exists(toolPath))
+	s.True(file.Contains(toolPath, "type TestTool struct"))
+	s.True(file.Contains(toolPath, "func (r *TestTool) Name() string"))
+	s.True(file.Contains(toolPath, "func (r *TestTool) Execute(ctx context.Context, args map[string]any) (string, error)"))
+}
+
 func (s *MainTestSuite) TestMakeFilter() {
 	s.NoError(facades.Artisan().Call("make:filter TestFilter"))
 	s.True(file.Contains(path.Bootstrap("filters.go"), "&filters.TestFilter{},"))

@@ -130,7 +130,7 @@ func (s *AITestSuite) TestTools() {
 	}
 }
 
-func (s *AITestSuite) TestAttachmentsAndProviderFiles() {
+func (s *AITestSuite) TestAttachments() {
 	for _, provider := range aiProviderCases() {
 		s.Run(provider.name, func() {
 			s.requireProvider(provider)
@@ -147,6 +147,17 @@ func (s *AITestSuite) TestAttachmentsAndProviderFiles() {
 			response, err := conversation.Prompt("Read the attached document and reply with the code word only.", frameworkai.WithAttachments(attachment))
 			s.Require().NoError(err)
 			s.containsToken(response.Text(), "ATTACHMENT_OK")
+		})
+	}
+}
+
+func (s *AITestSuite) TestProviderFiles() {
+	for _, provider := range aiProviderCases() {
+		s.Run(provider.name, func() {
+			s.requireProvider(provider)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+			defer cancel()
 
 			file := frameworkai.DocumentFromString("Stored provider file content.", frameworkai.WithMimeType("text/plain"))
 			uploaded, err := file.Put(ctx, frameworkai.WithProvider(provider.name))
@@ -171,12 +182,12 @@ func (s *AITestSuite) TestAttachmentsAndProviderFiles() {
 	}
 }
 
-func (s *AITestSuite) TestMediaRequests() {
-	for _, provider := range []aiProviderCase{{name: "openai", env: "OPENAI_API_KEY"}, {name: "gemini", env: "GEMINI_API_KEY"}} {
+func (s *AITestSuite) TestImage() {
+	for _, provider := range mediaProviderCases() {
 		s.Run(provider.name, func() {
 			s.requireProvider(provider)
 
-			ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
 
 			imageResponse, err := facades.AI().WithContext(ctx).Image("A simple red square icon with no text.").Provider(provider.name).Square().Generate()
@@ -194,6 +205,17 @@ func (s *AITestSuite) TestMediaRequests() {
 			s.Require().NoError(err)
 			s.Equal(imagePath, storedImagePath)
 			s.True(facades.Storage().Exists(imagePath))
+		})
+	}
+}
+
+func (s *AITestSuite) TestAudioAndTranscription() {
+	for _, provider := range mediaProviderCases() {
+		s.Run(provider.name, func() {
+			s.requireProvider(provider)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+			defer cancel()
 
 			audioResponse, err := facades.AI().WithContext(ctx).Audio("Say the words Goravel integration test clearly.").Provider(provider.name).Timeout(90 * time.Second).Generate()
 			s.Require().NoError(err)
@@ -242,6 +264,7 @@ func (s *AITestSuite) TestFailoverUsesBackupProvider() {
 			return openaifacades.OpenAI(failingProvider)
 		},
 	})
+	facades.App().Refresh()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
@@ -302,6 +325,13 @@ func aiProviderCases() []aiProviderCase {
 	return []aiProviderCase{
 		{name: "openai", env: "OPENAI_API_KEY"},
 		{name: "anthropic", env: "ANTHROPIC_API_KEY"},
+		{name: "gemini", env: "GEMINI_API_KEY"},
+	}
+}
+
+func mediaProviderCases() []aiProviderCase {
+	return []aiProviderCase{
+		{name: "openai", env: "OPENAI_API_KEY"},
 		{name: "gemini", env: "GEMINI_API_KEY"},
 	}
 }
