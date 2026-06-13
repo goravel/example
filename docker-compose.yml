@@ -11,6 +11,19 @@ services:
       - "4317:4317"
       - "4318:4318"
 
+  # Started by the TLS test suite, which generates the mounted certificates.
+  otel-collector-tls:
+    image: otel/opentelemetry-collector-contrib:latest
+    profiles:
+      - tls
+    restart: always
+    command: ["--config=/etc/otel-config-tls.yaml"]
+    volumes:
+      - ./otel-config-tls.yaml:/etc/otel-config-tls.yaml
+      - ./tests/testdata/otel-tls:/etc/otel-tls:ro
+    ports:
+      - "4319:4319"
+
   jaeger:
     image: jaegertracing/all-in-one:latest
     restart: always

@@ -7,6 +7,7 @@ import (
 	"github.com/goravel/framework/support/file"
 
 	"goravel/app/facades"
+	"goravel/tests/telemetry"
 )
 
 func TestMain(m *testing.M) {
@@ -40,6 +41,8 @@ func TestMain(m *testing.M) {
 	}
 
 	exit := m.Run()
+
+	telemetry.TeardownStack()
 
 	if err := file.Remove("storage"); err != nil {
 		panic(err)
