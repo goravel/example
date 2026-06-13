@@ -17,7 +17,6 @@ const tlsServiceName = "goravel-tls"
 type TelemetryTLSTestSuite struct {
 	suite.Suite
 	tests.TestCase
-	scope *telemetry.ConfigScope
 }
 
 func TestTelemetryTLSTestSuite(t *testing.T) {
@@ -50,16 +49,16 @@ func (s *TelemetryTLSTestSuite) SetupSuite() {
 	}
 
 	scope, err := telemetry.OverrideConfig(overrides)
-	s.scope = scope
+	// Cleanup instead of TearDownSuite: it restores the config even when a
+	// later assertion in SetupSuite fails.
+	s.T().Cleanup(func() {
+		s.NoError(scope.Restore())
+	})
 	s.Require().NoError(err)
 
 	resp, err := s.Http(s.T()).Get("/telemetry")
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
-}
-
-func (s *TelemetryTLSTestSuite) TearDownSuite() {
-	s.NoError(s.scope.Restore())
 }
 
 func (s *TelemetryTLSTestSuite) TestTraces() {

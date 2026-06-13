@@ -16,7 +16,6 @@ const plainServiceName = "goravel-plain"
 type TelemetryTestSuite struct {
 	suite.Suite
 	tests.TestCase
-	scope *telemetry.ConfigScope
 }
 
 func TestTelemetryTestSuite(t *testing.T) {
@@ -29,16 +28,16 @@ func (s *TelemetryTestSuite) SetupSuite() {
 	scope, err := telemetry.OverrideConfig(map[string]any{
 		"telemetry.service.name": plainServiceName,
 	})
-	s.scope = scope
+	// Cleanup instead of TearDownSuite: it restores the config even when a
+	// later assertion in SetupSuite fails.
+	s.T().Cleanup(func() {
+		s.NoError(scope.Restore())
+	})
 	s.Require().NoError(err)
 
 	resp, err := s.Http(s.T()).Get("/telemetry")
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
-}
-
-func (s *TelemetryTestSuite) TearDownSuite() {
-	s.NoError(s.scope.Restore())
 }
 
 func (s *TelemetryTestSuite) TestTraces() {
