@@ -10,6 +10,7 @@ import (
 	"goravel/app/facades"
 	"goravel/app/http/controllers"
 	"goravel/app/http/middleware"
+	"goravel/app/services"
 )
 
 const timeoutIsolationBuffer = 500 * time.Millisecond
@@ -200,6 +201,10 @@ func Api() {
 				"error": err.Error(),
 			})
 		}
+
+		tel := services.NewTelemetryImpl()
+		_ = tel.Process(ctx.Context(), "1")
+		tel.Consume(tel.Publish(ctx.Context()))
 
 		return ctx.Response().Success().String(body)
 	})

@@ -42,12 +42,15 @@ func (s *TelemetryTestSuite) SetupSuite() {
 
 func (s *TelemetryTestSuite) TestTraces() {
 	telemetry.AwaitTraces(s.T(), plainServiceName,
-		"GET /telemetry", "HTTP GET", "user.UserService/GetUser", "GET /grpc/user")
+		"GET /telemetry", "HTTP GET", "user.UserService/GetUser", "GET /grpc/user",
+		"users.process", "users.consume")
 }
 
 func (s *TelemetryTestSuite) TestMetrics() {
 	telemetry.AwaitMetric(s.T(), `grpc_controller_total{service_name="`+plainServiceName+`"}`,
 		"grpc_controller_total", "GrpcController/User")
+	telemetry.AwaitMetric(s.T(), `users_processed_total{service_name="`+plainServiceName+`"}`,
+		"users_processed_total")
 }
 
 func (s *TelemetryTestSuite) TestLogs() {
