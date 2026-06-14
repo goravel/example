@@ -19,7 +19,7 @@ env:
   MINIO_ACCESS_KEY_SECRET: ${{ secrets.MINIO_ACCESS_KEY_SECRET }}
   MINIO_BUCKET: ${{ secrets.MINIO_BUCKET }}
 jobs:
-  ubuntu:
+  test:
     strategy:
       matrix:
         go: [ "stable" ]
