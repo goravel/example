@@ -210,7 +210,9 @@ func Api() {
 		}
 
 		if tel != nil {
-			_ = tel.Process(ctx.Context(), "1")
+			if err := tel.Process(ctx.Context(), "1"); err != nil {
+				facades.Log().WithContext(ctx.Context()).Error("user processing failed: ", err)
+			}
 			tel.Consume(tel.Publish(ctx.Context()))
 		}
 

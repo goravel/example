@@ -26,6 +26,8 @@ type Telemetry interface {
 	Consume(headers map[string]string)
 }
 
+var _ Telemetry = (*TelemetryImpl)(nil)
+
 type TelemetryImpl struct {
 	tracer    trace.Tracer
 	processed metric.Int64Counter
@@ -76,7 +78,6 @@ func (r *TelemetryImpl) Process(ctx context.Context, userID string) error {
 	ctx, span := r.tracer.Start(ctx, "users.process", telemetry.WithSpanKind(telemetry.SpanKindInternal))
 	defer span.End()
 	span.SetAttributes(telemetry.String("user.id", userID))
-	span.AddEvent("user.validated")
 
 	r.inFlight.Add(ctx, 1)
 	defer r.inFlight.Add(ctx, -1)
@@ -86,11 +87,11 @@ func (r *TelemetryImpl) Process(ctx context.Context, userID string) error {
 		span.SetStatus(telemetry.CodeError, err.Error())
 		r.processed.Add(ctx, 1, metric.WithAttributes(telemetry.String("result", "error")))
 		r.duration.Record(ctx, time.Since(start).Seconds())
-		facades.Log().WithContext(ctx).Error("user processing failed: ", err)
 
 		return err
 	}
 
+	span.AddEvent("user.validated")
 	r.processed.Add(ctx, 1, metric.WithAttributes(telemetry.String("result", "ok")))
 	r.duration.Record(ctx, time.Since(start).Seconds())
 	facades.Log().WithContext(ctx).Info("user processed")
@@ -112,7 +113,7 @@ func (r *TelemetryImpl) Publish(ctx context.Context) map[string]string {
 func (r *TelemetryImpl) Consume(headers map[string]string) {
 	ctx := facades.Telemetry().Propagator().Extract(context.Background(), telemetry.PropagationMapCarrier(headers))
 
-	_, span := r.tracer.Start(ctx, "users.consume", telemetry.WithSpanKind(telemetry.SpanKindConsumer))
+	ctx, span := r.tracer.Start(ctx, "users.consume", telemetry.WithSpanKind(telemetry.SpanKindConsumer))
 	defer span.End()
 
 	facades.Log().WithContext(ctx).Info("user event consumed")
