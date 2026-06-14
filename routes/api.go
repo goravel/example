@@ -185,6 +185,13 @@ func Api() {
 		}).Name("url.post")
 	})
 
+	// Build the telemetry example once and share it; its instruments are created
+	// in the constructor and reused across requests.
+	tel, err := services.NewTelemetry()
+	if err != nil {
+		facades.Log().Error("failed to build the telemetry example service: ", err)
+	}
+
 	facades.Route().Get("telemetry", func(ctx http.Context) http.Response {
 		facades.Log().Channel("otel").WithContext(ctx).Info("test telemetry log")
 
@@ -202,9 +209,10 @@ func Api() {
 			})
 		}
 
-		tel := services.TelemetryExample()
-		_ = tel.Process(ctx.Context(), "1")
-		tel.Consume(tel.Publish(ctx.Context()))
+		if tel != nil {
+			_ = tel.Process(ctx.Context(), "1")
+			tel.Consume(tel.Publish(ctx.Context()))
+		}
 
 		return ctx.Response().Success().String(body)
 	})

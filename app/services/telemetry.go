@@ -13,9 +13,6 @@ import (
 	"goravel/app/facades"
 )
 
-// TelemetryBinding is the container key this example service is bound under.
-const TelemetryBinding = "goravel.services.telemetry"
-
 // scopeName identifies who produced the spans and metrics (the instrumentation
 // scope). Convention is the instrumenting package or application name.
 const scopeName = "goravel"
@@ -29,17 +26,6 @@ type Telemetry interface {
 	Consume(headers map[string]string)
 }
 
-// TelemetryExample resolves the singleton example telemetry service from the
-// container so its instruments are created once and reused across requests.
-func TelemetryExample() Telemetry {
-	instance, err := facades.App().Make(TelemetryBinding)
-	if err != nil {
-		panic(err)
-	}
-
-	return instance.(Telemetry)
-}
-
 type TelemetryImpl struct {
 	tracer    trace.Tracer
 	processed metric.Int64Counter
@@ -48,8 +34,8 @@ type TelemetryImpl struct {
 }
 
 // NewTelemetry creates the tracer and metric instruments once. Instruments are
-// safe for concurrent use and meant to be created once and reused, so this
-// service is bound as a singleton (see app/providers/telemetry_service_provider.go).
+// safe for concurrent use and meant to be created once and reused, so build this
+// service once (see routes/api.go) and share it rather than rebuilding per request.
 func NewTelemetry() (*TelemetryImpl, error) {
 	meter := facades.Telemetry().Meter(scopeName)
 

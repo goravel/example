@@ -34,8 +34,6 @@ import (
 	"github.com/goravel/s3"
 	"github.com/goravel/sqlite"
 	"github.com/goravel/sqlserver"
-
-	"goravel/app/providers"
 )
 
 func Providers() []foundation.ServiceProvider {
@@ -72,6 +70,5 @@ func Providers() []foundation.ServiceProvider {
 		&gin.ServiceProvider{},
 		&fiber.ServiceProvider{},
 		&telemetry.ServiceProvider{},
-		&providers.TelemetryServiceProvider{},
 	}
 }
