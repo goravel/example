@@ -41,17 +41,21 @@ type TelemetryImpl struct {
 func NewTelemetry() (*TelemetryImpl, error) {
 	meter := facades.Telemetry().Meter(scopeName)
 
-	processed, err := meter.Int64Counter("users.processed")
+	processed, err := meter.Int64Counter("users.processed",
+		metric.WithDescription("Number of processed users by result"))
 	if err != nil {
 		return nil, err
 	}
 
-	duration, err := meter.Float64Histogram("user.process.duration")
+	duration, err := meter.Float64Histogram("user.process.duration",
+		metric.WithUnit("s"),
+		metric.WithDescription("Duration of user processing"))
 	if err != nil {
 		return nil, err
 	}
 
-	inFlight, err := meter.Int64UpDownCounter("users.in_flight")
+	inFlight, err := meter.Int64UpDownCounter("users.in_flight",
+		metric.WithDescription("Users currently being processed"))
 	if err != nil {
 		return nil, err
 	}
