@@ -1,4 +1,4 @@
-package ai
+package feature
 
 import (
 	"context"
