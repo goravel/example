@@ -8,7 +8,6 @@ import (
 	"goravel/bootstrap"
 
 	"github.com/goravel/framework/support/carbon"
-	"github.com/goravel/framework/support/env"
 	"github.com/goravel/framework/support/file"
 	"github.com/goravel/framework/support/path"
 	"github.com/stretchr/testify/suite"
@@ -32,11 +31,7 @@ func (s *MainTestSuite) SetupSuite() {}
 
 func (s *MainTestSuite) TearDownTest() {
 	// Make sure the app can be built after running the command
-	if env.IsWindows() {
-		s.False(facades.Process().Run("./artisan.bat").Failed())
-	} else {
-		s.False(facades.Process().Run("./artisan").Failed())
-	}
+	s.False(facades.Process().Run("./artisan").Failed())
 
 	s.False(facades.Process().Run("git", "checkout", ".").Failed())
 	s.False(facades.Process().Run("git", "clean", "-fd").Failed())
