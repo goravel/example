@@ -3,6 +3,7 @@ package feature
 import (
 	"testing"
 
+	"github.com/goravel/framework/support/env"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
@@ -10,6 +11,10 @@ import (
 )
 
 func TestDBDrivers(t *testing.T) {
+	if env.IsWindows() {
+		t.Skip("Skipping database driver tests on Windows due to potential issues with Docker.")
+	}
+
 	connections := []string{"postgres", "mysql", "sqlserver"}
 
 	for _, connection := range connections {
