@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - master
-    pull_request:
+  pull_request:
 jobs:
   test:
     uses: goravel/.github/.github/workflows/test.yml@master
