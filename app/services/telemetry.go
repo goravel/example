@@ -17,8 +17,9 @@ import (
 // scope). Convention is the instrumenting package or application name.
 const scopeName = "goravel"
 
-// errUserBlocked is a simulated failure used to show error recording on a span.
-var errUserBlocked = errors.New("user is blocked")
+// errUserIDRequired is a simulated validation failure used to show error
+// recording on a span.
+var errUserIDRequired = errors.New("user id is required")
 
 type Telemetry interface {
 	Process(ctx context.Context, userID string) error
@@ -123,14 +124,14 @@ func (r *TelemetryImpl) Consume(headers map[string]string) {
 	facades.Log().WithContext(ctx).Info("user event consumed")
 }
 
-// validate runs inside a nested child span. An empty id simulates a failure so
-// the error-recording path can be shown.
+// validate runs inside a nested child span. A missing id simulates a validation
+// failure so the error-recording path can be shown.
 func (r *TelemetryImpl) validate(ctx context.Context, userID string) error {
 	_, span := r.tracer.Start(ctx, "users.validate")
 	defer span.End()
 
 	if userID == "" {
-		return errUserBlocked
+		return errUserIDRequired
 	}
 
 	return nil
