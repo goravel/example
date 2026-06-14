@@ -52,6 +52,8 @@ func (s *MainTestSuite) TestMakeAgent() {
 	s.True(file.Exists(agentPath))
 	s.True(file.Contains(agentPath, "type TestAgent struct"))
 	s.True(file.Contains(agentPath, "func (r *TestAgent) Instructions() string"))
+	s.True(file.Contains(agentPath, "func (r *TestAgent) Messages() []ai.Message"))
+	s.True(file.Contains(agentPath, "func (r *TestAgent) Middleware() []ai.Middleware"))
 	s.True(file.Contains(agentPath, "func (r *TestAgent) Tools() []ai.Tool"))
 }
 
