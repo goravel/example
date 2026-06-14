@@ -202,7 +202,7 @@ func Api() {
 			})
 		}
 
-		tel := services.NewTelemetryImpl()
+		tel := services.TelemetryExample()
 		_ = tel.Process(ctx.Context(), "1")
 		tel.Consume(tel.Publish(ctx.Context()))
 
