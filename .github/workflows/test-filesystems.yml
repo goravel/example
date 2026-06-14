@@ -1,4 +1,4 @@
-name: Test
+name: Test Filesystems
 on:
   pull_request:
 env:
@@ -22,7 +22,7 @@ jobs:
   ubuntu:
     strategy:
       matrix:
-        go: [ "latest" ]
+        go: [ "stable" ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
