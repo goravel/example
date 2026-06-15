@@ -8,6 +8,7 @@ import (
 	"goravel/bootstrap"
 
 	"github.com/goravel/framework/support/carbon"
+	"github.com/goravel/framework/support/env"
 	"github.com/goravel/framework/support/file"
 	"github.com/goravel/framework/support/path"
 	"github.com/stretchr/testify/suite"
@@ -31,7 +32,11 @@ func (s *MainTestSuite) SetupSuite() {}
 
 func (s *MainTestSuite) TearDownTest() {
 	// Make sure the app can be built after running the command
-	s.False(facades.Process().Run("./artisan").Failed())
+	if env.IsWindows() {
+		s.False(facades.Process().Run(`.\artisan.bat`).Failed())
+	} else {
+		s.False(facades.Process().Run("./artisan").Failed())
+	}
 
 	s.False(facades.Process().Run("git", "checkout", ".").Failed())
 	s.False(facades.Process().Run("git", "clean", "-fd").Failed())
@@ -43,6 +48,28 @@ func (s *MainTestSuite) TestMakeCommand() {
 	s.True(file.Contains(path.Bootstrap("commands.go"), "&commands.TestCommand{},"))
 	s.True(file.Exists(path.App("console", "commands", "test_command.go")))
 	s.True(file.Contains(path.Bootstrap("app.go"), "WithCommands(Commands)."))
+}
+
+func (s *MainTestSuite) TestMakeAgent() {
+	s.NoError(facades.Artisan().Call("make:agent TestAgent"))
+
+	agentPath := path.App("ai", "agents", "test_agent.go")
+	s.True(file.Exists(agentPath))
+	s.True(file.Contains(agentPath, "type TestAgent struct"))
+	s.True(file.Contains(agentPath, "func (r *TestAgent) Instructions() string"))
+	s.True(file.Contains(agentPath, "func (r *TestAgent) Messages() []ai.Message"))
+	s.True(file.Contains(agentPath, "func (r *TestAgent) Middleware() []ai.Middleware"))
+	s.True(file.Contains(agentPath, "func (r *TestAgent) Tools() []ai.Tool"))
+}
+
+func (s *MainTestSuite) TestMakeTool() {
+	s.NoError(facades.Artisan().Call("make:tool TestTool"))
+
+	toolPath := path.App("ai", "tools", "test_tool.go")
+	s.True(file.Exists(toolPath))
+	s.True(file.Contains(toolPath, "type TestTool struct"))
+	s.True(file.Contains(toolPath, "func (r *TestTool) Name() string"))
+	s.True(file.Contains(toolPath, "func (r *TestTool) Execute(ctx context.Context, args map[string]any) (string, error)"))
 }
 
 func (s *MainTestSuite) TestMakeFilter() {
