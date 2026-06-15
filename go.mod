@@ -5,15 +5,15 @@ go 1.25.0
 require (
 	github.com/99designs/gqlgen v0.17.57
 	github.com/gin-gonic/gin v1.12.0
-	github.com/gofiber/fiber/v3 v3.2.0
-	github.com/gofiber/template/html/v3 v3.0.4
+	github.com/gofiber/fiber/v3 v3.3.0
+	github.com/gofiber/template/html/v3 v3.0.5
 	github.com/goravel/anthropic v0.0.0-20260612100942-404b828815b9
 	github.com/goravel/cos v1.17.1-0.20260323021954-3ddc163693ee
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.17.1-0.20260524040519-047523ffa71c
+	github.com/goravel/fiber v1.17.1-0.20260613035455-658a0afce584
 	github.com/goravel/framework v1.17.2
 	github.com/goravel/gemini v0.0.0-20260612100742-b6ec562a886a
-	github.com/goravel/gin v1.17.1-0.20260611134216-db683f379979
+	github.com/goravel/gin v1.17.1-0.20260613040118-01d8b930d8e9
 	github.com/goravel/minio v1.17.1-0.20260406054609-93d9a56045ac
 	github.com/goravel/mysql v1.17.2-0.20260328140940-c52993f25694
 	github.com/goravel/openai v0.0.0-20260610102009-b45b58b76a24
@@ -118,7 +118,7 @@ require (
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/gofiber/schema v1.7.1 // indirect
 	github.com/gofiber/template/v2 v2.1.0 // indirect
-	github.com/gofiber/utils/v2 v2.0.5 // indirect
+	github.com/gofiber/utils/v2 v2.1.0 // indirect
 	github.com/goforj/godump v1.9.1 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
@@ -153,7 +153,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/mattn/go-isatty v0.0.21 // indirect
+	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.24 // indirect
 	github.com/microsoft/go-mssqldb v1.9.1 // indirect
@@ -207,7 +207,7 @@ require (
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/ugorji/go/codec v1.3.1 // indirect
 	github.com/unrolled/secure v1.17.0 // indirect
-	github.com/urfave/cli/v3 v3.9.0 // indirect
+	github.com/urfave/cli/v3 v3.10.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.71.0 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
@@ -238,16 +238,16 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/arch v0.22.0 // indirect
-	golang.org/x/crypto v0.52.0 // indirect
-	golang.org/x/exp v0.0.0-20260603202125-055de637280b // indirect
-	golang.org/x/mod v0.36.0 // indirect
-	golang.org/x/net v0.55.0 // indirect
-	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/term v0.43.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
+	golang.org/x/exp v0.0.0-20260611194520-c48552f49976 // indirect
+	golang.org/x/mod v0.37.0 // indirect
+	golang.org/x/net v0.56.0 // indirect
+	golang.org/x/sync v0.21.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
+	golang.org/x/term v0.44.0 // indirect
+	golang.org/x/text v0.38.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
-	golang.org/x/tools v0.45.0 // indirect
+	golang.org/x/tools v0.46.0 // indirect
 	google.golang.org/genai v1.58.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
@@ -260,4 +260,4 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-replace github.com/goravel/framework => github.com/goravel/framework v1.17.2-0.20260614043946-e4444f96e8b5
+replace github.com/goravel/framework => github.com/goravel/framework v1.17.2-0.20260615103401-e5f269b0f8d0

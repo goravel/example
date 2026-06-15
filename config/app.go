@@ -63,5 +63,15 @@ func init() {
 		// 32 character string, otherwise these encrypted strings
 		// will not be safe. Please do this before deploying an application!
 		"key": config.Env("APP_KEY", ""),
+
+		// Maintenance Mode
+		//
+		// This value determines the driver used to store the maintenance mode
+		// state. Supported drivers: "file", "cache". If you use the "cache"
+		// driver, you may specify a cache store name.
+		"maintenance": map[string]any{
+			"driver": config.Env("APP_MAINTENANCE_DRIVER", "file"),
+			"store":  config.Env("APP_MAINTENANCE_STORE", ""),
+		},
 	})
 }
