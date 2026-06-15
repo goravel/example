@@ -27,6 +27,14 @@ func NewTelemetryController() *TelemetryController {
 }
 
 func (r *TelemetryController) Index(ctx http.Context) http.Response {
+	// The whole endpoint is the manual telemetry example, so surface a failed
+	// initialization instead of returning a misleading 200 with no telemetry.
+	if r.telemetry == nil {
+		return ctx.Response().Json(http.StatusInternalServerError, http.Json{
+			"error": "telemetry example is not initialized",
+		})
+	}
+
 	facades.Log().Channel("otel").WithContext(ctx).Info("test telemetry log")
 
 	resp, err := facades.Http().WithContext(ctx).Get("/grpc/user?token=1")
@@ -43,12 +51,10 @@ func (r *TelemetryController) Index(ctx http.Context) http.Response {
 		})
 	}
 
-	if r.telemetry != nil {
-		if err := r.telemetry.Process(ctx, "1"); err != nil {
-			facades.Log().WithContext(ctx).Error("user processing failed: ", err)
-		}
-		r.telemetry.Consume(r.telemetry.Publish(ctx))
+	if err := r.telemetry.Process(ctx, "1"); err != nil {
+		facades.Log().WithContext(ctx).Error("user processing failed: ", err)
 	}
+	r.telemetry.Consume(r.telemetry.Publish(ctx))
 
 	return ctx.Response().Success().String(body)
 }
