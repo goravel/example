@@ -21,15 +21,9 @@ const scopeName = "goravel"
 // recording on a span.
 var errUserIDRequired = errors.New("user id is required")
 
-type Telemetry interface {
-	Process(ctx context.Context, userID string) error
-	Publish(ctx context.Context) map[string]string
-	Consume(headers map[string]string)
-}
-
-var _ Telemetry = (*TelemetryImpl)(nil)
-
-type TelemetryImpl struct {
+// Telemetry is a manual instrumentation example. It owns a tracer and a set of
+// metric instruments created once and reused across requests.
+type Telemetry struct {
 	tracer    trace.Tracer
 	processed metric.Int64Counter
 	duration  metric.Float64Histogram
@@ -38,8 +32,8 @@ type TelemetryImpl struct {
 
 // NewTelemetry creates the tracer and metric instruments once. Instruments are
 // safe for concurrent use and meant to be created once and reused, so build this
-// service once (see routes/api.go) and share it rather than rebuilding per request.
-func NewTelemetry() (*TelemetryImpl, error) {
+// once (see TelemetryController) and share it rather than rebuilding per request.
+func NewTelemetry() (*Telemetry, error) {
 	meter := facades.Telemetry().Meter(scopeName)
 
 	processed, err := meter.Int64Counter("users.processed",
@@ -61,7 +55,7 @@ func NewTelemetry() (*TelemetryImpl, error) {
 		return nil, err
 	}
 
-	return &TelemetryImpl{
+	return &Telemetry{
 		tracer:    facades.Telemetry().Tracer(scopeName),
 		processed: processed,
 		duration:  duration,
@@ -73,7 +67,7 @@ func NewTelemetry() (*TelemetryImpl, error) {
 // server) span, starts its own span with an attribute and an event, runs a
 // nested child span, records the outcome on the counter and histogram, tracks
 // in-flight work with the up-down counter, and logs with the trace context.
-func (r *TelemetryImpl) Process(ctx context.Context, userID string) error {
+func (r *Telemetry) Process(ctx context.Context, userID string) error {
 	start := time.Now()
 
 	// Enrich the span already active on the incoming context (started by the
@@ -106,7 +100,7 @@ func (r *TelemetryImpl) Process(ctx context.Context, userID string) error {
 
 // Publish injects the active trace context into message headers so a consumer
 // on another transport can continue the same trace.
-func (r *TelemetryImpl) Publish(ctx context.Context) map[string]string {
+func (r *Telemetry) Publish(ctx context.Context) map[string]string {
 	headers := map[string]string{}
 	facades.Telemetry().Propagator().Inject(ctx, telemetry.PropagationMapCarrier(headers))
 
@@ -115,7 +109,7 @@ func (r *TelemetryImpl) Publish(ctx context.Context) map[string]string {
 
 // Consume extracts the propagated context and starts a consumer span that
 // continues the producer's trace across the boundary.
-func (r *TelemetryImpl) Consume(headers map[string]string) {
+func (r *Telemetry) Consume(headers map[string]string) {
 	ctx := facades.Telemetry().Propagator().Extract(context.Background(), telemetry.PropagationMapCarrier(headers))
 
 	ctx, span := r.tracer.Start(ctx, "users.consume", telemetry.WithSpanKind(telemetry.SpanKindConsumer))
@@ -126,7 +120,7 @@ func (r *TelemetryImpl) Consume(headers map[string]string) {
 
 // validate runs inside a nested child span. A missing id simulates a validation
 // failure so the error-recording path can be shown.
-func (r *TelemetryImpl) validate(ctx context.Context, userID string) error {
+func (r *Telemetry) validate(ctx context.Context, userID string) error {
 	_, span := r.tracer.Start(ctx, "users.validate")
 	defer span.End()
 

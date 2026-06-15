@@ -10,7 +10,6 @@ import (
 	"goravel/app/facades"
 	"goravel/app/http/controllers"
 	"goravel/app/http/middleware"
-	"goravel/app/services"
 )
 
 const timeoutIsolationBuffer = 500 * time.Millisecond
@@ -185,39 +184,9 @@ func Api() {
 		}).Name("url.post")
 	})
 
-	// Build the telemetry example once and share it; its instruments are created
-	// in the constructor and reused across requests.
-	tel, err := services.NewTelemetry()
-	if err != nil {
-		facades.Log().Error("failed to build the telemetry example service: ", err)
-	}
-
-	facades.Route().Get("telemetry", func(ctx http.Context) http.Response {
-		facades.Log().Channel("otel").WithContext(ctx).Info("test telemetry log")
-
-		resp, err := facades.Http().WithContext(ctx).Get("/grpc/user?token=1")
-		if err != nil {
-			return ctx.Response().Json(http.StatusInternalServerError, http.Json{
-				"error": err.Error(),
-			})
-		}
-
-		body, err := resp.Body()
-		if err != nil {
-			return ctx.Response().Json(http.StatusInternalServerError, http.Json{
-				"error": err.Error(),
-			})
-		}
-
-		if tel != nil {
-			if err := tel.Process(ctx.Context(), "1"); err != nil {
-				facades.Log().WithContext(ctx.Context()).Error("user processing failed: ", err)
-			}
-			tel.Consume(tel.Publish(ctx.Context()))
-		}
-
-		return ctx.Response().Success().String(body)
-	})
+	// Telemetry
+	telemetryController := controllers.NewTelemetryController()
+	facades.Route().Get("telemetry", telemetryController.Index)
 }
 
 func timeoutIsolationDurations() (time.Duration, time.Duration) {
