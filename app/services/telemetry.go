@@ -15,7 +15,7 @@ import (
 
 // scopeName identifies who produced the spans and metrics (the instrumentation
 // scope). Convention is the instrumenting package or application name.
-const scopeName = "goravel"
+const scopeName = "goravel-example"
 
 // errUserIDRequired is a simulated validation failure used to show error
 // recording on a span.
@@ -125,6 +125,9 @@ func (r *Telemetry) validate(ctx context.Context, userID string) error {
 	defer span.End()
 
 	if userID == "" {
+		span.RecordError(errUserIDRequired)
+		span.SetStatus(telemetry.CodeError, errUserIDRequired.Error())
+
 		return errUserIDRequired
 	}
 

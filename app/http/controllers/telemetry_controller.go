@@ -51,7 +51,9 @@ func (r *TelemetryController) Index(ctx http.Context) http.Response {
 		})
 	}
 
-	if err := r.telemetry.Process(ctx, "1"); err != nil {
+	// userID defaults to "1"; request ?user= (empty) to exercise the validation error path.
+	userID := ctx.Request().Query("user", "1")
+	if err := r.telemetry.Process(ctx, userID); err != nil {
 		facades.Log().WithContext(ctx).Error("user processing failed: ", err)
 	}
 	r.telemetry.Consume(r.telemetry.Publish(ctx))

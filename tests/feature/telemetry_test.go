@@ -38,6 +38,12 @@ func (s *TelemetryTestSuite) SetupSuite() {
 	resp, err := s.Http(s.T()).Get("/telemetry")
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
+
+	// An empty user id drives the validation error path so the result="error"
+	// metric and the errored spans are emitted as well.
+	errResp, err := s.Http(s.T()).Get("/telemetry?user=")
+	s.Require().NoError(err)
+	errResp.AssertSuccessful()
 }
 
 func (s *TelemetryTestSuite) TestTraces() {
@@ -49,7 +55,9 @@ func (s *TelemetryTestSuite) TestTraces() {
 func (s *TelemetryTestSuite) TestMetrics() {
 	telemetry.AwaitMetric(s.T(), `grpc_controller_total{service_name="`+plainServiceName+`"}`,
 		"grpc_controller_total", "GrpcController/User")
-	telemetry.AwaitMetric(s.T(), `users_processed_total{service_name="`+plainServiceName+`"}`,
+	telemetry.AwaitMetric(s.T(), `users_processed_total{service_name="`+plainServiceName+`",result="ok"}`,
+		"users_processed_total")
+	telemetry.AwaitMetric(s.T(), `users_processed_total{service_name="`+plainServiceName+`",result="error"}`,
 		"users_processed_total")
 }
 
