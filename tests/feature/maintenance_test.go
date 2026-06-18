@@ -168,9 +168,13 @@ func (s *MaintenanceTestSuite) TestCacheDriver_DownAndUp() {
 		"driver": "cache",
 		"store":  "",
 	})
+	facades.App().Refresh()
 
 	err := facades.Artisan().Call("down --reason=CacheDriverTest")
 	s.Require().NoError(err)
+
+	s.True(facades.Cache().Has("framework:maintenance"))
+	s.Contains(facades.Cache().GetString("framework:maintenance"), "CacheDriverTest")
 
 	resp, err := s.Http(s.T()).Get("/")
 	s.Require().NoError(err)
@@ -183,6 +187,8 @@ func (s *MaintenanceTestSuite) TestCacheDriver_DownAndUp() {
 	err = facades.Artisan().Call("up")
 	s.Require().NoError(err)
 
+	s.False(facades.Cache().Has("framework:maintenance"))
+
 	resp, err = s.Http(s.T()).Get("/")
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
@@ -191,4 +197,5 @@ func (s *MaintenanceTestSuite) TestCacheDriver_DownAndUp() {
 		"driver": "file",
 		"store":  "",
 	})
+	facades.App().Refresh()
 }
