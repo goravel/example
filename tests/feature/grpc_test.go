@@ -126,7 +126,7 @@ func (s *GrpcFeatureSuite) TestDirectGrpcClientConnection() {
 	// single literal — no mirror map, no XXX_* cache fields to compare.
 	actual, err := protojson.Marshal(protoadapt.MessageV2Of(response))
 	s.Require().NoError(err)
-	s.Equal(`{"code":200,"data":{"id":"1","name":"Goravel","token":"direct"}}`, string(actual))
+	s.Equal(`{"code":200, "data":{"id":"1", "name":"Goravel", "token":"direct"}}`, string(actual))
 }
 
 // TestUserClientConnectionIsCached verifies that the gRPC application caches
