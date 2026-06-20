@@ -4,10 +4,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goravel/framework/support/file"
+	"github.com/goravel/framework/support/path"
 	"github.com/stretchr/testify/suite"
 
 	"goravel/app/console/commands"
 	"goravel/app/facades"
+	"goravel/bootstrap"
 	"goravel/tests"
 )
 
@@ -147,4 +150,18 @@ func (s *ConsoleTestSuite) TestRunShutdownable() {
 	s.NoError(err)
 	s.True(commands.GetShutdownableHandleRan(), "Handle should run")
 	s.True(commands.GetShutdownableShutdownRan(), "Shutdown should run after Handle returns (framework master application.go:209-217)")
+}
+
+func (s *ConsoleTestSuite) TestCommandsFilterReturnsNilInLocalEnv() {
+	filter := bootstrap.CommandsFilter()
+	s.Nil(filter, "CommandsFilter should return nil (keep all) when app.env is not production")
+}
+
+func (s *ConsoleTestSuite) TestCommandsFilterKeepsBuiltInCommands() {
+	s.NoError(facades.Artisan().Call("about"))
+}
+
+func (s *ConsoleTestSuite) TestCommandsFilterKeepsGlobMatchesInLocalEnv() {
+	s.NoError(facades.Artisan().Call("make:command TestGlobFilterCmd"))
+	s.True(file.Contains(path.Bootstrap("commands.go"), "&commands.TestGlobFilterCmd{},"))
 }
