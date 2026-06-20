@@ -141,3 +141,10 @@ func (s *ConsoleTestSuite) TestCallSingleCommand() {
 	s.InDelta(float32(1.25), capture.ArgumentFloat32, 0.00001)
 	s.True(capture.ArgumentTimestamp.Equal(timestamp))
 }
+
+func (s *ConsoleTestSuite) TestRunShutdownable() {
+	err := facades.Artisan().Run([]string{"./main", "artisan", "test:console-shutdownable"}, false)
+	s.NoError(err)
+	s.True(commands.GetShutdownableHandleRan(), "Handle should run")
+	s.True(commands.GetShutdownableShutdownRan(), "Shutdown should run after Handle returns (framework master application.go:209-217)")
+}

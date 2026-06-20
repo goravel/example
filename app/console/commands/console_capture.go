@@ -63,6 +63,9 @@ var (
 	consoleSingleLatest *ConsoleSingleCapture
 	consoleSliceLatest  *ConsoleSliceCapture
 	consoleCaptureMutex sync.RWMutex
+
+	shutdownableHandleRan   bool
+	shutdownableShutdownRan bool
 )
 
 func ResetConsoleCaptures() {
@@ -71,6 +74,8 @@ func ResetConsoleCaptures() {
 
 	consoleSingleLatest = nil
 	consoleSliceLatest = nil
+	shutdownableHandleRan = false
+	shutdownableShutdownRan = false
 }
 
 func SetConsoleSingleLatest(capture *ConsoleSingleCapture) {
@@ -99,4 +104,32 @@ func GetConsoleSliceLatest() *ConsoleSliceCapture {
 	defer consoleCaptureMutex.RUnlock()
 
 	return consoleSliceLatest
+}
+
+func SetShutdownableHandleRan() {
+	consoleCaptureMutex.Lock()
+	defer consoleCaptureMutex.Unlock()
+
+	shutdownableHandleRan = true
+}
+
+func GetShutdownableHandleRan() bool {
+	consoleCaptureMutex.RLock()
+	defer consoleCaptureMutex.RUnlock()
+
+	return shutdownableHandleRan
+}
+
+func SetShutdownableShutdownRan() {
+	consoleCaptureMutex.Lock()
+	defer consoleCaptureMutex.Unlock()
+
+	shutdownableShutdownRan = true
+}
+
+func GetShutdownableShutdownRan() bool {
+	consoleCaptureMutex.RLock()
+	defer consoleCaptureMutex.RUnlock()
+
+	return shutdownableShutdownRan
 }
