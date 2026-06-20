@@ -12,7 +12,6 @@ import (
 	"goravel/app/facades"
 	"goravel/bootstrap"
 	"goravel/tests"
-	"goravel/tests/telemetry"
 )
 
 type ConsoleTestSuite struct {
@@ -168,7 +167,7 @@ func (s *ConsoleTestSuite) TestCommandsFilterKeepsGlobMatchesInLocalEnv() {
 }
 
 func (s *ConsoleTestSuite) TestCommandsFilterInProductionEnv() {
-	scope, err := telemetry.OverrideConfig(map[string]any{
+	scope, err := tests.OverrideConfig(map[string]any{
 		"app.env": "production",
 	})
 	s.Require().NoError(err)
@@ -181,4 +180,8 @@ func (s *ConsoleTestSuite) TestCommandsFilterInProductionEnv() {
 	s.Equal([]string{"up", "down", "make:*", "vendor:publish"}, filter)
 
 	s.NoError(facades.Artisan().Call("up"), "up should survive production filter")
+
+	output, err := s.CaptureArtisanOutput("test:console-single")
+	s.NoError(err)
+	s.Contains(output, "Command 'test:console-single' is not defined.", "test:console-single should be excluded in production")
 }

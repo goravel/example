@@ -70,7 +70,7 @@ func TestFunction(t *testing.T) {
 
 ### Telemetry feature tests
 
-- Use the `tests/telemetry` kit: `EnsureStack` for compose services, `AwaitTraces`/`AwaitMetric`/`AwaitLogs` for backend assertions, `OverrideConfig`/`Restore` for config changes, `GenerateCollectorCerts` for TLS material.
+- Use the `tests/telemetry` kit: `EnsureStack` for compose services, `AwaitTraces`/`AwaitMetric`/`AwaitLogs` for backend assertions, `GenerateCollectorCerts` for TLS material. Use `tests.OverrideConfig`/`Restore` for config changes.
 - Never `time.Sleep` in telemetry suites; readiness and export latency are handled by the kit.
-- Every suite must claim a unique `telemetry.service.name` via `OverrideConfig` and query by it; backends stay warm and accumulate data across suites.
+- Every suite must claim a unique `telemetry.service.name` via `tests.OverrideConfig` and query by it; backends stay warm and accumulate data across suites.
 - Suites never run `docker compose down`; teardown is owned by `TestMain` via `telemetry.TeardownStack`.

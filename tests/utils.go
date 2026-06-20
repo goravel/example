@@ -1,4 +1,4 @@
-package telemetry
+package tests
 
 import (
 	"github.com/goravel/framework/facades"
