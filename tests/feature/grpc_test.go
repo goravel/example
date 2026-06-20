@@ -11,6 +11,7 @@ import (
 	proto "github.com/goravel/example-proto"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/protobuf/encoding/protojson"
+	protopkg "google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/protoadapt"
 
 	"goravel/app/facades"
@@ -121,12 +122,15 @@ func (s *GrpcFeatureSuite) TestDirectGrpcClientConnection() {
 	s.Require().NoError(err)
 	s.NotNil(response)
 
-	// example-proto generates v1 proto.Message types. Bridge through protoadapt
-	// so the non-deprecated protojson can marshal the wire form against a
-	// single literal — no mirror map, no XXX_* cache fields to compare.
-	actual, err := protojson.Marshal(protoadapt.MessageV2Of(response))
-	s.Require().NoError(err)
-	s.Equal(`{"code":200,"data":{"id":"1","name":"Goravel","token":"direct"}}`, string(actual))
+	// protojson.Marshal intentionally adds random spaces between builds
+	// (see internal/encoding/json/encode.go — detrand.Bool). Compare
+	// the parsed proto.Message values instead of raw JSON strings.
+	want := protoadapt.MessageV2Of(&proto.UserResponse{})
+	s.Require().NoError(protojson.Unmarshal(
+		[]byte(`{"code":200,"data":{"id":"1","name":"Goravel","token":"direct"}}`),
+		want,
+	))
+	s.True(protopkg.Equal(want, protoadapt.MessageV2Of(response)))
 }
 
 // TestUserClientConnectionIsCached verifies that the gRPC application caches
