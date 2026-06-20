@@ -73,5 +73,24 @@ func init() {
 			"driver": config.Env("APP_MAINTENANCE_DRIVER", "file"),
 			"store":  config.Env("APP_MAINTENANCE_STORE", ""),
 		},
+
+		// Disabled Runners
+		//
+		// Here you may specify which auto-run runners should be skipped when
+		// app.Start() is called. Patterns use path.Match glob matching.
+		//
+		// Framework runner signatures:
+		//   goravel:http      – HTTP server
+		//   goravel:grpc      – gRPC server
+		//   goravel:queue     – Queue worker
+		//   goravel:schedule  – Scheduler
+		//   goravel:telemetry – Telemetry
+		//
+		// Example: disable scheduler for a web-only container
+		//   "disabled_runners": []string{"goravel:schedule"},
+		//
+		// Example: disable all framework runners
+		//   "disabled_runners": []string{"goravel:*"},
+		"disabled_runners": []string{},
 	})
 }

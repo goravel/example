@@ -26,6 +26,14 @@ import (
 	"goravel/routes"
 )
 
+// BootstrapRunners returns user-defined runners. Tests populate this slice to
+// verify the disabled_runners config properly controls which runners start.
+var BootstrapRunnerList []contractsfoundation.Runner
+
+var BootstrapRunners = func() []contractsfoundation.Runner {
+	return BootstrapRunnerList
+}
+
 func Boot() contractsfoundation.Application {
 	return foundation.Setup().
 		WithMigrations(Migrations).
@@ -89,6 +97,7 @@ func Boot() contractsfoundation.Application {
 			paths.App("app")
 		}).
 		WithProviders(Providers).
+		WithRunners(BootstrapRunners).
 		WithSchedule(func() []schedule.Event {
 			return []schedule.Event{
 				facades.Schedule().Call(func() {
