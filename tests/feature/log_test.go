@@ -1,8 +1,13 @@
 package feature
 
 import (
-	"goravel/app/facades"
+	"context"
+	"encoding/json"
+	"os"
+	"strings"
 	"testing"
+
+	"goravel/app/facades"
 
 	"github.com/goravel/framework/support/carbon"
 	"github.com/goravel/framework/support/file"
@@ -34,4 +39,52 @@ func TestLog(t *testing.T) {
 
 	newDailyLogPath := path.Storage("logs", "goravel-"+now.ToDateString()+".log")
 	assert.True(t, file.Contains(newDailyLogPath, "["+dateTimeMilli+"] local.error: This is an error log"))
+}
+
+type logCtxKey string
+type logSentinel struct{}
+
+func TestLogWithContext(t *testing.T) {
+	ctx := context.Background()
+	ctx = context.WithValue(ctx, "GoravelAuthJwt", "should-be-filtered")
+	ctx = context.WithValue(ctx, "access_token", "should-be-filtered")
+	ctx = context.WithValue(ctx, "secret_key", "should-be-filtered")
+	ctx = context.WithValue(ctx, "request_id", "req-abc-123")
+	ctx = context.WithValue(ctx, logCtxKey("trace_id"), "trace-xyz-987")
+	ctx = context.WithValue(ctx, logSentinel{}, "user-42")
+
+	facades.Log().WithContext(ctx).Info("log with context example")
+
+	body, err := os.ReadFile(path.Storage("logs", "goravel.log"))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, body)
+
+	line := findLogLine(string(body), `"message":"log with context example"`)
+	assert.NotEmpty(t, line, "log line with marker message not found")
+
+	var entry map[string]any
+	assert.NoError(t, json.Unmarshal([]byte(line), &entry))
+
+	logCtx, ok := entry["context"].(map[string]any)
+	assert.True(t, ok, "log entry must include a context object")
+	if !ok {
+		return
+	}
+
+	assert.NotContains(t, logCtx, "GoravelAuthJwt")
+	assert.NotContains(t, logCtx, "access_token")
+	assert.NotContains(t, logCtx, "secret_key")
+
+	assert.Equal(t, "req-abc-123", logCtx["request_id"])
+	assert.Equal(t, "trace-xyz-987", logCtx["trace_id"])
+	assert.Equal(t, "user-42", logCtx["feature.logSentinel"])
+}
+
+func findLogLine(body, marker string) string {
+	for _, line := range strings.Split(body, "\n") {
+		if strings.Contains(line, marker) {
+			return line
+		}
+	}
+	return ""
 }

@@ -44,5 +44,19 @@ func init() {
 				"instrument_name": config.GetString("APP_NAME", "goravel/log"),
 			},
 		},
+
+		// Context Key Exclusions
+		//
+		// These keys are stripped from log entries written via
+		// facades.Log().WithContext(ctx). Framework-internal keys such as
+		// "GoravelAuthJwt" and "goravel_http_client_name" are excluded
+		// automatically; list project-specific keys here to extend the
+		// exclusion set.
+		"context": map[string]any{
+			"exclude": []any{
+				"access_token",
+				"secret_key",
+			},
+		},
 	})
 }

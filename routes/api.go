@@ -187,6 +187,10 @@ func Api() {
 	// Telemetry
 	telemetryController := controllers.NewTelemetryController()
 	facades.Route().Get("telemetry", telemetryController.Index)
+
+	// Logging
+	logController := controllers.NewLogController()
+	facades.Route().Get("log/with-context", logController.WithContext)
 }
 
 func timeoutIsolationDurations() (time.Duration, time.Duration) {
