@@ -8,19 +8,19 @@ require (
 	github.com/gofiber/fiber/v3 v3.3.0
 	github.com/gofiber/template/html/v3 v3.0.5
 	github.com/goravel/anthropic v0.0.0-20260612100942-404b828815b9
-	github.com/goravel/cos v1.17.1-0.20260323021954-3ddc163693ee
+	github.com/goravel/cos v1.17.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.17.1-0.20260613035455-658a0afce584
-	github.com/goravel/framework v1.17.2
+	github.com/goravel/framework v1.17.2-0.20260620003653-d44f2c8574f2
 	github.com/goravel/gemini v0.0.0-20260612100742-b6ec562a886a
 	github.com/goravel/gin v1.17.1-0.20260613040118-01d8b930d8e9
-	github.com/goravel/minio v1.17.1-0.20260406054609-93d9a56045ac
+	github.com/goravel/minio v1.17.0
 	github.com/goravel/mysql v1.17.2-0.20260328140940-c52993f25694
 	github.com/goravel/openai v0.0.0-20260610102009-b45b58b76a24
-	github.com/goravel/oss v1.17.1-0.20260316041853-7cb11e498cb9
+	github.com/goravel/oss v1.17.0
 	github.com/goravel/postgres v1.17.2-0.20260328141505-d15c51ef0b70
 	github.com/goravel/redis v1.17.1-0.20260209063449-3355af77f62f
-	github.com/goravel/s3 v1.17.1-0.20260406013458-b802a3c6ebb2
+	github.com/goravel/s3 v1.17.0
 	github.com/goravel/sqlite v1.17.1-0.20260328141412-2036b1ebff36
 	github.com/goravel/sqlserver v1.17.2-0.20260328141251-3f22017223f8
 	github.com/gorilla/websocket v1.5.3
@@ -34,7 +34,9 @@ require (
 	github.com/vektah/gqlparser/v2 v2.5.19
 	go.opentelemetry.io/otel v1.44.0
 	go.opentelemetry.io/otel/metric v1.44.0
+	go.opentelemetry.io/otel/trace v1.44.0
 	google.golang.org/grpc v1.81.1
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
@@ -233,7 +235,6 @@ require (
 	go.opentelemetry.io/otel/sdk v1.44.0 // indirect
 	go.opentelemetry.io/otel/sdk/log v0.20.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.44.0 // indirect
-	go.opentelemetry.io/otel/trace v1.44.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.10.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
@@ -251,7 +252,6 @@ require (
 	google.golang.org/genai v1.58.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.6.0 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
@@ -260,4 +260,4 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-replace github.com/goravel/framework => github.com/goravel/framework v1.17.2-0.20260615103401-e5f269b0f8d0
+replace github.com/goravel/framework => github.com/goravel/framework v1.17.2-0.20260620003653-d44f2c8574f2

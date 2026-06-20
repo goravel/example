@@ -10,5 +10,6 @@ func Commands() []console.Command {
 	return []console.Command{
 		&commands.ConsoleSingleCommand{},
 		&commands.ConsoleSliceCommand{},
+		&commands.ConsoleShutdownableCommand{},
 	}
 }
