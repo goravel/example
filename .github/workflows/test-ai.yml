@@ -1,6 +1,6 @@
 name: Test AI
 on:
-  pull_request:
+  workflow_dispatch:
 env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
