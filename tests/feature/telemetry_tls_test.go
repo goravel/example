@@ -48,7 +48,7 @@ func (s *TelemetryTLSTestSuite) SetupSuite() {
 		overrides[prefix+".tls.ca"] = caPath
 	}
 
-	scope, err := telemetry.OverrideConfig(overrides)
+	scope, err := tests.OverrideConfig(overrides)
 	// Cleanup instead of TearDownSuite: it restores the config even when a
 	// later assertion in SetupSuite fails.
 	s.T().Cleanup(func() {

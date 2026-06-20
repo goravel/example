@@ -25,7 +25,7 @@ func TestTelemetryTestSuite(t *testing.T) {
 func (s *TelemetryTestSuite) SetupSuite() {
 	telemetry.EnsureStack(s.T(), telemetry.ServiceJaeger, telemetry.ServicePrometheus, telemetry.ServiceLoki, telemetry.ServiceCollector)
 
-	scope, err := telemetry.OverrideConfig(map[string]any{
+	scope, err := tests.OverrideConfig(map[string]any{
 		"telemetry.service.name": plainServiceName,
 	})
 	// Cleanup instead of TearDownSuite: it restores the config even when a
