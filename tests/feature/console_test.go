@@ -12,6 +12,7 @@ import (
 	"goravel/app/facades"
 	"goravel/bootstrap"
 	"goravel/tests"
+	"goravel/tests/telemetry"
 )
 
 type ConsoleTestSuite struct {
@@ -164,4 +165,20 @@ func (s *ConsoleTestSuite) TestCommandsFilterKeepsBuiltInCommands() {
 func (s *ConsoleTestSuite) TestCommandsFilterKeepsGlobMatchesInLocalEnv() {
 	s.NoError(facades.Artisan().Call("make:command TestGlobFilterCmd"))
 	s.True(file.Contains(path.Bootstrap("commands.go"), "&commands.TestGlobFilterCmd{},"))
+}
+
+func (s *ConsoleTestSuite) TestCommandsFilterInProductionEnv() {
+	scope, err := telemetry.OverrideConfig(map[string]any{
+		"app.env": "production",
+	})
+	s.Require().NoError(err)
+	defer func() {
+		s.NoError(scope.Restore())
+	}()
+
+	filter := bootstrap.CommandsFilter()
+	s.NotNil(filter, "CommandsFilter should return non-nil in production")
+	s.Equal([]string{"up", "down", "make:*", "vendor:publish"}, filter)
+
+	s.NoError(facades.Artisan().Call("up"), "up should survive production filter")
 }
