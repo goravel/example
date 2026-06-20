@@ -1,13 +1,13 @@
 package feature
 
 import (
-	"context"
 	"encoding/json"
 	"os"
 	"strings"
 	"testing"
 
 	"goravel/app/facades"
+	"goravel/tests"
 
 	"github.com/goravel/framework/support/carbon"
 	"github.com/goravel/framework/support/file"
@@ -41,19 +41,12 @@ func TestLog(t *testing.T) {
 	assert.True(t, file.Contains(newDailyLogPath, "["+dateTimeMilli+"] local.error: This is an error log"))
 }
 
-type logCtxKey string
-type logSentinel struct{}
-
 func TestLogWithContext(t *testing.T) {
-	ctx := context.Background()
-	ctx = context.WithValue(ctx, "GoravelAuthJwt", "should-be-filtered")
-	ctx = context.WithValue(ctx, "access_token", "should-be-filtered")
-	ctx = context.WithValue(ctx, "secret_key", "should-be-filtered")
-	ctx = context.WithValue(ctx, "request_id", "req-abc-123")
-	ctx = context.WithValue(ctx, logCtxKey("trace_id"), "trace-xyz-987")
-	ctx = context.WithValue(ctx, logSentinel{}, "user-42")
+	testCase := &tests.TestCase{}
 
-	facades.Log().WithContext(ctx).Info("log with context example")
+	resp, err := testCase.Http(t).Get("/log/with-context")
+	assert.NoError(t, err)
+	resp.AssertSuccessful()
 
 	body, err := os.ReadFile(path.Storage("logs", "goravel.log"))
 	assert.NoError(t, err)
@@ -77,14 +70,15 @@ func TestLogWithContext(t *testing.T) {
 
 	assert.Equal(t, "req-abc-123", logCtx["request_id"])
 	assert.Equal(t, "trace-xyz-987", logCtx["trace_id"])
-	assert.Equal(t, "user-42", logCtx["feature.logSentinel"])
+	assert.Equal(t, "user-42", logCtx["controllers.logSentinel"])
 }
 
 func findLogLine(body, marker string) string {
+	var found string
 	for _, line := range strings.Split(body, "\n") {
 		if strings.Contains(line, marker) {
-			return line
+			found = line
 		}
 	}
-	return ""
+	return found
 }
