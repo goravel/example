@@ -330,8 +330,8 @@ github.com/goravel/example-proto v0.0.1 h1:ZxETeKREQWjuJ49bX/Hqj1NLR5Vyj489Ks6dR
 github.com/goravel/example-proto v0.0.1/go.mod h1:I8IPsHr4Ndf7KxmdsRpBR2LQ0Geo48+pjv9IIWf3mZg=
 github.com/goravel/fiber v1.17.1-0.20260621025423-854fc97c753e h1:s/ix3p+CZOmVSKr+nNep33n8jte9njW1bhIOWwCjedw=
 github.com/goravel/fiber v1.17.1-0.20260621025423-854fc97c753e/go.mod h1:ah3zvGM3b3oDINo1uvCSpbVZp3OgF2NqL3gC1HF4QvU=
-github.com/goravel/framework v1.17.2-0.20260620111819-895a1923bd91 h1:FvQKsBtW8Cp8OqTTxdPg8EA6geZxA3ScszGxCmLx1l4=
-github.com/goravel/framework v1.17.2-0.20260620111819-895a1923bd91/go.mod h1:J3xvbbFAbS/sYePrlIMfUD6anGcrnE49mnntYlKUvls=
+github.com/goravel/framework v1.17.2-0.20260621022129-9ffa3e9c7e45 h1:CDS4mjStqORdI9hYIihOPMzzvp0WSs5iKD254C/vwDo=
+github.com/goravel/framework v1.17.2-0.20260621022129-9ffa3e9c7e45/go.mod h1:J3xvbbFAbS/sYePrlIMfUD6anGcrnE49mnntYlKUvls=
 github.com/goravel/gemini v0.0.0-20260612100742-b6ec562a886a h1:pAqOmhOtpvhZr3jHxv6/cJFEr1gxvM50oQwir35dl+o=
 github.com/goravel/gemini v0.0.0-20260612100742-b6ec562a886a/go.mod h1:9X0bxFWH75aBewyk49An8mmSSp5HOLGGgH9wk0wNgpc=
 github.com/goravel/gin v1.17.1-0.20260620131757-00c7714a6c89 h1:WwV0hP93UPtC8ZPwH6RNzjFo32t6xNjuKpusH/3xYqU=
