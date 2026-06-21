@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	_ "unsafe"
 
 	"github.com/goravel/framework/support/file"
 	"github.com/stretchr/testify/suite"
@@ -13,6 +14,9 @@ import (
 	"goravel/app/facades"
 	"goravel/tests"
 )
+
+//go:linkname translationLoaded github.com/goravel/framework/translation.loaded
+var translationLoaded map[string]map[string]map[string]any
 
 type ValidationLangTestSuite struct {
 	suite.Suite
@@ -32,6 +36,7 @@ func (s *ValidationLangTestSuite) SetupTest() {
 
 func (s *ValidationLangTestSuite) TearDownTest() {
 	s.removeValidationLangFiles()
+	translationLoaded = make(map[string]map[string]map[string]any)
 }
 
 func (s *ValidationLangTestSuite) removeValidationLangFiles() {
