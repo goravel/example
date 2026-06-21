@@ -10,10 +10,10 @@ require (
 	github.com/goravel/anthropic v0.0.0-20260612100942-404b828815b9
 	github.com/goravel/cos v1.17.0
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.17.1-0.20260613035455-658a0afce584
-	github.com/goravel/framework v1.17.2-0.20260620053855-2059fd0b42f5
+	github.com/goravel/fiber v1.17.1-0.20260620111800-e43460f57383
+	github.com/goravel/framework v1.17.2-0.20260620111819-895a1923bd91
 	github.com/goravel/gemini v0.0.0-20260612100742-b6ec562a886a
-	github.com/goravel/gin v1.17.1-0.20260613040118-01d8b930d8e9
+	github.com/goravel/gin v1.17.1-0.20260620131757-00c7714a6c89
 	github.com/goravel/minio v1.17.0
 	github.com/goravel/mysql v1.17.2-0.20260328140940-c52993f25694
 	github.com/goravel/openai v0.0.0-20260610102009-b45b58b76a24
@@ -260,4 +260,4 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-replace github.com/goravel/framework => github.com/goravel/framework v1.17.2-0.20260620053855-2059fd0b42f5
+replace github.com/goravel/framework => github.com/goravel/framework v1.17.2-0.20260620111819-895a1923bd91

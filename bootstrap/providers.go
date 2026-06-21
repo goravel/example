@@ -27,6 +27,7 @@ import (
 	"github.com/goravel/framework/translation"
 	"github.com/goravel/framework/validation"
 	"github.com/goravel/framework/view"
+	"goravel/packages/viewtest"
 	"github.com/goravel/gemini"
 	"github.com/goravel/gin"
 	"github.com/goravel/minio"
@@ -78,5 +79,6 @@ func Providers() []foundation.ServiceProvider {
 		&openai.ServiceProvider{},
 		&anthropic.ServiceProvider{},
 		&gemini.ServiceProvider{},
+		&viewtest.ServiceProvider{},
 	}
 }

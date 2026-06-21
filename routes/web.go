@@ -70,6 +70,20 @@ func Web() {
 		})
 	})
 
+	// Package View Test: template only exists in package viewtest/views/
+	facades.Route().Get("package-only", func(ctx http.Context) http.Response {
+		return ctx.Response().View().Make("package_only.tmpl", map[string]any{
+			"name": "Goravel",
+		})
+	})
+
+	// Package View Test: template overridden in resources/views/
+	facades.Route().Get("shared", func(ctx http.Context) http.Response {
+		return ctx.Response().View().Make("shared.tmpl", map[string]any{
+			"name": "Goravel",
+		})
+	})
+
 	facades.Route().Fallback(func(ctx http.Context) http.Response {
 		return ctx.Response().String(http.StatusNotFound, "fallback")
 	})
