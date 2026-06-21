@@ -4,16 +4,13 @@ go 1.25.0
 
 require (
 	github.com/99designs/gqlgen v0.17.57
-	github.com/gin-gonic/gin v1.12.0
-	github.com/gofiber/fiber/v3 v3.3.0
-	github.com/gofiber/template/html/v3 v3.0.5
 	github.com/goravel/anthropic v0.0.0-20260612100942-404b828815b9
 	github.com/goravel/cos v1.17.0
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.17.1-0.20260613035455-658a0afce584
-	github.com/goravel/framework v1.17.2-0.20260620053855-2059fd0b42f5
+	github.com/goravel/fiber v1.17.1-0.20260621025423-854fc97c753e
+	github.com/goravel/framework v1.17.2-0.20260620111819-895a1923bd91
 	github.com/goravel/gemini v0.0.0-20260612100742-b6ec562a886a
-	github.com/goravel/gin v1.17.1-0.20260613040118-01d8b930d8e9
+	github.com/goravel/gin v1.17.1-0.20260620131757-00c7714a6c89
 	github.com/goravel/minio v1.17.0
 	github.com/goravel/mysql v1.17.2-0.20260328140940-c52993f25694
 	github.com/goravel/openai v0.0.0-20260610102009-b45b58b76a24
@@ -104,6 +101,7 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
 	github.com/gin-contrib/timeout v1.2.1 // indirect
+	github.com/gin-gonic/gin v1.12.0 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -118,8 +116,8 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
+	github.com/gofiber/fiber/v3 v3.3.0 // indirect
 	github.com/gofiber/schema v1.7.1 // indirect
-	github.com/gofiber/template/v2 v2.1.0 // indirect
 	github.com/gofiber/utils/v2 v2.1.0 // indirect
 	github.com/goforj/godump v1.9.1 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
@@ -260,4 +258,4 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-replace github.com/goravel/framework => github.com/goravel/framework v1.17.2-0.20260620053855-2059fd0b42f5
+replace github.com/goravel/framework => github.com/goravel/framework v1.17.2-0.20260620111819-895a1923bd91
