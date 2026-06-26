@@ -3,8 +3,10 @@ package feature
 import (
 	"testing"
 
+	"github.com/goravel/framework/contracts/binding"
 	"github.com/stretchr/testify/suite"
 
+	"goravel/app/facades"
 	"goravel/tests"
 	"goravel/tests/telemetry"
 )
@@ -35,6 +37,16 @@ func (s *TelemetryTestSuite) SetupSuite() {
 	})
 	s.Require().NoError(err)
 
+	// The /telemetry handler runs an automatically instrumented DB query. The DB
+	// connection and its bound tracer are cached process-wide and may have been
+	// built by an earlier suite under a different service name. Orm().Fresh()
+	// clears the connection cache, and App().Fresh(binding.DB) drops the already
+	// resolved DB facade so the next query rebuilds the instrument under
+	// plainServiceName. Then recreate the users table the query reads.
+	facades.Orm().Fresh()
+	facades.App().Fresh(binding.DB)
+	s.RefreshDatabase()
+
 	resp, err := s.Http(s.T()).Get("/telemetry")
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
@@ -49,7 +61,7 @@ func (s *TelemetryTestSuite) SetupSuite() {
 func (s *TelemetryTestSuite) TestTraces() {
 	telemetry.AwaitTraces(s.T(), plainServiceName,
 		"GET /telemetry", "HTTP GET", "user.UserService/GetUser", "GET /grpc/user",
-		"users.process", "users.consume")
+		"users.process", "users.consume", "SELECT users")
 }
 
 func (s *TelemetryTestSuite) TestMetrics() {
