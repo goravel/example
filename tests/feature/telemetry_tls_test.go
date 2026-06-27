@@ -56,6 +56,10 @@ func (s *TelemetryTLSTestSuite) SetupSuite() {
 	})
 	s.Require().NoError(err)
 
+	// The /telemetry handler runs an automatically instrumented DB query, so the
+	// users table must exist for the request to succeed.
+	s.RefreshDatabase()
+
 	resp, err := s.Http(s.T()).Get("/telemetry")
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
