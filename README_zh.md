@@ -39,7 +39,11 @@ Laravel！
 
 ### Unit Test (Testing With Mock)
 
-[app/http/controllers/validation_controller_test.go](https://github.com/goravel/example/blob/master/app/http/controllers/validation_controller_test.go)
+使用 `mock.Factory()` 和 EXPECT 风格语法进行模拟的示例：
+
+[app/services/mock_examples_test.go](https://github.com/goravel/example/blob/master/app/services/mock_examples_test.go)
+
+涵盖 18 个 Facade：App, Artisan, Auth, Cache, Config, Crypt, Event, Gate, Grpc, Hash, Lang, Log, Mail, Orm, OrmTransaction, Queue, Storage, Validation, View。
 
 ### Integration Test (Testing With Configuration)
 
