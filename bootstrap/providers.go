@@ -80,5 +80,6 @@ func Providers() []foundation.ServiceProvider {
 		&anthropic.ServiceProvider{},
 		&gemini.ServiceProvider{},
 		&viewtest.ServiceProvider{},
+		&RouteProvider{},
 	}
 }

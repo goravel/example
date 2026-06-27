@@ -379,3 +379,13 @@ func (s *HttpTestSuite) TestView() {
 	s.NotEmpty(csrfToken)
 	s.Equal(context, fmt.Sprintf("\n  \n<html>\n  <body>\n    <p>I'm the header</p>\n\n  <p>Hello, Goravel</p>\n  <p> CSRF Token: %s </p>\n  \n  <p>I'm the footer</p>\n  </body>\n</html>\n\n", csrfToken))
 }
+
+func (s *HttpTestSuite) TestProviderRoute() {
+	resp, err := s.Http(s.T()).Get("/provider-route")
+	s.NoError(err)
+	resp.AssertSuccessful()
+
+	content, err := resp.Content()
+	s.NoError(err)
+	s.Equal("Hello from provider route", content)
+}
