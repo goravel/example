@@ -38,11 +38,12 @@ func (s *TelemetryTestSuite) SetupSuite() {
 	s.Require().NoError(err)
 
 	// The /telemetry handler runs an automatically instrumented DB query. The DB
-	// connection and its bound tracer are cached process-wide and may have been
-	// built by an earlier suite under a different service name. Orm().Fresh()
-	// clears the connection cache, and App().Fresh(binding.DB) drops the already
-	// resolved DB facade so the next query rebuilds the instrument under
-	// plainServiceName. Then recreate the users table the query reads.
+	// connection and its bound tracer are cached process-wide and survive
+	// App().Restart(), so a connection an earlier suite built keeps that suite's
+	// service name. Orm().Fresh() clears the connection cache and
+	// App().Fresh(binding.DB) drops the resolved DB facade, so the next query
+	// rebuilds the instrument under plainServiceName. Then recreate the users
+	// table the query reads.
 	facades.Orm().Fresh()
 	facades.App().Fresh(binding.DB)
 	s.RefreshDatabase()
