@@ -36,7 +36,11 @@ Welcome to star, PR and issues！
 
 ### Unit Test (Testing With Mock)
 
-[app/http/controllers/validation_controller_test.go](https://github.com/goravel/example/blob/master/app/http/controllers/validation_controller_test.go)
+Examples of mocking facades using `mock.Factory()` with EXPECT-style syntax:
+
+[app/services/mock_examples_test.go](https://github.com/goravel/example/blob/master/app/services/mock_examples_test.go)
+
+Covers 18 facades: App, Artisan, Auth, Cache, Config, Crypt, Event, Gate, Grpc, Hash, Lang, Log, Mail, Orm, OrmTransaction, Queue, Storage, Validation, and View.
 
 ### Integration Test (Testing With Configuration)
 
