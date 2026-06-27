@@ -21,8 +21,8 @@ func AppCurrentLocale() string {
 	return facades.App().CurrentLocale(context.Background())
 }
 
-func ArtisanCall() {
-	facades.Artisan().Call("list")
+func ArtisanCall() error {
+	return facades.Artisan().Call("list")
 }
 
 func Auth(ctx contractshttp.Context) error {

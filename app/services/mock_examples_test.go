@@ -34,9 +34,7 @@ func (s *MockExamplesTestSuite) TestArtisan() {
 	mockArtisan := mockFactory.Artisan()
 	mockArtisan.EXPECT().Call("list").Return(nil).Once()
 
-	s.NotPanics(func() {
-		ArtisanCall()
-	})
+	s.Nil(ArtisanCall())
 }
 
 func (s *MockExamplesTestSuite) TestAuth() {
