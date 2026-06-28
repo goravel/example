@@ -71,8 +71,8 @@ func Providers() []foundation.ServiceProvider {
 		&redis.ServiceProvider{},
 		&gin.ServiceProvider{},
 		&fiber.ServiceProvider{},
-		&ai.ServiceProvider{},
 		&openai.ServiceProvider{},
 		&telemetry.ServiceProvider{},
+		&ai.ServiceProvider{},
 	}
 }
