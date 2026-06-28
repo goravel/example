@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"github.com/goravel/cos"
 	"github.com/goravel/fiber"
+	"github.com/goravel/framework/ai"
 	"github.com/goravel/framework/auth"
 	"github.com/goravel/framework/cache"
 	"github.com/goravel/framework/contracts/foundation"
@@ -20,6 +21,7 @@ import (
 	"github.com/goravel/framework/route"
 	"github.com/goravel/framework/schedule"
 	"github.com/goravel/framework/session"
+	"github.com/goravel/framework/telemetry"
 	"github.com/goravel/framework/testing"
 	"github.com/goravel/framework/translation"
 	"github.com/goravel/framework/validation"
@@ -27,6 +29,7 @@ import (
 	"github.com/goravel/gin"
 	"github.com/goravel/minio"
 	"github.com/goravel/mysql"
+	"github.com/goravel/openai"
 	"github.com/goravel/oss"
 	"github.com/goravel/postgres"
 	"github.com/goravel/redis"
@@ -68,5 +71,8 @@ func Providers() []foundation.ServiceProvider {
 		&redis.ServiceProvider{},
 		&gin.ServiceProvider{},
 		&fiber.ServiceProvider{},
+		&ai.ServiceProvider{},
+		&openai.ServiceProvider{},
+		&telemetry.ServiceProvider{},
 	}
 }

@@ -20,8 +20,8 @@ func (r *ValidationCreate) Authorize(ctx http.Context) error {
 	return nil
 }
 
-func (r *ValidationCreate) Rules(ctx http.Context) map[string]string {
-	return map[string]string{
+func (r *ValidationCreate) Rules(ctx http.Context) map[string]any {
+	return map[string]any{
 		"name":     "required",
 		"context":  "required",
 		"tags.*":   "required|string",
@@ -31,12 +31,12 @@ func (r *ValidationCreate) Rules(ctx http.Context) map[string]string {
 	}
 }
 
-func (r *ValidationCreate) Messages(ctx http.Context) map[string]string {
-	return map[string]string{}
+func (r *ValidationCreate) Messages(ctx http.Context) map[string]any {
+	return map[string]any{}
 }
 
-func (r *ValidationCreate) Attributes(ctx http.Context) map[string]string {
-	return map[string]string{}
+func (r *ValidationCreate) Attributes(ctx http.Context) map[string]any {
+	return map[string]any{}
 }
 
 func (r *ValidationCreate) PrepareForValidation(ctx http.Context, data validation.Data) error {
@@ -55,8 +55,8 @@ func (r *ValidationCreate) PrepareForValidation(ctx http.Context, data validatio
 	return nil
 }
 
-func (r *ValidationCreate) Filters(ctx http.Context) map[string]string {
-	return map[string]string{
+func (r *ValidationCreate) Filters(ctx http.Context) map[string]any {
+	return map[string]any{
 		"name": "trim",
 	}
 }

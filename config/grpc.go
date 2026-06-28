@@ -14,7 +14,7 @@ func init() {
 		"port": config.Env("GRPC_PORT"),
 
 		// Configure servers which the client will connect to
-		"servers": map[string]any{
+		"clients": map[string]any{
 			"user": map[string]any{
 				"host": config.Env("GRPC_USER_HOST"),
 				"port": config.Env("GRPC_USER_PORT"),

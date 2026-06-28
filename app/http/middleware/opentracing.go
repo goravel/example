@@ -15,25 +15,35 @@ const (
 )
 
 func Opentracing(tracer opentracing.Tracer) http.Middleware {
-	return func(ctx http.Context) {
-		var parentSpan opentracing.Span
+	return &OpentracingMiddleware{Tracer: tracer}
+}
 
-		spCtx, err := opentracing.GlobalTracer().Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(ctx.Request().Headers()))
-		if err != nil {
-			parentSpan = tracer.StartSpan(ctx.Request().Path())
-			defer parentSpan.Finish()
-		} else {
-			parentSpan = opentracing.StartSpan(
-				ctx.Request().Path(),
-				opentracing.ChildOf(spCtx),
-				opentracing.Tag{Key: string(ext.Component), Value: "HTTP"},
-				ext.SpanKindRPCServer,
-			)
-			defer parentSpan.Finish()
-		}
+type OpentracingMiddleware struct {
+	Tracer opentracing.Tracer
+}
 
-		ctx.WithValue(OpentracingTracer, tracer)
-		ctx.WithValue(OpentracingCtx, opentracing.ContextWithSpan(context.Background(), parentSpan))
-		ctx.Request().Next()
+func (o *OpentracingMiddleware) Handle(ctx http.Context) {
+	var parentSpan opentracing.Span
+
+	spCtx, err := opentracing.GlobalTracer().Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(ctx.Request().Headers()))
+	if err != nil {
+		parentSpan = o.Tracer.StartSpan(ctx.Request().Path())
+		defer parentSpan.Finish()
+	} else {
+		parentSpan = opentracing.StartSpan(
+			ctx.Request().Path(),
+			opentracing.ChildOf(spCtx),
+			opentracing.Tag{Key: string(ext.Component), Value: "HTTP"},
+			ext.SpanKindRPCServer,
+		)
+		defer parentSpan.Finish()
 	}
+
+	ctx.WithValue(OpentracingTracer, o.Tracer)
+	ctx.WithValue(OpentracingCtx, opentracing.ContextWithSpan(context.Background(), parentSpan))
+	ctx.Request().Next()
+}
+
+func (o *OpentracingMiddleware) Signature() string {
+	return "opentracing"
 }

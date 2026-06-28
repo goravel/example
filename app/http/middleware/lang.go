@@ -7,13 +7,21 @@ import (
 )
 
 func Lang() httpcontract.Middleware {
-	return func(ctx httpcontract.Context) {
-		lang := ctx.Request().Input("lang")
-		if lang == "" {
-			lang = facades.Config().GetString("app.locale")
-		}
-		facades.App().SetLocale(ctx, lang)
+	return &LangMiddleware{}
+}
 
-		ctx.Request().Next()
+type LangMiddleware struct{}
+
+func (l *LangMiddleware) Handle(ctx httpcontract.Context) {
+	lang := ctx.Request().Input("lang")
+	if lang == "" {
+		lang = facades.Config().GetString("app.locale")
 	}
+	facades.App().SetLocale(ctx, lang)
+
+	ctx.Request().Next()
+}
+
+func (l *LangMiddleware) Signature() string {
+	return "lang"
 }
