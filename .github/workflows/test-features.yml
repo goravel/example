@@ -1,4 +1,4 @@
-name: Test
+name: Test Features
 on:
   push:
     branches:
