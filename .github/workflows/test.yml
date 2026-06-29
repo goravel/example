@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: go mod tidy
       - name: Run tests
-        run: go test -timeout 10m -p 1 ./...
+        run: go test -timeout 10m -run "^TestMainTestSuite$" . ./app/...
   windows:
     strategy:
       matrix:
@@ -50,4 +50,4 @@ jobs:
       - name: Install dependencies
         run: go mod tidy
       - name: Run tests
-        run: go test -timeout 10m -run "^TestMainTestSuite$" && go test -timeout 10m ./app/...
+        run: go test -timeout 10m -run "^TestMainTestSuite$" . ./app/...

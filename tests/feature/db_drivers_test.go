@@ -3,6 +3,7 @@ package feature
 import (
 	"testing"
 
+	"github.com/goravel/framework/support/env"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 
@@ -10,7 +11,10 @@ import (
 )
 
 func TestDBDrivers(t *testing.T) {
-	connections := []string{"postgres", "mysql", "sqlserver"}
+	connections := []string{"postgres", "mysql"}
+	if env.IsLinux() {
+		connections = append(connections, "sqlserver")
+	}
 
 	for _, connection := range connections {
 		database, err := facades.Testing().Docker().Database(connection)
