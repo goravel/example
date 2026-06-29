@@ -6,14 +6,22 @@ import (
 	"goravel/app/facades"
 )
 
-func Lang() httpcontract.Middleware {
-	return func(ctx httpcontract.Context) {
-		lang := ctx.Request().Input("lang")
-		if lang == "" {
-			lang = facades.Config().GetString("app.locale")
-		}
-		facades.App().SetLocale(ctx, lang)
+type langMiddleware struct{}
 
-		ctx.Request().Next()
+func (r *langMiddleware) Signature() string {
+	return "lang"
+}
+
+func (r *langMiddleware) Handle(ctx httpcontract.Context) {
+	lang := ctx.Request().Input("lang")
+	if lang == "" {
+		lang = facades.Config().GetString("app.locale")
 	}
+	facades.App().SetLocale(ctx, lang)
+
+	ctx.Request().Next()
+}
+
+func Lang() httpcontract.Middleware {
+	return &langMiddleware{}
 }
