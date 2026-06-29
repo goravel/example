@@ -7,10 +7,10 @@ require (
 	github.com/goravel/anthropic v0.0.0-20260612100942-404b828815b9
 	github.com/goravel/cos v1.17.0
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.17.1-0.20260627025643-b0f12c46dcc3
-	github.com/goravel/framework v1.17.2-0.20260627035548-8c6802e27755
+	github.com/goravel/fiber v1.17.1-0.20260629033830-bc739387e45e
+	github.com/goravel/framework v1.17.2-0.20260629045658-ca1f3f2b35c6
 	github.com/goravel/gemini v0.0.0-20260612100742-b6ec562a886a
-	github.com/goravel/gin v1.17.1-0.20260627033833-3bbdffa3f231
+	github.com/goravel/gin v1.17.1-0.20260627145218-3c2810355756
 	github.com/goravel/minio v1.17.0
 	github.com/goravel/mysql v1.17.2-0.20260328140940-c52993f25694
 	github.com/goravel/openai v0.0.0-20260610102009-b45b58b76a24
@@ -207,7 +207,7 @@ require (
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	github.com/ugorji/go/codec v1.3.1 // indirect
 	github.com/unrolled/secure v1.17.0 // indirect
-	github.com/urfave/cli/v3 v3.10.0 // indirect
+	github.com/urfave/cli/v3 v3.10.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.71.0 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
@@ -246,7 +246,7 @@ require (
 	golang.org/x/term v0.44.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
-	golang.org/x/tools v0.46.0 // indirect
+	golang.org/x/tools v0.47.0 // indirect
 	google.golang.org/genai v1.58.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260526163538-3dc84a4a5aaa // indirect
@@ -254,8 +254,8 @@ require (
 	gorm.io/driver/mysql v1.6.0 // indirect
 	gorm.io/driver/postgres v1.6.0 // indirect
 	gorm.io/driver/sqlserver v1.6.3 // indirect
-	gorm.io/gorm v1.31.1 // indirect
+	gorm.io/gorm v1.31.2 // indirect
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-replace github.com/goravel/framework => github.com/goravel/framework v1.17.2-0.20260627035548-8c6802e27755
+replace github.com/goravel/framework => github.com/goravel/framework v1.17.2-0.20260629045658-ca1f3f2b35c6
