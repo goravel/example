@@ -37,6 +37,19 @@ func (r *TelemetryController) Index(ctx http.Context) http.Response {
 
 	facades.Log().Channel("otel").WithContext(ctx).Info("test telemetry log")
 
+	// Database queries are instrumented automatically. This builder query emits a
+	// "SELECT users" client span nested under the request span with no manual
+	// tracing; facades.Orm() is instrumented the same way.
+	var users []struct {
+		ID   uint   `db:"id"`
+		Name string `db:"name"`
+	}
+	if err := facades.DB().WithContext(ctx).Table("users").Limit(1).Get(&users); err != nil {
+		return ctx.Response().Json(http.StatusInternalServerError, http.Json{
+			"error": err.Error(),
+		})
+	}
+
 	resp, err := facades.Http().WithContext(ctx).Get("/grpc/user?token=1")
 	if err != nil {
 		return ctx.Response().Json(http.StatusInternalServerError, http.Json{

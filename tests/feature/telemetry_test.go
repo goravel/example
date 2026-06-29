@@ -35,6 +35,10 @@ func (s *TelemetryTestSuite) SetupSuite() {
 	})
 	s.Require().NoError(err)
 
+	// The /telemetry handler runs an automatically instrumented DB query, so the
+	// users table must exist for the "SELECT users" span to be produced.
+	s.RefreshDatabase()
+
 	resp, err := s.Http(s.T()).Get("/telemetry")
 	s.Require().NoError(err)
 	resp.AssertSuccessful()
@@ -49,7 +53,7 @@ func (s *TelemetryTestSuite) SetupSuite() {
 func (s *TelemetryTestSuite) TestTraces() {
 	telemetry.AwaitTraces(s.T(), plainServiceName,
 		"GET /telemetry", "HTTP GET", "user.UserService/GetUser", "GET /grpc/user",
-		"users.process", "users.consume")
+		"users.process", "users.consume", "SELECT users")
 }
 
 func (s *TelemetryTestSuite) TestMetrics() {
