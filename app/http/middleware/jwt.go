@@ -10,46 +10,54 @@ import (
 )
 
 func Jwt() http.Middleware {
-	return func(ctx http.Context) {
-		guard := facades.Config().GetString("auth.defaults.guard")
-		if ctx.Request().Header("Guard") != "" {
-			guard = ctx.Request().Header("Guard")
-		}
+	return &JwtMiddleware{}
+}
 
-		token := ctx.Request().Header("Authorization", "")
-		if token == "" {
-			_ = ctx.Response().String(http.StatusUnauthorized, "Unauthorized").Abort()
-			return
-		}
+type JwtMiddleware struct{}
 
-		if _, err := facades.Auth(ctx).Guard(guard).Parse(token); err != nil {
-			if errors.Is(err, auth.ErrorTokenExpired) {
-				// Refresh token
-				token, err = facades.Auth(ctx).Guard(guard).Refresh()
-				if err != nil {
-					// Refresh time exceeded
-					ctx.Request().Abort(http.StatusUnauthorized)
-					return
-				}
+func (j *JwtMiddleware) Handle(ctx http.Context) {
+	guard := facades.Config().GetString("auth.defaults.guard")
+	if ctx.Request().Header("Guard") != "" {
+		guard = ctx.Request().Header("Guard")
+	}
 
-				token = "Bearer " + token
-			} else {
-				// Token is invalid
+	token := ctx.Request().Header("Authorization", "")
+	if token == "" {
+		_ = ctx.Response().String(http.StatusUnauthorized, "Unauthorized").Abort()
+		return
+	}
+
+	if _, err := facades.Auth(ctx).Guard(guard).Parse(token); err != nil {
+		if errors.Is(err, auth.ErrorTokenExpired) {
+			// Refresh token
+			token, err = facades.Auth(ctx).Guard(guard).Refresh()
+			if err != nil {
+				// Refresh time exceeded
 				ctx.Request().Abort(http.StatusUnauthorized)
 				return
 			}
+
+			token = "Bearer " + token
+		} else {
+			// Token is invalid
+			ctx.Request().Abort(http.StatusUnauthorized)
+			return
 		}
-
-		// You can get User in DB and set it to ctx
-
-		//var user models.User
-		//if err := facades.Auth().User(ctx, &user); err != nil {
-		//	ctx.Request().AbortWithStatus(http.StatusUnauthorized)
-		//  return
-		//}
-		//ctx.WithValue("user", user)
-
-		ctx.Response().Header("Authorization", token)
-		ctx.Request().Next()
 	}
+
+	// You can get User in DB and set it to ctx
+
+	//var user models.User
+	//if err := facades.Auth().User(ctx, &user); err != nil {
+	//	ctx.Request().AbortWithStatus(http.StatusUnauthorized)
+	//  return
+	//}
+	//ctx.WithValue("user", user)
+
+	ctx.Response().Header("Authorization", token)
+	ctx.Request().Next()
+}
+
+func (j *JwtMiddleware) Signature() string {
+	return "jwt"
 }

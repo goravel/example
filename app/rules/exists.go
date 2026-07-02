@@ -9,12 +9,12 @@ import (
 )
 
 /**
- * exists 验证一个值在某个表中的字段中存在，相较于Laravel，支持同时判断多个字段
- * exists verify a value exists in a table field, compared to Laravel, support judging multiple fields at the same time
- * 用法：exists:表名称,字段名称,字段名称,字段名称
- * Usage: exists:table_name,field_name,field_name,field_name
- * 例子：exists:users,phone,email
- * Example: exists:users,phone,email
+ * exists_custom 验证一个值在某个表中的字段中存在，相较于Laravel，支持同时判断多个字段
+ * exists_custom verify a value exists in a table field, compared to Laravel, support judging multiple fields at the same time
+ * 用法：exists_custom:表名称,字段名称,字段名称,字段名称
+ * Usage: exists_custom:table_name,field_name,field_name,field_name
+ * 例子：exists_custom:users,phone,email
+ * Example: exists_custom:users,phone,email
  */
 
 type Exists struct {
@@ -22,7 +22,7 @@ type Exists struct {
 
 // Signature The name of the rule.
 func (receiver *Exists) Signature() string {
-	return "exists"
+	return "exists_custom"
 }
 
 // Passes Determine if the validation rule passes.
