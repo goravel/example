@@ -35,7 +35,7 @@ func (s *ValidationControllerTestSuite) TestJson() {
 	mockValidator := mockFactory.ValidationValidator()
 	mockContext.EXPECT().WithValue("ctx", "context").Once()
 	mockContext.EXPECT().Request().Return(mockRequest).Once()
-	mockRequest.EXPECT().Validate(map[string]string{
+	mockRequest.EXPECT().Validate(map[string]any{
 		"context": "required",
 		"name":    "required",
 		"date":    "required|date",

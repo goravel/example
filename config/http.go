@@ -1,13 +1,8 @@
 package config
 
 import (
-	"github.com/gin-gonic/gin/render"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/template/html/v2"
 	fiberfacades "github.com/goravel/fiber/facades"
 	"github.com/goravel/framework/contracts/route"
-	"github.com/goravel/framework/support/path"
-	"github.com/goravel/gin"
 	ginfacades "github.com/goravel/gin/facades"
 
 	"goravel/app/facades"
@@ -28,9 +23,10 @@ func init() {
 					return ginfacades.Route("gin"), nil
 				},
 				// Optional, default is http/template
-				"template": func() (render.HTMLRender, error) {
-					return gin.DefaultTemplate()
-				},
+				// Remove this due to testing, it's unnecessary when upgrading.
+				// "template": func() (render.HTMLRender, error) {
+				// 	return gin.DefaultTemplate()
+				// },
 			},
 			"fiber": map[string]any{
 				// immutable mode, see https://docs.gofiber.io/#zero-allocation
@@ -45,9 +41,10 @@ func init() {
 					return fiberfacades.Route("fiber"), nil
 				},
 				// Optional, default is "html/template"
-				"template": func() (fiber.Views, error) {
-					return html.New(path.Resource("views"), ".tmpl"), nil
-				},
+				// Remove this due to testing, it's unnecessary when upgrading.
+				// "template": func() (fiber.Views, error) {
+				// 	return html.New(path.Resource("views"), ".tmpl"), nil
+				// },
 			},
 		},
 		// HTTP URL
@@ -56,8 +53,8 @@ func init() {
 		"host": config.Env("APP_HOST", "127.0.0.1"),
 		// HTTP Port
 		"port": config.Env("APP_PORT", "3000"),
-		// HTTP Timeout, default is 3 seconds
-		"request_timeout": 3,
+		// HTTP Timeout, default is 5 seconds
+		"request_timeout": 5,
 		// HTTPS Configuration
 		"tls": map[string]any{
 			// HTTPS Host
