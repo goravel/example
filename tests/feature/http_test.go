@@ -456,7 +456,7 @@ func (s *HttpTestSuite) TestValidationRequest() {
 
 		content, err := resp.Content()
 		s.Require().NoError(err)
-		s.Equal("{\"message\":{\"code\":{\"regex\":\"code value does not pass the regex check\"},\"date\":{\"date\":\"date value should be a date string\"},\"name\":{\"required\":\"name is required to not be empty\"}}}", content)
+		s.Equal("{\"message\":{\"code\":{\"regex\":\"The code field format is invalid.\"},\"date\":{\"date\":\"validation.regex\"},\"name\":{\"required\":\"validation.regex\"},\"scores.*\":{\"required\":\"validation.regex\"},\"tags.*\":{\"required\":\"validation.regex\"}}}", content)
 	})
 }
 
