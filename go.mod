@@ -234,3 +234,5 @@ require (
 	gorm.io/gorm v1.31.1 // indirect
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
+
+replace github.com/goravel/framework => github.com/goravel/framework v1.17.3-0.20260704041804-bd3ec82fa2e9
