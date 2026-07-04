@@ -9,9 +9,9 @@ require (
 	github.com/gofiber/template/html/v2 v2.1.3
 	github.com/goravel/cos v1.17.0
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.17.0
-	github.com/goravel/framework v1.17.2
-	github.com/goravel/gin v1.17.0
+	github.com/goravel/fiber v1.17.1
+	github.com/goravel/framework v1.17.3
+	github.com/goravel/gin v1.17.1
 	github.com/goravel/minio v1.17.0
 	github.com/goravel/mysql v1.17.0
 	github.com/goravel/oss v1.17.0
@@ -234,3 +234,5 @@ require (
 	gorm.io/gorm v1.31.1 // indirect
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
+
+replace github.com/goravel/framework => github.com/goravel/framework v1.17.3

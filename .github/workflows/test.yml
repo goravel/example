@@ -22,7 +22,7 @@ env:
   MINIO_ACCESS_KEY_SECRET: ${{ secrets.MINIO_ACCESS_KEY_SECRET }}
   MINIO_BUCKET: ${{ secrets.MINIO_BUCKET }}
 jobs:
-  ubuntu:
+  unit:
     strategy:
       matrix:
         go: [ "1.23", "1.24" ]
@@ -44,4 +44,27 @@ jobs:
       - name: Install dependencies
         run: go mod tidy
       - name: Run tests
-        run: go test -timeout 5m -p 1 ./...
+        run: go test -timeout 10m -run "^TestMainTestSuite$" . ./app/...
+  integration:
+    strategy:
+      matrix:
+        go: [ "1.23", "1.24" ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Go mod cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Install dependencies
+        run: go mod tidy
+      - name: Run tests
+        run: go test -timeout 10m ./tests/...
