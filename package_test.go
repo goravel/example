@@ -131,26 +131,26 @@ func TestInstallAndUninstallCacheDrivers(t *testing.T) {
 }
 
 func TestInstallAndUninstallHttpDrivers(t *testing.T) {
-	assert.NoError(t, facades.Artisan().Call("package:uninstall github.com/goravel/gin@master"))
+	assert.NoError(t, facades.Artisan().Call("package:uninstall github.com/goravel/gin@v1.17.x"))
 	assert.False(t, file.Contain(path.Bootstrap("providers.go"), "&gin.ServiceProvider{},"))
 	assert.False(t, file.Contain(path.Bootstrap("providers.go"), "github.com/goravel/gin"))
 	assert.False(t, file.Contain(path.Config("http.go"), `"gin": map[string]any{`))
 	assert.False(t, file.Contain(path.Config("http.go"), `ginfacades "github.com/goravel/gin/facades"`))
 
-	assert.NoError(t, facades.Artisan().Call("package:install github.com/goravel/gin@master"))
+	assert.NoError(t, facades.Artisan().Call("package:install github.com/goravel/gin@v1.17.x"))
 	assert.True(t, file.Contain(path.Bootstrap("providers.go"), "&gin.ServiceProvider{},"))
 	assert.True(t, file.Contain(path.Bootstrap("providers.go"), "github.com/goravel/gin"))
 	assert.True(t, file.Contain(path.Config("http.go"), `"gin": map[string]any{`))
 	assert.True(t, file.Contain(path.Config("http.go"), `github.com/goravel/framework/contracts/route`))
 	assert.True(t, file.Contain(path.Config("http.go"), `ginfacades "github.com/goravel/gin/facades"`))
 
-	assert.NoError(t, facades.Artisan().Call("package:uninstall github.com/goravel/fiber@master"))
+	assert.NoError(t, facades.Artisan().Call("package:uninstall github.com/goravel/fiber@v1.17.x"))
 	assert.False(t, file.Contain(path.Bootstrap("providers.go"), "&fiber.ServiceProvider{},"))
 	assert.False(t, file.Contain(path.Bootstrap("providers.go"), "github.com/goravel/fiber"))
 	assert.False(t, file.Contain(path.Config("http.go"), `"fiber": map[string]any{`))
 	assert.False(t, file.Contain(path.Config("http.go"), `fiberfacades "github.com/goravel/fiber/facades"`))
 
-	assert.NoError(t, facades.Artisan().Call("package:install github.com/goravel/fiber@master"))
+	assert.NoError(t, facades.Artisan().Call("package:install github.com/goravel/fiber@v1.17.x"))
 	assert.True(t, file.Contain(path.Bootstrap("providers.go"), "&fiber.ServiceProvider{},"))
 	assert.True(t, file.Contain(path.Bootstrap("providers.go"), "github.com/goravel/fiber"))
 	assert.True(t, file.Contain(path.Config("http.go"), `"fiber": map[string]any{`))
