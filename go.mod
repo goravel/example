@@ -4,22 +4,22 @@ go 1.25.0
 
 require (
 	github.com/99designs/gqlgen v0.17.57
-	github.com/goravel/anthropic v0.0.0-20260702090625-962f48a73e60
-	github.com/goravel/cos v1.17.1-0.20260702090339-0e79e98f8153
+	github.com/goravel/anthropic v1.18.0
+	github.com/goravel/cos v1.18.0
 	github.com/goravel/example-proto v0.0.1
-	github.com/goravel/fiber v1.17.1-0.20260702090256-01fb4640efcc
-	github.com/goravel/framework v1.17.2
-	github.com/goravel/gemini v0.0.0-20260702090641-f413fdfe4a80
-	github.com/goravel/gin v1.17.1-0.20260702090240-8cd333a3db83
-	github.com/goravel/minio v1.17.1-0.20260702090416-a39dc71bf482
-	github.com/goravel/mysql v1.17.2-0.20260702090451-0e72088cf9ff
-	github.com/goravel/openai v0.0.0-20260702090602-62f23d8ad238
-	github.com/goravel/oss v1.17.1-0.20260702090354-3788331117fc
-	github.com/goravel/postgres v1.17.2-0.20260702090438-251fae7174d0
-	github.com/goravel/redis v1.17.1-0.20260702090542-95acd0e1df4f
-	github.com/goravel/s3 v1.17.1-0.20260702090320-0eb9c7674727
-	github.com/goravel/sqlite v1.17.1-0.20260702090526-8fedbf1a2ae6
-	github.com/goravel/sqlserver v1.17.2-0.20260702090507-2183e12a9096
+	github.com/goravel/fiber v1.18.0
+	github.com/goravel/framework v1.18.0
+	github.com/goravel/gemini v1.18.0
+	github.com/goravel/gin v1.18.0
+	github.com/goravel/minio v1.18.0
+	github.com/goravel/mysql v1.18.0
+	github.com/goravel/openai v1.18.0
+	github.com/goravel/oss v1.18.0
+	github.com/goravel/postgres v1.18.0
+	github.com/goravel/redis v1.18.0
+	github.com/goravel/s3 v1.18.0
+	github.com/goravel/sqlite v1.18.0
+	github.com/goravel/sqlserver v1.18.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/minio/minio-go/v7 v7.2.1
 	github.com/opentracing/opentracing-go v1.2.0
@@ -257,4 +257,4 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-replace github.com/goravel/framework => github.com/goravel/framework v1.17.2-0.20260704091648-a554ced468ca
+replace github.com/goravel/framework => github.com/goravel/framework v1.18.0
