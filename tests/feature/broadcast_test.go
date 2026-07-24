@@ -34,14 +34,7 @@ func (s *BroadcastTestSuite) TearDownSuite() {
 }
 
 func (s *BroadcastTestSuite) SetupTest() {
-	config := facades.Config()
-	config.Add("broadcasting.connections.log", map[string]any{
-		"driver": "log",
-	})
-	config.Add("broadcasting.connections.null", map[string]any{
-		"driver": "null",
-	})
-	config.Add("broadcasting.default", "null")
+	facades.Config().Add("broadcasting.default", "null")
 }
 
 func (s *BroadcastTestSuite) TestBroadcastDispatch_ShouldBroadcastNow_NullDriver() {
@@ -167,17 +160,6 @@ func (s *BroadcastTestSuite) TestPusherDriverDispatch_RoundTrip() {
 	}
 
 	facades.Config().Add("broadcasting.default", "pusher")
-	facades.Config().Add("broadcasting.connections.pusher", map[string]any{
-		"driver": "pusher",
-		"key":    "test-key",
-		"secret": "test-secret",
-		"app_id": "test-app",
-		"options": map[string]any{
-			"host":   "127.0.0.1",
-			"port":   6001,
-			"scheme": "http",
-		},
-	})
 
 	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
 		OrderID:   1,
