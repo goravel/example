@@ -9,10 +9,10 @@ func init() {
 
 		"connections": map[string]any{
 			"pusher": map[string]any{
-				"driver":  "pusher",
-				"key":     config.Env("PUSHER_APP_KEY", "test-key"),
-				"secret":  config.Env("PUSHER_APP_SECRET", "test-secret"),
-				"app_id":  config.Env("PUSHER_APP_ID", "test-app"),
+				"driver": "pusher",
+				"key":    config.Env("PUSHER_APP_KEY", "test-key"),
+				"secret": config.Env("PUSHER_APP_SECRET", "test-secret"),
+				"app_id": config.Env("PUSHER_APP_ID", "test-app"),
 				"options": map[string]any{
 					"cluster": config.Env("PUSHER_APP_CLUSTER", "mt1"),
 					"host":    config.Env("PUSHER_HOST", "127.0.0.1"),

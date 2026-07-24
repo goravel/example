@@ -28,7 +28,6 @@ import (
 	"github.com/goravel/framework/translation"
 	"github.com/goravel/framework/validation"
 	"github.com/goravel/framework/view"
-	"goravel/packages/viewtest"
 	"github.com/goravel/gemini"
 	"github.com/goravel/gin"
 	"github.com/goravel/minio"
@@ -40,6 +39,7 @@ import (
 	"github.com/goravel/s3"
 	"github.com/goravel/sqlite"
 	"github.com/goravel/sqlserver"
+	"goravel/packages/viewtest"
 )
 
 func Providers() []foundation.ServiceProvider {

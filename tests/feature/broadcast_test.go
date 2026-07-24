@@ -168,10 +168,10 @@ func (s *BroadcastTestSuite) TestPusherDriverDispatch_RoundTrip() {
 
 	facades.Config().Add("broadcasting.default", "pusher")
 	facades.Config().Add("broadcasting.connections.pusher", map[string]any{
-		"driver":  "pusher",
-		"key":     "test-key",
-		"secret":  "test-secret",
-		"app_id":  "test-app",
+		"driver": "pusher",
+		"key":    "test-key",
+		"secret": "test-secret",
+		"app_id": "test-app",
 		"options": map[string]any{
 			"host":   "127.0.0.1",
 			"port":   6001,
