@@ -37,15 +37,7 @@ func (s *BroadcastTestSuite) SetupTest() {
 	facades.Config().Add("broadcasting.default", "null")
 }
 
-func (s *BroadcastTestSuite) TestBroadcastDispatch_ShouldBroadcastNow_NullDriver() {
-	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
-		OrderID:   1,
-		OrderData: map[string]any{"id": 1},
-	})
-	s.NoError(err)
-}
-
-func (s *BroadcastTestSuite) TestBroadcastDispatch_ShouldBroadcastNow_LogDriver() {
+func (s *BroadcastTestSuite) TestLogDriver() {
 	facades.Config().Add("broadcasting.default", "log")
 
 	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
@@ -55,8 +47,8 @@ func (s *BroadcastTestSuite) TestBroadcastDispatch_ShouldBroadcastNow_LogDriver(
 	s.NoError(err)
 }
 
-func (s *BroadcastTestSuite) TestBroadcastDispatch_ShouldBroadcastWithConnections() {
-	facades.Config().Add("broadcasting.default", "log")
+func (s *BroadcastTestSuite) TestNullDriver() {
+	facades.Config().Add("broadcasting.default", "null")
 
 	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
 		OrderID:   1,
@@ -65,15 +57,21 @@ func (s *BroadcastTestSuite) TestBroadcastDispatch_ShouldBroadcastWithConnection
 	s.NoError(err)
 }
 
-func (s *BroadcastTestSuite) TestBroadcastDispatch_ShouldBroadcastWithQueue() {
+func (s *BroadcastTestSuite) TestPusherDriver() {
+	if !s.isRelayCloudRunning() {
+		s.T().Skip("RelayCloud not running")
+	}
+
+	facades.Config().Add("broadcasting.default", "pusher")
+
 	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
 		OrderID:   1,
-		OrderData: map[string]any{"id": 1},
+		OrderData: map[string]any{"test": "relaycloud"},
 	})
 	s.NoError(err)
 }
 
-func (s *BroadcastTestSuite) TestBroadcastDispatch_BroadcastWhenFalse() {
+func (s *BroadcastTestSuite) TestDispatch_BroadcastWhenFalse_SkipsDispatch() {
 	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShipped{
 		OrderID:    1,
 		ShouldFire: false,
@@ -81,8 +79,26 @@ func (s *BroadcastTestSuite) TestBroadcastDispatch_BroadcastWhenFalse() {
 	s.NoError(err)
 }
 
-func (s *BroadcastTestSuite) TestBroadcastDispatch_NoChannels() {
+func (s *BroadcastTestSuite) TestDispatch_NoChannels_SkipsDispatch() {
 	err := facades.Broadcast().Dispatch(&appbroadcasting.EmptyEvent{})
+	s.NoError(err)
+}
+
+func (s *BroadcastTestSuite) TestDispatch_ShouldBroadcastWithQueue() {
+	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
+		OrderID:   1,
+		OrderData: map[string]any{"id": 1},
+	})
+	s.NoError(err)
+}
+
+func (s *BroadcastTestSuite) TestDispatch_ShouldBroadcastWithConnections() {
+	facades.Config().Add("broadcasting.default", "log")
+
+	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
+		OrderID:   1,
+		OrderData: map[string]any{"id": 1},
+	})
 	s.NoError(err)
 }
 
@@ -152,20 +168,6 @@ func (s *BroadcastTestSuite) TestAuthResponseType() {
 	}
 	s.Equal("test-key:signature", resp.Auth)
 	s.Equal(`{"user_id":"1"}`, resp.ChannelData)
-}
-
-func (s *BroadcastTestSuite) TestPusherDriverDispatch_RoundTrip() {
-	if !s.isRelayCloudRunning() {
-		s.T().Skip("RelayCloud not running")
-	}
-
-	facades.Config().Add("broadcasting.default", "pusher")
-
-	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
-		OrderID:   1,
-		OrderData: map[string]any{"test": "relaycloud"},
-	})
-	s.NoError(err)
 }
 
 func (s *BroadcastTestSuite) isRelayCloudRunning() bool {
