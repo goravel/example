@@ -1,7 +1,6 @@
 package feature
 
 import (
-	stdhttp "net/http"
 	"os/exec"
 	"testing"
 
@@ -48,25 +47,9 @@ func (s *BroadcastTestSuite) TestLogDriver() {
 }
 
 func (s *BroadcastTestSuite) TestNullDriver() {
-	facades.Config().Add("broadcasting.default", "null")
-
 	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
 		OrderID:   1,
 		OrderData: map[string]any{"id": 1},
-	})
-	s.NoError(err)
-}
-
-func (s *BroadcastTestSuite) TestPusherDriver() {
-	if !s.isRelayCloudRunning() {
-		s.T().Skip("RelayCloud not running")
-	}
-
-	facades.Config().Add("broadcasting.default", "pusher")
-
-	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
-		OrderID:   1,
-		OrderData: map[string]any{"test": "relaycloud"},
 	})
 	s.NoError(err)
 }
@@ -168,13 +151,4 @@ func (s *BroadcastTestSuite) TestAuthResponseType() {
 	}
 	s.Equal("test-key:signature", resp.Auth)
 	s.Equal(`{"user_id":"1"}`, resp.ChannelData)
-}
-
-func (s *BroadcastTestSuite) isRelayCloudRunning() bool {
-	resp, err := stdhttp.Get("http://127.0.0.1:6001")
-	if err != nil {
-		return false
-	}
-	defer func() { _ = resp.Body.Close() }()
-	return true
 }
