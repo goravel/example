@@ -6,6 +6,7 @@ import (
 	"github.com/goravel/fiber"
 	"github.com/goravel/framework/ai"
 	"github.com/goravel/framework/auth"
+	"github.com/goravel/framework/broadcasting"
 	"github.com/goravel/framework/cache"
 	"github.com/goravel/framework/contracts/foundation"
 	"github.com/goravel/framework/crypt"
@@ -54,6 +55,7 @@ func Providers() []foundation.ServiceProvider {
 		&auth.ServiceProvider{},
 		&crypt.ServiceProvider{},
 		&queue.ServiceProvider{},
+		&broadcasting.ServiceProvider{},
 		&event.ServiceProvider{},
 		&grpc.ServiceProvider{},
 		&hash.ServiceProvider{},

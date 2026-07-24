@@ -11,6 +11,7 @@ import (
 	"github.com/goravel/framework/contracts/queue"
 	"github.com/goravel/framework/filesystem"
 
+	appbroadcasting "goravel/app/broadcasting"
 	"goravel/app/events"
 	"goravel/app/facades"
 	"goravel/app/jobs"
@@ -135,4 +136,18 @@ func Validation() string {
 
 func View() bool {
 	return facades.View().Exists("welcome.tmpl")
+}
+
+func BroadcastChannel() {
+	facades.Broadcast().Channel("orders.{orderId}", func(user any, channelName string, params map[string]string) bool {
+		return params["orderId"] == "1"
+	})
+}
+
+func BroadcastDispatch() error {
+	return facades.Broadcast().Dispatch(&appbroadcasting.OrderShipped{
+		OrderID:    1,
+		OrderData:  map[string]any{"id": 1},
+		ShouldFire: true,
+	})
 }

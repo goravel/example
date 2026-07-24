@@ -6,6 +6,7 @@ import (
 
 	"github.com/goravel/framework/contracts/mail"
 	"github.com/goravel/framework/filesystem"
+	mocksbroadcasting "github.com/goravel/framework/mocks/broadcasting"
 	"github.com/goravel/framework/testing/mock"
 	testifymock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -215,4 +216,22 @@ func (s *MockExamplesTestSuite) TestView() {
 	mockView.EXPECT().Exists("welcome.tmpl").Return(true).Once()
 
 	s.True(View())
+}
+
+func (s *MockExamplesTestSuite) TestBroadcastChannel() {
+	mockFactory := mock.Factory()
+	mockBroadcast := mocksbroadcasting.NewBroadcast(s.T())
+	mockFactory.App().EXPECT().MakeBroadcast().Return(mockBroadcast).Once()
+	mockBroadcast.EXPECT().Channel("orders.{orderId}", testifymock.Anything).Once()
+
+	BroadcastChannel()
+}
+
+func (s *MockExamplesTestSuite) TestBroadcastDispatch() {
+	mockFactory := mock.Factory()
+	mockBroadcast := mocksbroadcasting.NewBroadcast(s.T())
+	mockFactory.App().EXPECT().MakeBroadcast().Return(mockBroadcast).Once()
+	mockBroadcast.EXPECT().Dispatch(testifymock.Anything).Return(nil).Once()
+
+	s.Nil(BroadcastDispatch())
 }

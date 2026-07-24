@@ -120,6 +120,7 @@ func Boot() contractsfoundation.Application {
 			facades.Schema().Extend(schema.Extension{
 				Models: []any{models.User{}},
 			})
+			routes.Channels()
 		}).
 		WithConfig(config.Boot).
 		Create()
