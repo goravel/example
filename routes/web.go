@@ -27,6 +27,7 @@ func Web() {
 	// 2. Add route to `/route/web.go`, needs to contain your home page and static routes
 	// 3. Configure nginx based on the /nginx.conf file
 	facades.Route().StaticFile("index.html", "./resources/views/index.html")
+	facades.Route().StaticFile("broadcast.html", "./resources/views/broadcast.html")
 	facades.Route().Static("css", "./resources/views/css")
 
 	// View Nesting
