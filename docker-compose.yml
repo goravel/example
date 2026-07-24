@@ -1,6 +1,14 @@
 version: '3.8'
 
 services:
+  relay:
+    image: darknautica/relay:latest
+    restart: always
+    volumes:
+      - ./docker/relay/apps.json:/relay/apps.json
+    ports:
+      - "6001:6001"
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     restart: always

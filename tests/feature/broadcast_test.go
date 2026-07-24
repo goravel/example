@@ -2,6 +2,7 @@ package feature
 
 import (
 	stdhttp "net/http"
+	"os/exec"
 	"testing"
 
 	"github.com/goravel/framework/broadcasting"
@@ -21,6 +22,15 @@ type BroadcastTestSuite struct {
 
 func TestBroadcastTestSuite(t *testing.T) {
 	suite.Run(t, &BroadcastTestSuite{})
+}
+
+func (s *BroadcastTestSuite) SetupSuite() {
+	exec.Command("docker", "compose", "up", "relay", "-d", "--wait").Run()
+}
+
+func (s *BroadcastTestSuite) TearDownSuite() {
+	exec.Command("docker", "compose", "stop", "relay").Run()
+	exec.Command("docker", "compose", "rm", "-f", "relay").Run()
 }
 
 func (s *BroadcastTestSuite) SetupTest() {
