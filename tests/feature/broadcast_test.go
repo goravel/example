@@ -25,12 +25,12 @@ func TestBroadcastTestSuite(t *testing.T) {
 }
 
 func (s *BroadcastTestSuite) SetupSuite() {
-	exec.Command("docker", "compose", "up", "relay", "-d", "--wait").Run()
+	_ = exec.Command("docker", "compose", "up", "relay", "-d").Run()
 }
 
 func (s *BroadcastTestSuite) TearDownSuite() {
-	exec.Command("docker", "compose", "stop", "relay").Run()
-	exec.Command("docker", "compose", "rm", "-f", "relay").Run()
+	_ = exec.Command("docker", "compose", "stop", "relay").Run()
+	_ = exec.Command("docker", "compose", "rm", "-f", "relay").Run()
 }
 
 func (s *BroadcastTestSuite) SetupTest() {
@@ -191,6 +191,6 @@ func (s *BroadcastTestSuite) isRelayCloudRunning() bool {
 	if err != nil {
 		return false
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	return true
 }
