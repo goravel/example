@@ -8,7 +8,7 @@ require (
 	github.com/goravel/cos v1.18.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.18.0
-	github.com/goravel/framework v1.18.1-0.20260724081045-8b12654652e5
+	github.com/goravel/framework v1.18.1-0.20260725114535-19e84864a5ab
 	github.com/goravel/gemini v1.18.0
 	github.com/goravel/gin v1.18.0
 	github.com/goravel/minio v1.18.0
