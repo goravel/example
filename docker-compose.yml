@@ -1,13 +1,21 @@
 version: '3.8'
 
 services:
-  relay:
-    image: darknautica/relay:latest
+  soketi:
+    image: quay.io/soketi/soketi:latest
     restart: always
-    volumes:
-      - ./docker/relay/apps.json:/relay/apps.json
+    environment:
+      SOKETI_DEBUG: "1"
+      SOKETI_DEFAULT_APP_ID: "test-app"
+      SOKETI_DEFAULT_APP_KEY: "test-key"
+      SOKETI_DEFAULT_APP_SECRET: "test-secret"
+      SOKETI_DEFAULT_APP_ENABLE_CLIENT_MESSAGES: "1"
+      SOKETI_DEFAULT_APP_ENABLE_CLIENT_CHANNELS: "1"
+      SOKETI_DEFAULT_APP_ENABLE_CLIENT_STATS: "1"
+      SOKETI_METRICS_ENABLED: "0"
     ports:
       - "6001:6001"
+      - "9601:9601"
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest

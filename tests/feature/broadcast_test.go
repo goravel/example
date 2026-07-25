@@ -3,6 +3,7 @@ package feature
 import (
 	"os/exec"
 	"testing"
+	"time"
 
 	"github.com/goravel/framework/broadcasting"
 	contracts "github.com/goravel/framework/contracts/broadcasting"
@@ -24,12 +25,13 @@ func TestBroadcastTestSuite(t *testing.T) {
 }
 
 func (s *BroadcastTestSuite) SetupSuite() {
-	_ = exec.Command("docker", "compose", "up", "relay", "-d").Run()
+	_ = exec.Command("docker", "compose", "up", "soketi", "-d").Run()
+	time.Sleep(2 * time.Second)
 }
 
 func (s *BroadcastTestSuite) TearDownSuite() {
-	_ = exec.Command("docker", "compose", "stop", "relay").Run()
-	_ = exec.Command("docker", "compose", "rm", "-f", "relay").Run()
+	_ = exec.Command("docker", "compose", "stop", "soketi").Run()
+	_ = exec.Command("docker", "compose", "rm", "-f", "soketi").Run()
 }
 
 func (s *BroadcastTestSuite) SetupTest() {
@@ -151,4 +153,44 @@ func (s *BroadcastTestSuite) TestAuthResponseType() {
 	}
 	s.Equal("test-key:signature", resp.Auth)
 	s.Equal(`{"user_id":"1"}`, resp.ChannelData)
+}
+
+func TestPusherDriverEndToEnd(t *testing.T) {
+	ws, err := tests.NewWSClient("127.0.0.1:6001", "test-key")
+	if err != nil {
+		t.Skip("Soketi not reachable: " + err.Error())
+	}
+	defer func() { _ = ws.Close() }()
+
+	if err := ws.Subscribe("test-channel"); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(300 * time.Millisecond)
+
+	facades.Config().Add("broadcasting.default", "pusher")
+	if err := facades.App().Restart(); err != nil {
+		t.Fatal(err)
+	}
+
+	err = facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
+		OrderID:   1,
+		OrderData: map[string]any{"id": 1, "msg": "hello from soketi"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	time.Sleep(1 * time.Second)
+
+	found := false
+	for _, e := range ws.Events() {
+		if e.Event == "order.shipped" && e.Channel == "test-channel" {
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		t.Errorf("expected order.shipped event on test-channel, got %d events", ws.EventCount())
+	}
 }
