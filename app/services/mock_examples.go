@@ -11,7 +11,6 @@ import (
 	"github.com/goravel/framework/contracts/queue"
 	"github.com/goravel/framework/filesystem"
 
-	appbroadcasting "goravel/app/broadcasting"
 	"goravel/app/events"
 	"goravel/app/facades"
 	"goravel/app/jobs"
@@ -145,7 +144,7 @@ func BroadcastChannel() {
 }
 
 func BroadcastDispatch() error {
-	return facades.Broadcast().Dispatch(&appbroadcasting.OrderShipped{
+	return facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
 		OrderID:    1,
 		OrderData:  map[string]any{"id": 1},
 		ShouldFire: true,

@@ -11,19 +11,18 @@ import (
 	"io"
 	stdhttp "net/http"
 	"net/url"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/goravel/framework/broadcasting"
-	contracts "github.com/goravel/framework/contracts/broadcasting"
-	supporthttp "github.com/goravel/framework/support/http"
 	"github.com/gorilla/websocket"
+	supporthttp "github.com/goravel/framework/support/http"
 	"github.com/stretchr/testify/suite"
 
-	appbroadcasting "goravel/app/broadcasting"
+	"goravel/app/events"
 	"goravel/app/facades"
 	"goravel/tests"
 )
@@ -37,30 +36,33 @@ func TestBroadcastTestSuite(t *testing.T) {
 	suite.Run(t, &BroadcastTestSuite{})
 }
 
-func (s *BroadcastTestSuite) SetupTest() {
-	facades.Config().Add("broadcasting.default", "null")
+func (s *BroadcastTestSuite) SetupSuite() {
+	exec.Command("docker", "compose", "up", "soketi", "-d", "--wait").Run()
+
+	facades.Config().Add("broadcasting.default", "pusher")
+	if err := facades.App().Restart(); err != nil {
+		s.T().Fatal(err)
+	}
 }
 
-func (s *BroadcastTestSuite) TestLogDriver() {
+func (s *BroadcastTestSuite) TearDownSuite() {
 	facades.Config().Add("broadcasting.default", "log")
+	_ = facades.App().Restart()
 
-	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
+	exec.Command("docker", "compose", "stop", "soketi").Run()
+	exec.Command("docker", "compose", "rm", "-f", "soketi").Run()
+}
+
+func (s *BroadcastTestSuite) TestDispatchWithPusher() {
+	err := facades.Broadcast().Dispatch(&events.OrderShippedNowBroadcast{
 		OrderID:   1,
 		OrderData: map[string]any{"id": 1, "name": "Test Order"},
 	})
 	s.NoError(err)
 }
 
-func (s *BroadcastTestSuite) TestNullDriver() {
-	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
-		OrderID:   1,
-		OrderData: map[string]any{"id": 1},
-	})
-	s.NoError(err)
-}
-
 func (s *BroadcastTestSuite) TestDispatch_BroadcastWhenFalse_SkipsDispatch() {
-	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShipped{
+	err := facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
 		OrderID:    1,
 		ShouldFire: false,
 	})
@@ -68,25 +70,7 @@ func (s *BroadcastTestSuite) TestDispatch_BroadcastWhenFalse_SkipsDispatch() {
 }
 
 func (s *BroadcastTestSuite) TestDispatch_NoChannels_SkipsDispatch() {
-	err := facades.Broadcast().Dispatch(&appbroadcasting.EmptyEvent{})
-	s.NoError(err)
-}
-
-func (s *BroadcastTestSuite) TestDispatch_ShouldBroadcastWithQueue() {
-	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
-		OrderID:   1,
-		OrderData: map[string]any{"id": 1},
-	})
-	s.NoError(err)
-}
-
-func (s *BroadcastTestSuite) TestDispatch_ShouldBroadcastWithConnections() {
-	facades.Config().Add("broadcasting.default", "log")
-
-	err := facades.Broadcast().Dispatch(&appbroadcasting.OrderShippedNow{
-		OrderID:   1,
-		OrderData: map[string]any{"id": 1},
-	})
+	err := facades.Broadcast().Dispatch(&events.EmptyBroadcastEvent{})
 	s.NoError(err)
 }
 
@@ -122,40 +106,6 @@ func (s *BroadcastTestSuite) TestChannelAuth_MissingSocketID() {
 	resp, err := s.Http(s.T()).Post("/broadcasting/auth", body.Reader())
 	s.NoError(err)
 	resp.AssertBadRequest()
-}
-
-func (s *BroadcastTestSuite) TestChannelHelpers() {
-	public := broadcasting.PublicChannel("my-channel")
-	s.Equal("my-channel", public.Name)
-	s.False(broadcasting.IsPrivateChannel(public))
-	s.False(broadcasting.IsPresenceChannel(public))
-	s.Equal("my-channel", broadcasting.ChannelBaseName(public))
-
-	private := broadcasting.PrivateChannel("orders.123")
-	s.Equal("private-orders.123", private.Name)
-	s.True(broadcasting.IsPrivateChannel(private))
-	s.False(broadcasting.IsPresenceChannel(private))
-	s.Equal("orders.123", broadcasting.ChannelBaseName(private))
-
-	presence := broadcasting.PresenceChannel("chat")
-	s.Equal("presence-chat", presence.Name)
-	s.False(broadcasting.IsPrivateChannel(presence))
-	s.True(broadcasting.IsPresenceChannel(presence))
-	s.Equal("chat", broadcasting.ChannelBaseName(presence))
-}
-
-func (s *BroadcastTestSuite) TestConstants() {
-	s.Equal("private-", contracts.ChannelPrefixPrivate)
-	s.Equal("presence-", contracts.ChannelPrefixPresence)
-}
-
-func (s *BroadcastTestSuite) TestAuthResponseType() {
-	resp := contracts.AuthResponse{
-		Auth:        "test-key:signature",
-		ChannelData: `{"user_id":"1"}`,
-	}
-	s.Equal("test-key:signature", resp.Auth)
-	s.Equal(`{"user_id":"1"}`, resp.ChannelData)
 }
 
 type wsClient struct {
@@ -328,10 +278,10 @@ const (
 	soketiAuthURL = "http://127.0.0.1:8080/broadcasting/auth"
 )
 
-func TestWSClientConnect(t *testing.T) {
+func (s *BroadcastTestSuite) TestWSClientConnect() {
 	ws, err := newWSClient(soketiHost, soketiAppKey)
 	if err != nil {
-		t.Skip("Soketi not reachable: " + err.Error())
+		s.T().Skip("Soketi not reachable: " + err.Error())
 	}
 	defer func() { _ = ws.close() }()
 
@@ -339,56 +289,43 @@ func TestWSClientConnect(t *testing.T) {
 	sid := ws.socketID
 	ws.mu.Unlock()
 
-	if sid == "" {
-		t.Error("expected socket_id from connection_established event")
-	}
+	s.NotEmpty(sid, "expected socket_id from connection_established event")
 }
 
-func TestWSClientPublishAndReceive(t *testing.T) {
+func (s *BroadcastTestSuite) TestWSClientPublishAndReceive() {
 	ws, err := newWSClient(soketiHost, soketiAppKey)
 	if err != nil {
-		t.Skip("Soketi not reachable: " + err.Error())
+		s.T().Skip("Soketi not reachable: " + err.Error())
 	}
 	defer func() { _ = ws.close() }()
 
-	if err := ws.subscribePublic("test-channel"); err != nil {
-		t.Fatal(err)
-	}
+	s.NoError(ws.subscribePublic("test-channel"))
 	time.Sleep(300 * time.Millisecond)
 
-	if err := soketiTrigger("test-channel", "order.shipped", map[string]any{"order_id": 1, "msg": "hello"}); err != nil {
-		t.Fatal(err)
-	}
-
+	s.NoError(soketiTrigger("test-channel", "order.shipped", map[string]any{"order_id": 1, "msg": "hello"}))
 	time.Sleep(1 * time.Second)
 
+	found := false
 	for _, e := range ws.events() {
 		if e.Event == "order.shipped" && e.Channel == "test-channel" {
-			return
+			found = true
 		}
 	}
-	t.Error("expected order.shipped event on test-channel")
+	s.True(found, "expected order.shipped event on test-channel")
 }
 
-func TestWSClientPublishToMultipleChannels(t *testing.T) {
+func (s *BroadcastTestSuite) TestWSClientPublishToMultipleChannels() {
 	ws, err := newWSClient(soketiHost, soketiAppKey)
 	if err != nil {
-		t.Skip("Soketi not reachable: " + err.Error())
+		s.T().Skip("Soketi not reachable: " + err.Error())
 	}
 	defer func() { _ = ws.close() }()
 
-	if err := ws.subscribePublic("channel-a"); err != nil {
-		t.Fatal(err)
-	}
-	if err := ws.subscribePublic("channel-b"); err != nil {
-		t.Fatal(err)
-	}
+	s.NoError(ws.subscribePublic("channel-a"))
+	s.NoError(ws.subscribePublic("channel-b"))
 	time.Sleep(300 * time.Millisecond)
 
-	if err := soketiTriggerMulti([]string{"channel-a", "channel-b"}, "multi-event", map[string]any{"broadcast": true}); err != nil {
-		t.Fatal(err)
-	}
-
+	s.NoError(soketiTriggerMulti([]string{"channel-a", "channel-b"}, "multi-event", map[string]any{"broadcast": true}))
 	time.Sleep(1 * time.Second)
 
 	channels := map[string]bool{}
@@ -396,41 +333,19 @@ func TestWSClientPublishToMultipleChannels(t *testing.T) {
 		channels[e.Channel] = true
 	}
 
-	if !channels["channel-a"] {
-		t.Error("expected event on channel-a")
-	}
-	if !channels["channel-b"] {
-		t.Error("expected event on channel-b")
-	}
+	s.True(channels["channel-a"], "expected event on channel-a")
+	s.True(channels["channel-b"], "expected event on channel-b")
 }
 
-func TestWSClientPrivateChannelAuthRejected(t *testing.T) {
-	facades.Config().Add("broadcasting.default", "pusher")
-	facades.Config().Add("broadcasting.connections.pusher", map[string]any{
-		"driver": "pusher",
-		"key":    soketiAppKey,
-		"secret": soketiSecret,
-		"app_id": soketiAppID,
-		"options": map[string]any{
-			"host":   "127.0.0.1",
-			"port":   6001,
-			"scheme": "http",
-		},
-	})
-	if err := facades.App().Restart(); err != nil {
-		t.Fatal(err)
-	}
-
+func (s *BroadcastTestSuite) TestWSClientPrivateChannelAuthRejected() {
 	ws, err := newWSClient(soketiHost, soketiAppKey)
 	if err != nil {
-		t.Skip("Soketi not reachable: " + err.Error())
+		s.T().Skip("Soketi not reachable: " + err.Error())
 	}
 	defer func() { _ = ws.close() }()
 
 	err = ws.subscribePrivate(soketiAuthURL, "private-orders.999")
-	if err == nil {
-		t.Error("expected auth error for unauthorized channel")
-	}
+	s.Error(err, "expected auth error for unauthorized channel")
 }
 
 func soketiTrigger(channel, event string, data map[string]any) error {

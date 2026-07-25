@@ -2,9 +2,7 @@ package feature
 
 import (
 	"os"
-	"os/exec"
 	"testing"
-	"time"
 
 	"github.com/goravel/framework/support/file"
 
@@ -13,9 +11,6 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	_ = exec.Command("docker", "compose", "up", "soketi", "-d").Run()
-	time.Sleep(2 * time.Second)
-
 	database, err := facades.Testing().Docker().Database()
 	if err != nil {
 		panic(err)
@@ -48,9 +43,6 @@ func TestMain(m *testing.M) {
 	exit := m.Run()
 
 	telemetry.TeardownStack()
-
-	_ = exec.Command("docker", "compose", "stop", "soketi").Run()
-	_ = exec.Command("docker", "compose", "rm", "-f", "soketi").Run()
 
 	if err := file.Remove("storage"); err != nil {
 		panic(err)
