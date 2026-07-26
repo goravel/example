@@ -41,7 +41,7 @@
 </head>
 <body>
     <h1>Broadcasting Test</h1>
-    <p class="subtitle">Connect to RelayCloud and test real-time events</p>
+    <p class="subtitle">Connect to Soketi and test real-time events</p>
 
     <div class="status">
         <div id="statusDot" class="status-dot disconnected"></div>
@@ -142,7 +142,7 @@
 
             ws.onopen = function () {
                 setStatus(true);
-                logStatus('Connected to RelayCloud');
+                logStatus('Connected to Soketi');
             };
 
             ws.onmessage = function (evt) {
@@ -200,7 +200,6 @@
                 event: 'pusher:subscribe',
                 data: { channel: name, auth: '' }
             }));
-            subscribedChannels.add(name);
         }
 
         async function dispatch() {
