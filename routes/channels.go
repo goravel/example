@@ -2,21 +2,30 @@ package routes
 
 import (
 	"goravel/app/facades"
+	"goravel/app/models"
 
 	"github.com/spf13/cast"
 )
 
 func Channels() {
-	facades.Broadcast().Channel("orders.{orderId}", func(user any, channelName string, params map[string]string) bool {
-		return user != nil && params["orderId"] != ""
+	facades.Broadcast().Channel("orders.{orderId}", func(userID any, channelName string, params map[string]string) (bool, any) {
+		return userID != nil && params["orderId"] != "", nil
 	})
 
-	facades.Broadcast().Channel("users.{userId}", func(user any, channelName string, params map[string]string) bool {
-		userID := cast.ToString(user)
-		return params["userId"] == userID
+	facades.Broadcast().Channel("users.{userId}", func(userID any, channelName string, params map[string]string) (bool, any) {
+		var user models.User
+		if err := facades.Orm().Query().Where("id", userID).First(&user); err != nil {
+			return false, nil
+		}
+
+		return params["userId"] == cast.ToString(user.ID), &user
 	})
 
-	facades.Broadcast().Channel("public-updates", func(user any, channelName string, params map[string]string) bool {
-		return true
+	facades.Broadcast().Channel("public-updates", func(userID any, channelName string, params map[string]string) (bool, any) {
+		return true, nil
+	})
+
+	facades.Broadcast().Channel("team.{teamId}", func(userID any, channelName string, params map[string]string) (bool, any) {
+		return userID != nil && params["teamId"] != "", nil
 	})
 }

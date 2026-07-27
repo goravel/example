@@ -5,7 +5,7 @@ import "goravel/app/facades"
 func init() {
 	config := facades.Config()
 	config.Add("broadcasting", map[string]any{
-		"default": config.Env("BROADCAST_CONNECTION", "log"),
+		"default": config.Env("BROADCAST_CONNECTION", "pusher"),
 
 		"connections": map[string]any{
 			"pusher": map[string]any{

@@ -63,6 +63,15 @@
 
     <div class="controls">
         <div class="input-group">
+            <label>User Name</label>
+            <input id="userName" value="test" style="width:120px" />
+        </div>
+        <button class="btn-connect" onclick="login()" style="background:#f59e0b">Login (JWT)</button>
+        <span id="jwtStatus" style="font-size:12px;color:#64748b"></span>
+    </div>
+
+    <div class="controls">
+        <div class="input-group">
             <label>Channel</label>
             <input id="channelName" value="orders" placeholder="orders" style="width:200px" />
         </div>
@@ -91,6 +100,8 @@
         let ws = null;
         let eventCount = 0;
         let subscribedChannels = new Set();
+        let jwtToken = '';
+        let socketId = '';
 
         function time() {
             return new Date().toLocaleTimeString();
@@ -153,12 +164,25 @@
                     const data = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data;
 
                     if (event === 'pusher:connection_established') {
+                        socketId = data.socket_id || '';
                         logStatus('Connection established: ' + JSON.stringify(data));
                         return;
                     }
                     if (event === 'pusher_internal:subscription_succeeded') {
                         subscribedChannels.add(channel);
-                        logStatus('Subscribed to ' + channel.slice(0, -1));
+                        var membersList = '';
+                        if (data && data.presence) {
+                            membersList = ', members: ' + JSON.stringify(data.presence.ids || []);
+                        }
+                        logStatus('Subscribed to ' + channel + membersList);
+                        return;
+                    }
+                    if (event === 'pusher_internal:member_added') {
+                        logStatus('Member joined ' + channel + ': ' + JSON.stringify(data));
+                        return;
+                    }
+                    if (event === 'pusher_internal:member_removed') {
+                        logStatus('Member left ' + channel + ': ' + JSON.stringify(data));
                         return;
                     }
                     logEvent(event, channel, { data: data });
@@ -194,12 +218,61 @@
             subscribeChannel(name);
         }
 
-        function subscribeChannel(name) {
+        async function subscribeChannel(name) {
+            let auth = '';
+            let channelData = '';
+            if (name.startsWith('private-') || name.startsWith('presence-')) {
+                if (!jwtToken) { logStatus('Not logged in — click Login first'); return; }
+                if (!socketId) { logStatus('No socket_id yet — connect first'); return; }
+
+                const authUrl = document.getElementById('authEndpoint').value;
+                try {
+                    const resp = await fetch(authUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'Authorization': jwtToken
+                        },
+                        body: 'socket_id=' + encodeURIComponent(socketId) +
+                              '&channel_name=' + encodeURIComponent(name)
+                    });
+                    const result = await resp.json();
+                    auth = result.auth || '';
+                    channelData = result.channel_data || '';
+                    if (!auth) {
+                        logStatus('Auth failed (' + resp.status + '): ' + JSON.stringify(result));
+                        return;
+                    }
+                    logStatus('Auth obtained for ' + name);
+                } catch (e) {
+                    logStatus('Auth request failed: ' + e.message);
+                    return;
+                }
+            }
+
             logStatus('Subscribing to ' + name + '...');
+            var data = { channel: name, auth: auth };
+            if (channelData) { data.channel_data = channelData; }
             ws.send(JSON.stringify({
                 event: 'pusher:subscribe',
-                data: { channel: name, auth: '' }
+                data: data
             }));
+        }
+
+        async function login() {
+            const name = document.getElementById('userName').value || 'test';
+            try {
+                const resp = await fetch('/jwt/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'name=' + encodeURIComponent(name)
+                });
+                jwtToken = resp.headers.get('Authorization');
+                document.getElementById('jwtStatus').textContent = jwtToken ? 'logged in as ' + name : 'failed';
+                logStatus(jwtToken ? 'Logged in as ' + name : 'Login failed');
+            } catch (e) {
+                logStatus('Login request failed: ' + e.message);
+            }
         }
 
         async function dispatch() {

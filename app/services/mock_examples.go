@@ -138,8 +138,8 @@ func View() bool {
 }
 
 func BroadcastChannel() {
-	facades.Broadcast().Channel("orders.{orderId}", func(user any, channelName string, params map[string]string) bool {
-		return params["orderId"] == "1"
+	facades.Broadcast().Channel("orders.{orderId}", func(user any, channelName string, params map[string]string) (bool, any) {
+		return params["orderId"] == "1", nil
 	})
 }
 

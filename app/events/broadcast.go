@@ -111,6 +111,29 @@ func (e *EmptyBroadcastEvent) BroadcastWhen() bool {
 	return false
 }
 
+type TeamPresenceBroadcast struct {
+	TeamID   uint
+	TeamData map[string]any
+}
+
+func (e *TeamPresenceBroadcast) BroadcastOn() []contracts.Channel {
+	return []contracts.Channel{
+		broadcasting.PresenceChannel("team." + itoa(e.TeamID)),
+	}
+}
+
+func (e *TeamPresenceBroadcast) BroadcastAs() string {
+	return "team.presence"
+}
+
+func (e *TeamPresenceBroadcast) BroadcastWith() map[string]any {
+	return map[string]any{"team": e.TeamData}
+}
+
+func (e *TeamPresenceBroadcast) BroadcastWhen() bool {
+	return true
+}
+
 func itoa(n uint) string {
 	if n == 0 {
 		return "0"
