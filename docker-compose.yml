@@ -13,6 +13,10 @@ services:
       SOKETI_DEFAULT_APP_ENABLE_CLIENT_CHANNELS: "1"
       SOKETI_DEFAULT_APP_ENABLE_CLIENT_STATS: "1"
       SOKETI_METRICS_ENABLED: "0"
+      # Set the adapter driver to Redis in production to enable horizontal scaling of Soketi instances.
+      # SOKETI_ADAPTER_DRIVER: redis
+      # SOKETI_ADAPTER_REDIS_HOST: redis
+      # SOKETI_ADAPTER_REDIS_PORT: "6379"
     ports:
       - "6001:6001"
       - "9601:9601"

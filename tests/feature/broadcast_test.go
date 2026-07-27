@@ -61,56 +61,128 @@ func (s *BroadcastTestSuite) TearDownSuite() {
 }
 
 func (s *BroadcastTestSuite) TestDispatchWithPusher() {
-	err := facades.Broadcast().Dispatch(&events.OrderShippedNowBroadcast{
+	ws, err := newWSClient(soketiHost, soketiAppKey)
+	if err != nil {
+		s.T().Skip("Soketi not reachable: " + err.Error())
+	}
+	defer func() { _ = ws.close() }()
+
+	s.NoError(ws.subscribePublic("orders"))
+	time.Sleep(300 * time.Millisecond)
+
+	err = facades.Broadcast().Dispatch(&events.OrderShippedNowBroadcast{
 		OrderID:   1,
 		OrderData: map[string]any{"id": 1, "name": "Test Order"},
 	})
 	s.NoError(err)
+	time.Sleep(1 * time.Second)
+
+	found := false
+	expectedData := `{"order":{"id":1,"name":"Test Order"}}`
+	for _, e := range ws.events() {
+		if e.Event == "order.shipped" && e.Channel == "orders" && e.Data == expectedData {
+			found = true
+		}
+	}
+	s.True(found, "expected order.shipped event on orders channel")
 }
 
 func (s *BroadcastTestSuite) TestDispatch_BroadcastWhenFalse_SkipsDispatch() {
-	err := facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default": "database",
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	jwtToken := s.jwtLogin("broadcast-skip-when")
+
+	ws, err := newWSClient(soketiHost, soketiAppKey)
+	if err != nil {
+		s.T().Skip("Soketi not reachable: " + err.Error())
+	}
+	defer func() { _ = ws.close() }()
+
+	auth, _ := s.authChannel(ws.socketID, "private-orders.1", jwtToken)
+	s.NoError(ws.Subscribe("private-orders.1", auth, ""))
+	time.Sleep(300 * time.Millisecond)
+
+	s.NoError(facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
 		OrderID:    1,
 		ShouldFire: false,
-	})
+		Conns:      []string{"pusher"},
+	}))
+	time.Sleep(1 * time.Second)
+
+	count, err := facades.DB().Table("jobs").Where("queue", "default").Count()
 	s.NoError(err)
+	s.Equal(int64(0), count, "no job should be queued when BroadcastWhen is false")
+
+	found := false
+	for _, e := range ws.events() {
+		if e.Event == "order.shipped" && e.Channel == "private-orders.1" {
+			found = true
+		}
+	}
+	s.False(found, "no broadcast should fire when BroadcastWhen is false")
 }
 
 func (s *BroadcastTestSuite) TestDispatch_NoChannels_SkipsDispatch() {
-	err := facades.Broadcast().Dispatch(&events.EmptyBroadcastEvent{})
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default": "database",
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	s.NoError(facades.Broadcast().Dispatch(&events.EmptyBroadcastEvent{}))
+	time.Sleep(500 * time.Millisecond)
+
+	count, err := facades.DB().Table("jobs").Count()
 	s.NoError(err)
+	s.Equal(int64(0), count, "no job should be queued when BroadcastOn returns no channels")
 }
 
 func (s *BroadcastTestSuite) TestChannelAuth_PublicChannel() {
+	jwtToken := s.jwtLogin("broadcast-public-channel")
+
 	body, err := supporthttp.NewBody().
 		SetField("socket_id", "1234.5678").
 		SetField("channel_name", "public-channel").
 		Build()
 	s.NoError(err)
 
-	resp, err := s.Http(s.T()).Post("/broadcasting/auth", body.Reader())
+	resp, err := s.Http(s.T()).
+		WithHeader("Authorization", jwtToken).
+		Post("/broadcasting/auth", body.Reader())
 	s.NoError(err)
 	resp.AssertOk()
 }
 
 func (s *BroadcastTestSuite) TestChannelAuth_MissingParams() {
+	jwtToken := s.jwtLogin("broadcast-missing-params")
+
 	body, err := supporthttp.NewBody().
 		SetField("socket_id", "1234.5678").
 		Build()
 	s.NoError(err)
 
-	resp, err := s.Http(s.T()).Post("/broadcasting/auth", body.Reader())
+	resp, err := s.Http(s.T()).
+		WithHeader("Authorization", jwtToken).
+		Post("/broadcasting/auth", body.Reader())
 	s.NoError(err)
 	resp.AssertBadRequest()
 }
 
 func (s *BroadcastTestSuite) TestChannelAuth_MissingSocketID() {
+	jwtToken := s.jwtLogin("broadcast-missing-sid")
+
 	body, err := supporthttp.NewBody().
 		SetField("channel_name", "private-orders.1").
 		Build()
 	s.NoError(err)
 
-	resp, err := s.Http(s.T()).Post("/broadcasting/auth", body.Reader())
+	resp, err := s.Http(s.T()).
+		WithHeader("Authorization", jwtToken).
+		Post("/broadcasting/auth", body.Reader())
 	s.NoError(err)
 	resp.AssertBadRequest()
 }
@@ -624,11 +696,29 @@ func (s *BroadcastTestSuite) TestDispatch_WithQueue() {
 	s.Require().NoError(err)
 	defer func() { s.NoError(scope.Restore()) }()
 
+	jwtToken := s.jwtLogin("broadcast-queue-test")
+
+	ws, err := newWSClient(soketiHost, soketiAppKey)
+	if err != nil {
+		s.T().Skip("Soketi not reachable: " + err.Error())
+	}
+	defer func() { _ = ws.close() }()
+
+	auth, _ := s.authChannel(ws.socketID, "private-orders.1", jwtToken)
+	s.NoError(ws.Subscribe("private-orders.1", auth, ""))
+	time.Sleep(300 * time.Millisecond)
+
+	const expectedData = `{"order":{"id":1,"name":"Queued Order"}}`
+
 	s.NoError(facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
 		OrderID:    1,
 		ShouldFire: true,
 		QueueName:  "custom-broadcast-queue",
-		Conns:      []string{"null"},
+		Conns:      []string{"pusher"},
+		OrderData: map[string]any{
+			"id":   1,
+			"name": "Queued Order",
+		},
 	}))
 
 	var jobs []frameworkmodels.Job
@@ -649,15 +739,41 @@ func (s *BroadcastTestSuite) TestDispatch_WithQueue() {
 
 	count, err := facades.DB().Table("jobs").Where("queue", "custom-broadcast-queue").Count()
 	s.NoError(err)
-	s.Equal(int64(0), count)
+	s.Equal(int64(0), count, "queued broadcast job should be consumed")
+
+	found := false
+	for _, e := range ws.events() {
+		if e.Event == "order.shipped" && e.Channel == "private-orders.1" && e.Data == expectedData {
+			found = true
+		}
+	}
+	s.True(found, "expected order.shipped event on private-orders.1 after queued job consumed")
 }
 
 func (s *BroadcastTestSuite) TestDispatch_WithQueueConnection() {
+	jwtToken := s.jwtLogin("broadcast-queue-conn-test")
+
+	ws, err := newWSClient(soketiHost, soketiAppKey)
+	if err != nil {
+		s.T().Skip("Soketi not reachable: " + err.Error())
+	}
+	defer func() { _ = ws.close() }()
+
+	auth, _ := s.authChannel(ws.socketID, "private-orders.1", jwtToken)
+	s.NoError(ws.Subscribe("private-orders.1", auth, ""))
+	time.Sleep(300 * time.Millisecond)
+
+	const expectedData = `{"order":{"id":1,"name":"Queued Conn Order"}}`
+
 	s.NoError(facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
 		OrderID:    1,
 		ShouldFire: true,
 		QueueConn:  "database",
-		Conns:      []string{"null"},
+		Conns:      []string{"pusher"},
+		OrderData: map[string]any{
+			"id":   1,
+			"name": "Queued Conn Order",
+		},
 	}))
 
 	var jobs []frameworkmodels.Job
@@ -677,7 +793,15 @@ func (s *BroadcastTestSuite) TestDispatch_WithQueueConnection() {
 
 	count, err := facades.DB().Table("jobs").Count()
 	s.NoError(err)
-	s.Equal(int64(0), count)
+	s.Equal(int64(0), count, "queued broadcast job should be consumed")
+
+	found := false
+	for _, e := range ws.events() {
+		if e.Event == "order.shipped" && e.Channel == "private-orders.1" && e.Data == expectedData {
+			found = true
+		}
+	}
+	s.True(found, "expected order.shipped event on private-orders.1 after queued job consumed")
 }
 
 func (s *BroadcastTestSuite) TestDispatch_WithDelay() {
@@ -687,28 +811,79 @@ func (s *BroadcastTestSuite) TestDispatch_WithDelay() {
 	s.Require().NoError(err)
 	defer func() { s.NoError(scope.Restore()) }()
 
+	jwtToken := s.jwtLogin("broadcast-delay-test")
+
+	ws, err := newWSClient(soketiHost, soketiAppKey)
+	if err != nil {
+		s.T().Skip("Soketi not reachable: " + err.Error())
+	}
+	defer func() { _ = ws.close() }()
+
+	auth, _ := s.authChannel(ws.socketID, "private-orders.1", jwtToken)
+	s.NoError(ws.Subscribe("private-orders.1", auth, ""))
+	time.Sleep(300 * time.Millisecond)
+
+	const (
+		delay        = 3 * time.Second
+		expectedData = `{"order":{"id":1,"name":"Delayed Order"}}`
+	)
+
 	s.NoError(facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
 		OrderID:    1,
 		ShouldFire: true,
-		DelayedAt:  time.Now().Add(2 * time.Second),
-		Conns:      []string{"null"},
+		DelayedAt:  time.Now().UTC().Add(delay),
+		QueueName:  "custom-delay-queue",
+		Conns:      []string{"pusher"},
+		OrderData: map[string]any{
+			"id":   1,
+			"name": "Delayed Order",
+		},
 	}))
 
 	var jobs []frameworkmodels.Job
-	s.NoError(facades.DB().Table("jobs").Where("queue", "default").Get(&jobs))
+	s.NoError(facades.DB().Table("jobs").Where("queue", "custom-delay-queue").Get(&jobs))
 	s.Require().Len(jobs, 1)
 	s.Require().NotNil(jobs[0].AvailableAt)
 	s.Greater(jobs[0].AvailableAt.StdTime(), time.Now())
 
-	time.Sleep(1 * time.Second)
-	count, err := facades.DB().Table("jobs").Where("queue", "default").Count()
-	s.NoError(err)
-	s.Equal(int64(1), count, "job should not be consumed before delay expires")
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Connection: "database",
+		Queue:      "custom-delay-queue",
+		Concurrent: 1,
+		Tries:      1,
+	})
+	go func() { _ = worker.Run() }()
 
-	time.Sleep(3 * time.Second)
-	count, err = facades.DB().Table("jobs").Where("queue", "default").Count()
+	// Before the delay elapses, the worker must not consume the job nor fire the broadcast.
+	time.Sleep(1 * time.Second)
+
+	count, err := facades.DB().Table("jobs").Where("queue", "custom-delay-queue").Count()
 	s.NoError(err)
-	s.Equal(int64(0), count, "job should be consumed after delay expires")
+	s.Equal(int64(1), count, "delayed job should not be consumed before delay expires")
+
+	foundEarly := false
+	for _, e := range ws.events() {
+		if e.Event == "order.shipped" && e.Channel == "private-orders.1" && e.Data == expectedData {
+			foundEarly = true
+		}
+	}
+	s.False(foundEarly, "delayed broadcast should not fire before delay expires")
+
+	// After the delay elapses, the worker consumes the job and the broadcast is delivered.
+	time.Sleep(5 * time.Second)
+	_ = worker.Shutdown()
+
+	count, err = facades.DB().Table("jobs").Where("queue", "custom-delay-queue").Count()
+	s.NoError(err)
+	s.Equal(int64(0), count, "delayed job should be consumed after delay expires")
+
+	found := false
+	for _, e := range ws.events() {
+		if e.Event == "order.shipped" && e.Channel == "private-orders.1" && e.Data == expectedData {
+			found = true
+		}
+	}
+	s.True(found, "expected order.shipped event on private-orders.1 after delayed job consumed")
 }
 
 func (s *BroadcastTestSuite) TestDispatch_WithTriesBackoffAndTimeout() {
@@ -792,7 +967,7 @@ func (s *BroadcastTestSuite) TestDispatch_WithConnections() {
 	}
 	s.True(found, "expected order.shipped event on private-orders.1")
 
-	matches, err := filepath.Glob("storage/logs/*.log")
+	matches, err := filepath.Glob("../../storage/logs/*.log")
 	s.Require().NoError(err)
 	s.Require().NotEmpty(matches, "expected at least one log file under storage/logs/")
 

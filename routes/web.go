@@ -16,21 +16,21 @@ import (
 
 func Web() {
 	facades.Route().Get("/", func(ctx http.Context) http.Response {
-		// err := facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
-		// 	OrderID:    1,
-		// 	ShouldFire: true,
-		// 	OrderData: map[string]any{
-		// 		"item":  "Laptop",
-		// 		"price": 1200,
-		// 	},
-		// })
-		err := facades.Broadcast().Dispatch(&events.TeamPresenceBroadcast{
-			TeamID: 1,
-			TeamData: map[string]any{
-				"item":  "team",
+		err := facades.Broadcast().Dispatch(&events.OrderShippedNowBroadcast{
+			OrderID: 1,
+			// ShouldFire: true,
+			OrderData: map[string]any{
+				"item":  "Laptop",
 				"price": 1200,
 			},
 		})
+		// err := facades.Broadcast().Dispatch(&events.TeamPresenceBroadcast{
+		// 	TeamID: 1,
+		// 	TeamData: map[string]any{
+		// 		"item":  "team",
+		// 		"price": 1200,
+		// 	},
+		// })
 		fmt.Println(err)
 
 		return ctx.Response().View().Make("welcome.tmpl", map[string]any{
