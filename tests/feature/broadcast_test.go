@@ -70,9 +70,12 @@ func (s *BroadcastTestSuite) TestDispatchWithPusher() {
 	s.NoError(ws.subscribePublic("orders"))
 	time.Sleep(300 * time.Millisecond)
 
-	err = facades.Broadcast().Dispatch(&events.OrderShippedNowBroadcast{
-		OrderID:   1,
-		OrderData: map[string]any{"id": 1, "name": "Test Order"},
+	err = facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+		ChannelType:        "public",
+		ChannelName:        "orders",
+		ShouldFire:         true,
+		ShouldBroadcastNow: true,
+		OrderData:          map[string]any{"id": 1, "name": "Test Order"},
 	})
 	s.NoError(err)
 	time.Sleep(1 * time.Second)
@@ -107,9 +110,9 @@ func (s *BroadcastTestSuite) TestDispatch_BroadcastWhenFalse_SkipsDispatch() {
 	time.Sleep(300 * time.Millisecond)
 
 	s.NoError(facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
-		OrderID:    1,
-		ShouldFire: false,
-		Conns:      []string{"pusher"},
+		ChannelName: "orders.1",
+		ShouldFire:  false,
+		Conns:       []string{"pusher"},
 	}))
 	time.Sleep(1 * time.Second)
 
@@ -572,8 +575,11 @@ func (s *BroadcastTestSuite) TestPublicChannelFullFlow() {
 	s.NoError(ws.subscribePublic("orders"))
 	time.Sleep(300 * time.Millisecond)
 
-	err = facades.Broadcast().Dispatch(&events.OrderShippedNowBroadcast{
-		OrderID: 1,
+	err = facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+		ChannelType:        "public",
+		ChannelName:        "orders",
+		ShouldFire:         true,
+		ShouldBroadcastNow: true,
 		OrderData: map[string]any{
 			"id":   1,
 			"name": "Test Order",
@@ -592,6 +598,39 @@ func (s *BroadcastTestSuite) TestPublicChannelFullFlow() {
 	s.True(found, "expected order.shipped event on orders channel")
 }
 
+func (s *BroadcastTestSuite) TestPublicChannelFullFlow_CustomChannelName() {
+	ws, err := newWSClient(soketiHost, soketiAppKey)
+	if err != nil {
+		s.T().Skip("Soketi not reachable: " + err.Error())
+	}
+	defer func() { _ = ws.close() }()
+
+	s.NoError(ws.subscribePublic("public-updates"))
+	time.Sleep(300 * time.Millisecond)
+
+	err = facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+		ChannelType:        "public",
+		ChannelName:        "public-updates",
+		ShouldFire:         true,
+		ShouldBroadcastNow: true,
+		OrderData: map[string]any{
+			"item":  "Laptop",
+			"price": 1,
+		},
+	})
+	s.NoError(err)
+	time.Sleep(1 * time.Second)
+
+	found := false
+	expectedData := `{"order":{"item":"Laptop","price":1}}`
+	for _, e := range ws.events() {
+		if e.Event == "order.shipped" && e.Channel == "public-updates" && e.Data == expectedData {
+			found = true
+		}
+	}
+	s.True(found, "expected order.shipped event on public-updates channel")
+}
+
 func (s *BroadcastTestSuite) TestPrivateChannelFullFlow() {
 	jwtToken := s.jwtLogin("broadcast-private-test")
 
@@ -606,8 +645,8 @@ func (s *BroadcastTestSuite) TestPrivateChannelFullFlow() {
 	time.Sleep(300 * time.Millisecond)
 
 	err = facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
-		OrderID:    1,
-		ShouldFire: true,
+		ChannelName: "orders.1",
+		ShouldFire:  true,
 		OrderData: map[string]any{
 			"id":   1,
 			"name": "Private Order",
@@ -670,7 +709,7 @@ func (s *BroadcastTestSuite) TestPresenceChannelFullFlow() {
 	s.True(memberRemoved, "expected member_removed on presence-team.1 channel")
 
 	err = facades.Broadcast().Dispatch(&events.TeamPresenceBroadcast{
-		TeamID: 1,
+		ChannelName: "team.1",
 		TeamData: map[string]any{
 			"id":   1,
 			"name": "Test Team",
@@ -711,10 +750,10 @@ func (s *BroadcastTestSuite) TestDispatch_WithQueue() {
 	const expectedData = `{"order":{"id":1,"name":"Queued Order"}}`
 
 	s.NoError(facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
-		OrderID:    1,
-		ShouldFire: true,
-		QueueName:  "custom-broadcast-queue",
-		Conns:      []string{"pusher"},
+		ChannelName: "orders.1",
+		ShouldFire:  true,
+		QueueName:   "custom-broadcast-queue",
+		Conns:       []string{"pusher"},
 		OrderData: map[string]any{
 			"id":   1,
 			"name": "Queued Order",
@@ -766,10 +805,10 @@ func (s *BroadcastTestSuite) TestDispatch_WithQueueConnection() {
 	const expectedData = `{"order":{"id":1,"name":"Queued Conn Order"}}`
 
 	s.NoError(facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
-		OrderID:    1,
-		ShouldFire: true,
-		QueueConn:  "database",
-		Conns:      []string{"pusher"},
+		ChannelName: "orders.1",
+		ShouldFire:  true,
+		QueueConn:   "database",
+		Conns:       []string{"pusher"},
 		OrderData: map[string]any{
 			"id":   1,
 			"name": "Queued Conn Order",
@@ -829,11 +868,11 @@ func (s *BroadcastTestSuite) TestDispatch_WithDelay() {
 	)
 
 	s.NoError(facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
-		OrderID:    1,
-		ShouldFire: true,
-		DelayedAt:  time.Now().UTC().Add(delay),
-		QueueName:  "custom-delay-queue",
-		Conns:      []string{"pusher"},
+		ChannelName: "orders.1",
+		ShouldFire:  true,
+		DelayedAt:   time.Now().UTC().Add(delay),
+		QueueName:   "custom-delay-queue",
+		Conns:       []string{"pusher"},
 		OrderData: map[string]any{
 			"id":   1,
 			"name": "Delayed Order",
@@ -901,7 +940,7 @@ func (s *BroadcastTestSuite) TestDispatch_WithTriesBackoffAndTimeout() {
 			backoff:    200 * time.Millisecond,
 			timeout:    0,
 			minElapsed: 300 * time.Millisecond,
-			maxElapsed:  3 * time.Second,
+			maxElapsed: 3 * time.Second,
 		},
 		{
 			name:       "timeout_caps_retries",
@@ -917,12 +956,12 @@ func (s *BroadcastTestSuite) TestDispatch_WithTriesBackoffAndTimeout() {
 		s.Run(tt.name, func() {
 			start := time.Now()
 			err := facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
-				OrderID:    1,
-				ShouldFire: true,
-				Conns:      []string{"nonexistent"},
-				Retries:    tt.retries,
-				Backoff:    tt.backoff,
-				Timeout:    tt.timeout,
+				ChannelName: "orders.1",
+				ShouldFire:  true,
+				Conns:       []string{"nonexistent"},
+				Retries:     tt.retries,
+				Backoff:     tt.backoff,
+				Timeout:     tt.timeout,
 			})
 			elapsed := time.Since(start)
 
@@ -947,9 +986,9 @@ func (s *BroadcastTestSuite) TestDispatch_WithConnections() {
 	time.Sleep(300 * time.Millisecond)
 
 	err = facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
-		OrderID:    1,
-		ShouldFire: true,
-		Conns:      []string{"pusher", "null", "log"},
+		ChannelName: "orders.1",
+		ShouldFire:  true,
+		Conns:       []string{"pusher", "null", "log"},
 		OrderData: map[string]any{
 			"id":   1,
 			"name": "Connections Order",

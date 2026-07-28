@@ -63,6 +63,13 @@
 
     <div class="controls">
         <div class="input-group">
+            <label>API Host</label>
+            <input id="apiHost" value="http://127.0.0.1:8080" oninput="updateAuthEndpoint()" style="width:200px" />
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="input-group">
             <label>User Name</label>
             <input id="userName" value="test" style="width:120px" />
         </div>
@@ -76,8 +83,57 @@
             <input id="channelName" value="orders" placeholder="orders" style="width:200px" />
         </div>
         <button class="btn-subscribe" onclick="subscribe()">Subscribe</button>
-        <button class="btn-dispatch" onclick="dispatch()">Dispatch OrderShipped</button>
-        <button class="btn-dispatch" onclick="dispatchConfig()" style="font-size:11px">Custom Dispatch</button>
+    </div>
+
+    <div class="controls">
+        <div class="input-group">
+            <label>Data (JSON)</label>
+            <input id="dispatchData" value='{"item":"Laptop","price":1200}' style="width:250px" />
+        </div>
+        <button class="btn-dispatch" onclick="doDispatch()">Dispatch</button>
+    </div>
+
+    <div class="controls" style="margin-bottom:8px">
+        <span id="toggleAdv" style="cursor:pointer;color:#94a3b8;font-size:13px;user-select:none">▶ Advanced</span>
+    </div>
+
+    <div id="advancedOpts" class="controls" style="display:none;flex-wrap:wrap">
+        <div class="input-group">
+            <label>Queue Name</label>
+            <input id="dispatchQueueName" placeholder="default" style="width:120px" />
+        </div>
+        <div class="input-group">
+            <label>Queue Conn</label>
+            <input id="dispatchQueueConn" placeholder="database" style="width:100px" />
+        </div>
+        <div class="input-group">
+            <label>Conns (csv)</label>
+            <input id="dispatchConns" placeholder="pusher,log" style="width:120px" />
+        </div>
+        <div class="input-group">
+            <label>Should Fire</label>
+            <input type="checkbox" id="dispatchShouldFire" checked style="width:16px;height:16px" />
+        </div>
+        <div class="input-group">
+            <label>Broadcast Now</label>
+            <input type="checkbox" id="dispatchBroadcastNow" style="width:16px;height:16px" />
+        </div>
+        <div class="input-group">
+            <label>Retries</label>
+            <input id="dispatchRetries" type="number" value="" style="width:60px" />
+        </div>
+        <div class="input-group">
+            <label>Backoff (s)</label>
+            <input id="dispatchBackoff" type="number" value="" style="width:60px" />
+        </div>
+        <div class="input-group">
+            <label>Timeout (s)</label>
+            <input id="dispatchTimeout" type="number" value="" style="width:60px" />
+        </div>
+        <div class="input-group">
+            <label>Delay (s)</label>
+            <input id="dispatchDelay" type="number" value="" style="width:120px" />
+        </div>
     </div>
 
     <div class="controls" style="margin-bottom: 8px">
@@ -102,6 +158,20 @@
         let subscribedChannels = new Set();
         let jwtToken = '';
         let socketId = '';
+
+        function apiBase() {
+            return (document.getElementById('apiHost').value || '').replace(/\/+$/, '');
+        }
+
+        function updateAuthEndpoint() {
+            document.getElementById('authEndpoint').value = apiBase() + '/broadcasting/auth';
+        }
+
+        function channelTypeFromName(name) {
+            if (name.indexOf('presence-team.') === 0) return 'presence';
+            if (name.indexOf('private-orders.') === 0) return 'private';
+            return 'public';
+        }
 
         function time() {
             return new Date().toLocaleTimeString();
@@ -262,7 +332,7 @@
         async function login() {
             const name = document.getElementById('userName').value || 'test';
             try {
-                const resp = await fetch('/jwt/login', {
+                const resp = await fetch(apiBase() + '/jwt/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: 'name=' + encodeURIComponent(name)
@@ -275,36 +345,70 @@
             }
         }
 
-        async function dispatch() {
-            const authUrl = document.getElementById('authEndpoint').value;
+        async function doDispatch() {
+            var name = document.getElementById('channelName').value.trim();
+            if (!name) { logStatus('Enter a channel to subscribe & dispatch'); return; }
+            var type = channelTypeFromName(name);
+            var dataStr = document.getElementById('dispatchData').value;
+            var payload = { channel_type: type, channel: name };
+
+            function val(id) { var el = document.getElementById(id); return el && el.value ? el.value : ''; }
+            function setIf(id, key) { var v = val(id); if (v) payload[key] = v; }
+            function setInt(id, key) { var el = document.getElementById(id); if (!el || !el.value) return; var v = parseInt(el.value); if (!isNaN(v) && v) payload[key] = v; }
+
             try {
-                const resp = await fetch(authUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'socket_id=1234.5678&channel_name=private-orders.1'
-                });
-                const result = await resp.text();
-                logStatus('Auth response (' + resp.status + '): ' + result);
+                var data = JSON.parse(dataStr);
+                if (type === 'presence') {
+                    payload.team_data = data;
+                } else {
+                    payload.order_data = data;
+                    payload.should_fire = document.getElementById('dispatchShouldFire').checked;
+                    if (type === 'public') {
+                        payload.broadcast_now = true;
+                    } else {
+                        payload.broadcast_now = document.getElementById('dispatchBroadcastNow').checked;
+                    }
+                    setIf('dispatchQueueConn', 'queue_conn');
+                    setIf('dispatchQueueName', 'queue_name');
+                    setInt('dispatchRetries', 'retries');
+                    setInt('dispatchBackoff', 'backoff');
+                    setInt('dispatchTimeout', 'timeout');
+                    setInt('dispatchDelay', 'delay');
+                    var conns = val('dispatchConns');
+                    if (conns) payload.conns = conns.split(',').map(function(s){return s.trim()});
+                }
             } catch (e) {
-                logStatus('Auth request failed: ' + e.message);
+                logStatus('Invalid JSON data: ' + e.message);
+                return;
+            }
+
+            console.log('Dispatch payload:', payload);
+
+            try {
+                var resp = await fetch(apiBase() + '/broadcasting/dispatch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                var result = await resp.json();
+                if (resp.ok) {
+                    logStatus('Dispatched: ' + result.message + ' → ' + result.channel);
+                } else {
+                    logStatus('Dispatch failed (' + resp.status + '): ' + (result.error || JSON.stringify(result)));
+                }
+            } catch (e) {
+                logStatus('Dispatch request failed: ' + e.message);
             }
         }
 
-        async function dispatchConfig() {
-            const channel = document.getElementById('channelName').value;
-            const authUrl = document.getElementById('authEndpoint').value;
-            try {
-                const resp = await fetch(authUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'socket_id=1234.5678&channel_name=private-' + channel + '.1'
-                });
-                const result = await resp.json();
-                logStatus('Auth (' + resp.status + '): auth=' + (result.auth || 'none').slice(0, 20) + '...');
-            } catch (e) {
-                logStatus('Auth request failed: ' + e.message);
-            }
-        }
+        document.getElementById('toggleAdv').addEventListener('click', function() {
+            var opts = document.getElementById('advancedOpts');
+            var show = opts.style.display === 'none';
+            opts.style.display = show ? 'flex' : 'none';
+            this.textContent = show ? '▼ Advanced' : '▶ Advanced';
+        });
+
+        updateAuthEndpoint();
     </script>
 </body>
 </html>

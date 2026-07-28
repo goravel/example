@@ -1,38 +1,18 @@
 package routes
 
 import (
-	"fmt"
-
 	"github.com/goravel/framework/contracts/http"
 	"github.com/goravel/framework/contracts/route"
 	"github.com/goravel/framework/http/middleware"
 	"github.com/goravel/framework/support"
 	"github.com/spf13/cast"
 
-	"goravel/app/events"
 	"goravel/app/facades"
 	"goravel/app/http/controllers"
 )
 
 func Web() {
 	facades.Route().Get("/", func(ctx http.Context) http.Response {
-		err := facades.Broadcast().Dispatch(&events.OrderShippedNowBroadcast{
-			OrderID: 1,
-			// ShouldFire: true,
-			OrderData: map[string]any{
-				"item":  "Laptop",
-				"price": 1200,
-			},
-		})
-		// err := facades.Broadcast().Dispatch(&events.TeamPresenceBroadcast{
-		// 	TeamID: 1,
-		// 	TeamData: map[string]any{
-		// 		"item":  "team",
-		// 		"price": 1200,
-		// 	},
-		// })
-		fmt.Println(err)
-
 		return ctx.Response().View().Make("welcome.tmpl", map[string]any{
 			"version": support.Version,
 		})
@@ -47,7 +27,6 @@ func Web() {
 	// 2. Add route to `/route/web.go`, needs to contain your home page and static routes
 	// 3. Configure nginx based on the /nginx.conf file
 	facades.Route().StaticFile("index.html", "./resources/views/index.html")
-	facades.Route().StaticFile("broadcast.html", "./resources/views/broadcast.html")
 	facades.Route().Static("css", "./resources/views/css")
 
 	// View Nesting
@@ -108,4 +87,9 @@ func Web() {
 	facades.Route().Fallback(func(ctx http.Context) http.Response {
 		return ctx.Response().String(http.StatusNotFound, "fallback")
 	})
+
+	// Test Broadcasting
+	broadcastController := controllers.NewBroadcastController()
+	facades.Route().Post("broadcasting/dispatch", broadcastController.Dispatch)
+	facades.Route().StaticFile("broadcast.html", "./resources/views/broadcast.html")
 }

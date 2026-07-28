@@ -145,8 +145,8 @@ func BroadcastChannel() {
 
 func BroadcastDispatch() error {
 	return facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
-		OrderID:    1,
-		OrderData:  map[string]any{"id": 1},
-		ShouldFire: true,
+		ChannelName: "orders.1",
+		OrderData:   map[string]any{"id": 1},
+		ShouldFire:  true,
 	})
 }

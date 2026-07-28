@@ -26,12 +26,16 @@ import (
 	"goravel/routes"
 )
 
-// BootstrapRunners returns user-defined runners. Tests populate this slice to
-// verify the disabled_runners config properly controls which runners start.
+// BootstrapRunnerList holds extra runners injected by tests (e.g. the tracker
+// runners in tests/feature/disabled_runners_test.go). It is intentionally
+// separate from DefaultRunners so that clearing it in a test does not drop the
+// app's own queue workers that later suites may depend on.
 var BootstrapRunnerList []contractsfoundation.Runner
 
+// BootstrapRunners returns the runners started on app boot: the app's default
+// runners plus any injected via BootstrapRunnerList.
 var BootstrapRunners = func() []contractsfoundation.Runner {
-	return BootstrapRunnerList
+	return append(DefaultRunners(), BootstrapRunnerList...)
 }
 
 func Boot() contractsfoundation.Application {

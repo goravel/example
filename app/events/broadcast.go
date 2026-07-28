@@ -8,21 +8,28 @@ import (
 )
 
 type OrderShippedBroadcast struct {
-	OrderID    uint
-	OrderData  map[string]any
-	ShouldFire bool
-	QueueName  string
-	Conns      []string
-	QueueConn  string
-	DelayedAt  time.Time
-	Retries    int
-	Backoff    time.Duration
-	Timeout    time.Duration
+	OrderData          map[string]any
+	ShouldFire         bool
+	QueueName          string
+	Conns              []string
+	QueueConn          string
+	DelayedAt          time.Time
+	Retries            int
+	Backoff            time.Duration
+	Timeout            time.Duration
+	ShouldBroadcastNow bool
+	ChannelType        string
+	ChannelName        string
 }
 
 func (e *OrderShippedBroadcast) BroadcastOn() []contracts.Channel {
+	if e.ChannelType == "public" {
+		return []contracts.Channel{
+			broadcasting.PublicChannel(e.ChannelName),
+		}
+	}
 	return []contracts.Channel{
-		broadcasting.PrivateChannel("orders." + itoa(e.OrderID)),
+		broadcasting.PrivateChannel(e.ChannelName),
 	}
 }
 
@@ -66,31 +73,8 @@ func (e *OrderShippedBroadcast) BroadcastTimeout() time.Duration {
 	return e.Timeout
 }
 
-type OrderShippedNowBroadcast struct {
-	OrderID   uint
-	OrderData map[string]any
-}
-
-func (e *OrderShippedNowBroadcast) BroadcastOn() []contracts.Channel {
-	return []contracts.Channel{
-		broadcasting.PublicChannel("orders"),
-	}
-}
-
-func (e *OrderShippedNowBroadcast) BroadcastAs() string {
-	return "order.shipped"
-}
-
-func (e *OrderShippedNowBroadcast) BroadcastWith() map[string]any {
-	return map[string]any{"order": e.OrderData}
-}
-
-func (e *OrderShippedNowBroadcast) BroadcastWhen() bool {
-	return true
-}
-
-func (e *OrderShippedNowBroadcast) BroadcastNow() bool {
-	return true
+func (e *OrderShippedBroadcast) BroadcastNow() bool {
+	return e.ShouldBroadcastNow
 }
 
 type EmptyBroadcastEvent struct{}
@@ -112,13 +96,13 @@ func (e *EmptyBroadcastEvent) BroadcastWhen() bool {
 }
 
 type TeamPresenceBroadcast struct {
-	TeamID   uint
-	TeamData map[string]any
+	TeamData    map[string]any
+	ChannelName string
 }
 
 func (e *TeamPresenceBroadcast) BroadcastOn() []contracts.Channel {
 	return []contracts.Channel{
-		broadcasting.PresenceChannel("team." + itoa(e.TeamID)),
+		broadcasting.PresenceChannel(e.ChannelName),
 	}
 }
 
@@ -132,16 +116,4 @@ func (e *TeamPresenceBroadcast) BroadcastWith() map[string]any {
 
 func (e *TeamPresenceBroadcast) BroadcastWhen() bool {
 	return true
-}
-
-func itoa(n uint) string {
-	if n == 0 {
-		return "0"
-	}
-	var digits []byte
-	for n > 0 {
-		digits = append([]byte{byte('0' + n%10)}, digits...)
-		n /= 10
-	}
-	return string(digits)
 }
