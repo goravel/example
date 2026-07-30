@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Broadcasting Test</title>
+    <title>Broadcasting Test — Laravel Echo</title>
+    <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.4.0/dist/web/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.16.1/dist/echo.iife.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 24px; }
@@ -40,8 +42,8 @@
     </style>
 </head>
 <body>
-    <h1>Broadcasting Test</h1>
-    <p class="subtitle">Connect to Soketi and test real-time events</p>
+    <h1>Broadcasting Test — Laravel Echo</h1>
+    <p class="subtitle">Connect via Laravel Echo + pusher-js and test real-time events</p>
 
     <div class="status">
         <div id="statusDot" class="status-dot disconnected"></div>
@@ -153,11 +155,9 @@
     </div>
 
     <script>
-        let ws = null;
+        let echoClient = null;
         let eventCount = 0;
-        let subscribedChannels = new Set();
         let jwtToken = '';
-        let socketId = '';
 
         function apiBase() {
             return (document.getElementById('apiHost').value || '').replace(/\/+$/, '');
@@ -168,9 +168,13 @@
         }
 
         function channelTypeFromName(name) {
-            if (name.indexOf('presence-team.') === 0) return 'presence';
-            if (name.indexOf('private-orders.') === 0) return 'private';
+            if (name.indexOf('presence-') === 0) return 'presence';
+            if (name.indexOf('private-') === 0) return 'private';
             return 'public';
+        }
+
+        function stripPrefix(name, prefix) {
+            return name.indexOf(prefix) === 0 ? name.slice(prefix.length) : name;
         }
 
         function time() {
@@ -214,119 +218,103 @@
         }
 
         function connect() {
+            if (echoClient) {
+                logStatus('Already connected — disconnect first');
+                return;
+            }
             const key = document.getElementById('appKey').value;
             const host = document.getElementById('host').value;
-            const wsUrl = 'ws://' + host + '/app/' + key + '?protocol=7&client=js&version=7.0.0';
+            const parts = host.split(':');
+            const wsHost = parts[0];
+            const wsPort = parseInt(parts[1]) || 6001;
 
-            logStatus('Connecting to ' + wsUrl + '...');
-            ws = new WebSocket(wsUrl);
+            const authEndpoint = document.getElementById('authEndpoint').value;
 
-            ws.onopen = function () {
-                setStatus(true);
-                logStatus('Connected to Soketi');
-            };
+            logStatus('Connecting Echo to ' + host + '...');
 
-            ws.onmessage = function (evt) {
-                try {
-                    const msg = JSON.parse(evt.data);
-                    const event = msg.event || 'unknown';
-                    const channel = msg.channel || '';
-                    const data = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data;
-
-                    if (event === 'pusher:connection_established') {
-                        socketId = data.socket_id || '';
-                        logStatus('Connection established: ' + JSON.stringify(data));
-                        return;
+            echoClient = new Echo({
+                broadcaster: 'pusher',
+                key: key,
+                cluster: 'mt1',
+                wsHost: wsHost,
+                wsPort: wsPort,
+                wssPort: wsPort,
+                forceTLS: false,
+                disableStats: true,
+                enabledTransports: ['ws'],
+                authEndpoint: authEndpoint,
+                auth: {
+                    headers: {
+                        Authorization: jwtToken || ''
                     }
-                    if (event === 'pusher_internal:subscription_succeeded') {
-                        subscribedChannels.add(channel);
-                        var membersList = '';
-                        if (data && data.presence) {
-                            membersList = ', members: ' + JSON.stringify(data.presence.ids || []);
-                        }
-                        logStatus('Subscribed to ' + channel + membersList);
-                        return;
-                    }
-                    if (event === 'pusher_internal:member_added') {
-                        logStatus('Member joined ' + channel + ': ' + JSON.stringify(data));
-                        return;
-                    }
-                    if (event === 'pusher_internal:member_removed') {
-                        logStatus('Member left ' + channel + ': ' + JSON.stringify(data));
-                        return;
-                    }
-                    logEvent(event, channel, { data: data });
-                } catch (e) {
-                    log('<span class="event-time">' + time() + '</span> <span style="color:#ef4444">Raw: ' + evt.data + '</span>');
                 }
-            };
+            });
 
-            ws.onclose = function () {
+            const pusher = echoClient.connector.pusher;
+            pusher.connection.bind('connected', function () {
+                setStatus(true);
+                logStatus('Echo connected (socket_id=' + pusher.connection.socket_id + ')');
+            });
+            pusher.connection.bind('disconnected', function () {
                 setStatus(false);
-                logStatus('Disconnected');
-            };
-
-            ws.onerror = function () {
-                logStatus('Connection error');
-            };
+                logStatus('Echo disconnected');
+            });
+            pusher.connection.bind('failed', function (err) {
+                logStatus('Echo connection failed: ' + (err && err.error ? err.error : 'unknown'));
+            });
         }
 
         function disconnect() {
-            if (ws) {
-                ws.close();
-                ws = null;
-                subscribedChannels.clear();
+            if (echoClient) {
+                echoClient.disconnect();
+                echoClient = null;
+                setStatus(false);
+                logStatus('Disconnected');
             }
         }
 
         function subscribe() {
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
+            if (!echoClient) {
                 logStatus('Not connected');
                 return;
             }
             const name = document.getElementById('channelName').value;
-            subscribeChannel(name);
-        }
+            const type = channelTypeFromName(name);
 
-        async function subscribeChannel(name) {
-            let auth = '';
-            let channelData = '';
-            if (name.startsWith('private-') || name.startsWith('presence-')) {
+            if (type === 'presence') {
                 if (!jwtToken) { logStatus('Not logged in — click Login first'); return; }
-                if (!socketId) { logStatus('No socket_id yet — connect first'); return; }
-
-                const authUrl = document.getElementById('authEndpoint').value;
-                try {
-                    const resp = await fetch(authUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'Authorization': jwtToken
-                        },
-                        body: 'socket_id=' + encodeURIComponent(socketId) +
-                              '&channel_name=' + encodeURIComponent(name)
+                var bare = stripPrefix(name, 'presence-');
+                echoClient.join(bare)
+                    .here(function (members) {
+                        logStatus('Present in ' + name + ': ' + JSON.stringify(Object.values(members)));
+                    })
+                    .joining(function (member) {
+                        logStatus('Joining ' + name + ': ' + JSON.stringify(member));
+                    })
+                    .leaving(function (member) {
+                        logStatus('Leaving ' + name + ': ' + JSON.stringify(member));
+                    })
+                    .listen('.team.presence', function (e) {
+                        logEvent('team.presence', name, e);
                     });
-                    const result = await resp.json();
-                    auth = result.auth || '';
-                    channelData = result.channel_data || '';
-                    if (!auth) {
-                        logStatus('Auth failed (' + resp.status + '): ' + JSON.stringify(result));
-                        return;
-                    }
-                    logStatus('Auth obtained for ' + name);
-                } catch (e) {
-                    logStatus('Auth request failed: ' + e.message);
-                    return;
-                }
+                logStatus('Joining presence channel ' + name + '...');
+            } else if (type === 'private') {
+                if (!jwtToken) { logStatus('Not logged in — click Login first'); return; }
+                var bare = stripPrefix(name, 'private-');
+                echoClient.private(bare)
+                    .listen('.order.shipped', function (e) {
+                        console.log('Private channel event:', e);
+                        logEvent('order.shipped', name, e);
+                        console.log('Private channel event logged');
+                    });
+                logStatus('Subscribing to private channel ' + name + '...');
+            } else {
+                echoClient.channel(name)
+                    .listen('.order.shipped', function (e) {
+                        logEvent('order.shipped', name, e);
+                    });
+                logStatus('Subscribing to public channel ' + name + '...');
             }
-
-            logStatus('Subscribing to ' + name + '...');
-            var data = { channel: name, auth: auth };
-            if (channelData) { data.channel_data = channelData; }
-            ws.send(JSON.stringify({
-                event: 'pusher:subscribe',
-                data: data
-            }));
         }
 
         async function login() {
@@ -337,9 +325,16 @@
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: 'name=' + encodeURIComponent(name)
                 });
-                jwtToken = resp.headers.get('Authorization');
+                jwtToken = resp.headers.get('Authorization') || '';
+                if (jwtToken.startsWith('Bearer ')) {
+                    jwtToken = jwtToken.slice(7);
+                }
                 document.getElementById('jwtStatus').textContent = jwtToken ? 'logged in as ' + name : 'failed';
                 logStatus(jwtToken ? 'Logged in as ' + name : 'Login failed');
+                if (echoClient) {
+                    echoClient.options.auth.headers.Authorization = jwtToken;
+                    logStatus('Refreshed Echo auth header');
+                }
             } catch (e) {
                 logStatus('Login request failed: ' + e.message);
             }
@@ -393,6 +388,7 @@
                 var result = await resp.json();
                 if (resp.ok) {
                     logStatus('Dispatched: ' + result.message + ' → ' + result.channel);
+                    // logEvent('Dispatched', result.channel || (type + '-' + name), data);
                 } else {
                     logStatus('Dispatch failed (' + resp.status + '): ' + (result.error || JSON.stringify(result)));
                 }

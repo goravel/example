@@ -21,7 +21,7 @@ func Channels() {
 		return params["userId"] == cast.ToString(user.ID), &user
 	})
 
-	facades.Broadcast().Channel("public-updates", func(userID any, channelName string, params map[string]string) (bool, any) {
+	facades.Broadcast().Channel("public", func(userID any, channelName string, params map[string]string) (bool, any) {
 		return true, nil
 	})
 
