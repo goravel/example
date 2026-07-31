@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -26,8 +27,6 @@ type DispatchRequest struct {
 	QueueName    string         `form:"queue_name" json:"queue_name"`
 	Conns        []string       `form:"conns" json:"conns"`
 	Delay        int64          `form:"delay" json:"delay"`
-	Retries      int            `form:"retries" json:"retries"`
-	Backoff      int64          `form:"backoff" json:"backoff"`
 	Timeout      int64          `form:"timeout" json:"timeout"`
 	BroadcastNow bool           `form:"broadcast_now" json:"broadcast_now"`
 }
@@ -74,15 +73,13 @@ func (c *BroadcastController) dispatchPrivate(ctx http.Context, req *DispatchReq
 		delayedAt = time.Now().UTC().Add(time.Duration(req.Delay) * time.Second)
 	}
 
-	err := facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+	err := facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		OrderData:          req.OrderData,
 		ShouldFire:         req.ShouldFire,
 		QueueName:          req.QueueName,
 		Conns:              req.Conns,
 		QueueConn:          req.QueueConn,
 		DelayedAt:          delayedAt,
-		Retries:            req.Retries,
-		Backoff:            time.Duration(req.Backoff) * time.Second,
 		Timeout:            time.Duration(req.Timeout) * time.Second,
 		ShouldBroadcastNow: req.BroadcastNow,
 		ChannelName:        stripPrivatePrefix(req.Channel),
@@ -103,7 +100,7 @@ func (c *BroadcastController) dispatchPublic(ctx http.Context, req *DispatchRequ
 			"price": 1200,
 		}
 	}
-	err := facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+	err := facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		ChannelType:        "public",
 		OrderData:          req.OrderData,
 		ShouldFire:         true,
@@ -125,7 +122,7 @@ func (c *BroadcastController) dispatchPresence(ctx http.Context, req *DispatchRe
 			"name": "goravel",
 		}
 	}
-	err := facades.Broadcast().Dispatch(&events.TeamPresenceBroadcast{
+	err := facades.Broadcast().Dispatch(context.Background(), &events.TeamPresenceBroadcast{
 		TeamData:    req.TeamData,
 		ChannelName: stripPresencePrefix(req.Channel),
 	})

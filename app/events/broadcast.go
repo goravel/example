@@ -14,8 +14,6 @@ type OrderShippedBroadcast struct {
 	Conns              []string
 	QueueConn          string
 	DelayedAt          time.Time
-	Retries            int
-	Backoff            time.Duration
 	Timeout            time.Duration
 	ShouldBroadcastNow bool
 	ChannelType        string
@@ -59,14 +57,6 @@ func (e *OrderShippedBroadcast) BroadcastQueueConnection() string {
 
 func (e *OrderShippedBroadcast) BroadcastDelay() time.Time {
 	return e.DelayedAt
-}
-
-func (e *OrderShippedBroadcast) BroadcastTries() int {
-	return e.Retries
-}
-
-func (e *OrderShippedBroadcast) BroadcastBackoff() time.Duration {
-	return e.Backoff
 }
 
 func (e *OrderShippedBroadcast) BroadcastTimeout() time.Duration {

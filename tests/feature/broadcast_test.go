@@ -2,6 +2,7 @@ package feature
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha256"
@@ -70,7 +71,7 @@ func (s *BroadcastTestSuite) TestDispatchWithPusher() {
 	s.NoError(ws.subscribePublic("orders"))
 	time.Sleep(300 * time.Millisecond)
 
-	err = facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+	err = facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		ChannelType:        "public",
 		ChannelName:        "orders",
 		ShouldFire:         true,
@@ -109,7 +110,7 @@ func (s *BroadcastTestSuite) TestDispatch_BroadcastWhenFalse_SkipsDispatch() {
 	s.NoError(ws.Subscribe("private-orders.1", auth, ""))
 	time.Sleep(300 * time.Millisecond)
 
-	s.NoError(facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+	s.NoError(facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		ChannelName: "orders.1",
 		ShouldFire:  false,
 		Conns:       []string{"pusher"},
@@ -136,7 +137,7 @@ func (s *BroadcastTestSuite) TestDispatch_NoChannels_SkipsDispatch() {
 	s.Require().NoError(err)
 	defer func() { s.NoError(scope.Restore()) }()
 
-	s.NoError(facades.Broadcast().Dispatch(&events.EmptyBroadcastEvent{}))
+	s.NoError(facades.Broadcast().Dispatch(context.Background(), &events.EmptyBroadcastEvent{}))
 	time.Sleep(500 * time.Millisecond)
 
 	count, err := facades.DB().Table("jobs").Count()
@@ -575,7 +576,7 @@ func (s *BroadcastTestSuite) TestPublicChannelFullFlow() {
 	s.NoError(ws.subscribePublic("orders"))
 	time.Sleep(300 * time.Millisecond)
 
-	err = facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+	err = facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		ChannelType:        "public",
 		ChannelName:        "orders",
 		ShouldFire:         true,
@@ -608,7 +609,7 @@ func (s *BroadcastTestSuite) TestPublicChannelFullFlow_CustomChannelName() {
 	s.NoError(ws.subscribePublic("public-updates"))
 	time.Sleep(300 * time.Millisecond)
 
-	err = facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+	err = facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		ChannelType:        "public",
 		ChannelName:        "public-updates",
 		ShouldFire:         true,
@@ -644,7 +645,7 @@ func (s *BroadcastTestSuite) TestPrivateChannelFullFlow() {
 	s.NoError(ws.Subscribe("private-orders.1", auth, ""))
 	time.Sleep(300 * time.Millisecond)
 
-	err = facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+	err = facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		ChannelName: "orders.1",
 		ShouldFire:  true,
 		OrderData: map[string]any{
@@ -708,7 +709,7 @@ func (s *BroadcastTestSuite) TestPresenceChannelFullFlow() {
 	s.True(memberAdded, "expected member_added on presence-team.1 channel")
 	s.True(memberRemoved, "expected member_removed on presence-team.1 channel")
 
-	err = facades.Broadcast().Dispatch(&events.TeamPresenceBroadcast{
+	err = facades.Broadcast().Dispatch(context.Background(), &events.TeamPresenceBroadcast{
 		ChannelName: "team.1",
 		TeamData: map[string]any{
 			"id":   1,
@@ -749,7 +750,7 @@ func (s *BroadcastTestSuite) TestDispatch_WithQueue() {
 
 	const expectedData = `{"order":{"id":1,"name":"Queued Order"}}`
 
-	s.NoError(facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+	s.NoError(facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		ChannelName: "orders.1",
 		ShouldFire:  true,
 		QueueName:   "custom-broadcast-queue",
@@ -804,7 +805,7 @@ func (s *BroadcastTestSuite) TestDispatch_WithQueueConnection() {
 
 	const expectedData = `{"order":{"id":1,"name":"Queued Conn Order"}}`
 
-	s.NoError(facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+	s.NoError(facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		ChannelName: "orders.1",
 		ShouldFire:  true,
 		QueueConn:   "database",
@@ -867,7 +868,7 @@ func (s *BroadcastTestSuite) TestDispatch_WithDelay() {
 		expectedData = `{"order":{"id":1,"name":"Delayed Order"}}`
 	)
 
-	s.NoError(facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+	s.NoError(facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		ChannelName: "orders.1",
 		ShouldFire:  true,
 		DelayedAt:   time.Now().UTC().Add(delay),
@@ -925,53 +926,6 @@ func (s *BroadcastTestSuite) TestDispatch_WithDelay() {
 	s.True(found, "expected order.shipped event on private-orders.1 after delayed job consumed")
 }
 
-func (s *BroadcastTestSuite) TestDispatch_WithTriesBackoffAndTimeout() {
-	tests := []struct {
-		name       string
-		retries    int
-		backoff    time.Duration
-		timeout    time.Duration
-		minElapsed time.Duration
-		maxElapsed time.Duration
-	}{
-		{
-			name:       "tries_and_backoff",
-			retries:    3,
-			backoff:    200 * time.Millisecond,
-			timeout:    0,
-			minElapsed: 300 * time.Millisecond,
-			maxElapsed: 3 * time.Second,
-		},
-		{
-			name:       "timeout_caps_retries",
-			retries:    10,
-			backoff:    200 * time.Millisecond,
-			timeout:    100 * time.Millisecond,
-			minElapsed: 0,
-			maxElapsed: 500 * time.Millisecond,
-		},
-	}
-
-	for _, tt := range tests {
-		s.Run(tt.name, func() {
-			start := time.Now()
-			err := facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
-				ChannelName: "orders.1",
-				ShouldFire:  true,
-				Conns:       []string{"nonexistent"},
-				Retries:     tt.retries,
-				Backoff:     tt.backoff,
-				Timeout:     tt.timeout,
-			})
-			elapsed := time.Since(start)
-
-			s.Require().Error(err)
-			s.Greater(elapsed, tt.minElapsed)
-			s.Less(elapsed, tt.maxElapsed)
-		})
-	}
-}
-
 func (s *BroadcastTestSuite) TestDispatch_WithConnections() {
 	jwtToken := s.jwtLogin("broadcast-connections-test")
 
@@ -985,7 +939,7 @@ func (s *BroadcastTestSuite) TestDispatch_WithConnections() {
 	s.NoError(ws.Subscribe("private-orders.1", auth, ""))
 	time.Sleep(300 * time.Millisecond)
 
-	err = facades.Broadcast().Dispatch(&events.OrderShippedBroadcast{
+	err = facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		ChannelName: "orders.1",
 		ShouldFire:  true,
 		Conns:       []string{"pusher", "null", "log"},

@@ -121,14 +121,6 @@
             <input type="checkbox" id="dispatchBroadcastNow" style="width:16px;height:16px" />
         </div>
         <div class="input-group">
-            <label>Retries</label>
-            <input id="dispatchRetries" type="number" value="" style="width:60px" />
-        </div>
-        <div class="input-group">
-            <label>Backoff (s)</label>
-            <input id="dispatchBackoff" type="number" value="" style="width:60px" />
-        </div>
-        <div class="input-group">
             <label>Timeout (s)</label>
             <input id="dispatchTimeout" type="number" value="" style="width:60px" />
         </div>
@@ -365,8 +357,6 @@
                     }
                     setIf('dispatchQueueConn', 'queue_conn');
                     setIf('dispatchQueueName', 'queue_name');
-                    setInt('dispatchRetries', 'retries');
-                    setInt('dispatchBackoff', 'backoff');
                     setInt('dispatchTimeout', 'timeout');
                     setInt('dispatchDelay', 'delay');
                     var conns = val('dispatchConns');

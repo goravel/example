@@ -231,7 +231,7 @@ func (s *MockExamplesTestSuite) TestBroadcastDispatch() {
 	mockFactory := mock.Factory()
 	mockBroadcast := mocksbroadcasting.NewBroadcast(s.T())
 	mockFactory.App().EXPECT().MakeBroadcast().Return(mockBroadcast).Once()
-	mockBroadcast.EXPECT().Dispatch(testifymock.Anything).Return(nil).Once()
+	mockBroadcast.EXPECT().Dispatch(context.Background(), testifymock.Anything).Return(nil).Once()
 
 	s.Nil(BroadcastDispatch())
 }
