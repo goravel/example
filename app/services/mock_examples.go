@@ -136,3 +136,17 @@ func Validation() string {
 func View() bool {
 	return facades.View().Exists("welcome.tmpl")
 }
+
+func BroadcastChannel() {
+	facades.Broadcast().Channel("orders.{orderId}", func(ctx context.Context, user any, channelName string, params map[string]string) (bool, any) {
+		return params["orderId"] == "1", nil
+	})
+}
+
+func BroadcastDispatch() error {
+	return facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
+		ChannelName: "orders.1",
+		OrderData:   map[string]any{"id": 1},
+		ShouldFire:  true,
+	})
+}

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Broadcasting Test</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 24px; }
+        h1 { font-size: 24px; margin-bottom: 8px; }
+        .subtitle { color: #94a3b8; margin-bottom: 24px; font-size: 14px; }
+        .controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; align-items: center; }
+        button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
+        .btn-connect { background: #2563eb; color: #fff; }
+        .btn-connect:hover { background: #1d4ed8; }
+        .btn-disconnect { background: #dc2626; color: #fff; }
+        .btn-disconnect:hover { background: #b91c1c; }
+        .btn-subscribe { background: #16a34a; color: #fff; }
+        .btn-subscribe:hover { background: #15803d; }
+        .btn-dispatch { background: #9333ea; color: #fff; }
+        .btn-dispatch:hover { background: #7e22ce; }
+        .status { display: flex; gap: 8px; align-items: center; margin-bottom: 20px; font-size: 13px; }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .status-dot.disconnected { background: #dc2626; }
+        .status-dot.connected { background: #16a34a; }
+        .event-log { background: #1e293b; border-radius: 8px; padding: 16px; max-height: 500px; overflow-y: auto; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; }
+        .event-item { padding: 8px 0; border-bottom: 1px solid #334155; }
+        .event-item:last-child { border-bottom: none; }
+        .event-time { color: #64748b; margin-right: 8px; }
+        .event-name { color: #38bdf8; font-weight: 600; }
+        .event-channel { color: #a78bfa; }
+        .event-data { color: #94a3b8; white-space: pre-wrap; word-break: break-all; margin-top: 4px; }
+        .input-group { display: flex; gap: 8px; align-items: center; }
+        input { padding: 8px 12px; border: 1px solid #334155; border-radius: 6px; background: #1e293b; color: #e2e8f0; font-size: 13px; outline: none; }
+        input:focus { border-color: #2563eb; }
+        label { font-size: 13px; color: #94a3b8; }
+        .empty { color: #64748b; font-style: italic; }
+        .clear-btn { background: transparent; color: #94a3b8; border: 1px solid #334155; }
+        .clear-btn:hover { background: #1e293b; }
+    </style>
+</head>
+<body>
+    <h1>Broadcasting Test</h1>
+    <p class="subtitle">Connect to Soketi and test real-time events</p>
+
+    <div class="status">
+        <div id="statusDot" class="status-dot disconnected"></div>
+        <span id="statusText">Disconnected</span>
+    </div>
+
+    <div class="controls">
+        <div class="input-group">
+            <label>App Key</label>
+            <input id="appKey" value="test-key" style="width:150px" />
+        </div>
+        <div class="input-group">
+            <label>Host</label>
+            <input id="host" value="127.0.0.1:6001" style="width:150px" />
+        </div>
+        <button class="btn-connect" onclick="connect()">Connect</button>
+        <button class="btn-disconnect" onclick="disconnect()">Disconnect</button>
+    </div>
+
+    <div class="controls">
+        <div class="input-group">
+            <label>API Host</label>
+            <input id="apiHost" value="http://127.0.0.1:8080" oninput="updateAuthEndpoint()" style="width:200px" />
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="input-group">
+            <label>User Name</label>
+            <input id="userName" value="test" style="width:120px" />
+        </div>
+        <button class="btn-connect" onclick="login()" style="background:#f59e0b">Login (JWT)</button>
+        <span id="jwtStatus" style="font-size:12px;color:#64748b"></span>
+    </div>
+
+    <div class="controls">
+        <div class="input-group">
+            <label>Channel</label>
+            <input id="channelName" value="private-orders.1" style="width:200px" />
+        </div>
+        <button class="btn-subscribe" onclick="subscribe()">Subscribe</button>
+    </div>
+
+    <div class="controls">
+        <div class="input-group">
+            <label>Data (JSON)</label>
+            <input id="dispatchData" value='{"item":"Laptop","price":1200}' style="width:250px" />
+        </div>
+        <button class="btn-dispatch" onclick="doDispatch()">Dispatch</button>
+    </div>
+
+    <div class="controls" style="margin-bottom:8px">
+        <span id="toggleAdv" style="cursor:pointer;color:#94a3b8;font-size:13px;user-select:none">▶ Advanced</span>
+    </div>
+
+    <div id="advancedOpts" class="controls" style="display:none;flex-wrap:wrap">
+        <div class="input-group">
+            <label>Queue Name</label>
+            <input id="dispatchQueueName" placeholder="default" style="width:120px" />
+        </div>
+        <div class="input-group">
+            <label>Queue Conn</label>
+            <input id="dispatchQueueConn" placeholder="database" style="width:100px" />
+        </div>
+        <div class="input-group">
+            <label>Conns (csv)</label>
+            <input id="dispatchConns" placeholder="pusher,log" style="width:120px" />
+        </div>
+        <div class="input-group">
+            <label>Should Fire</label>
+            <input type="checkbox" id="dispatchShouldFire" checked style="width:16px;height:16px" />
+        </div>
+        <div class="input-group">
+            <label>Broadcast Now</label>
+            <input type="checkbox" id="dispatchBroadcastNow" style="width:16px;height:16px" />
+        </div>
+        <div class="input-group">
+            <label>Timeout (s)</label>
+            <input id="dispatchTimeout" type="number" value="" style="width:60px" />
+        </div>
+        <div class="input-group">
+            <label>Delay (s)</label>
+            <input id="dispatchDelay" type="number" value="" style="width:120px" />
+        </div>
+    </div>
+
+    <div class="controls" style="margin-bottom: 8px">
+        <div class="input-group">
+            <label>Auth Endpoint</label>
+            <input id="authEndpoint" value="http://127.0.0.1:8080/broadcasting/auth" style="width:300px" />
+        </div>
+    </div>
+
+    <div style="margin-bottom: 16px">
+        <button class="clear-btn" onclick="clearLog()">Clear Log</button>
+        <span style="font-size:12px;color:#64748b;margin-left:8px" id="eventCount">0 events</span>
+    </div>
+
+    <div class="event-log" id="eventLog">
+        <div class="empty">Waiting for events...</div>
+    </div>
+
+    <script>
+        let ws = null;
+        let eventCount = 0;
+        let subscribedChannels = new Set();
+        let jwtToken = '';
+        let socketId = '';
+
+        function apiBase() {
+            return (document.getElementById('apiHost').value || '').replace(/\/+$/, '');
+        }
+
+        function updateAuthEndpoint() {
+            document.getElementById('authEndpoint').value = apiBase() + '/broadcasting/auth';
+        }
+
+        function channelTypeFromName(name) {
+            if (name.indexOf('presence-team.') === 0) return 'presence';
+            if (name.indexOf('private-orders.') === 0) return 'private';
+            return 'public';
+        }
+
+        function time() {
+            return new Date().toLocaleTimeString();
+        }
+
+        function log(msg) {
+            eventCount++;
+            const log = document.getElementById('eventLog');
+            const empty = log.querySelector('.empty');
+            if (empty) empty.remove();
+            const div = document.createElement('div');
+            div.className = 'event-item';
+            div.innerHTML = msg;
+            log.prepend(div);
+            document.getElementById('eventCount').textContent = eventCount + ' events';
+        }
+
+        function logEvent(event, channel, data) {
+            log('<span class="event-time">' + time() + '</span>' +
+                '<span class="event-name">' + event + '</span> ' +
+                '<span class="event-channel">@' + channel + '</span>' +
+                '<div class="event-data">' + JSON.stringify(data, null, 2) + '</div>');
+        }
+
+        function logStatus(msg) {
+            log('<span class="event-time">' + time() + '</span> <span style="color:#fbbf24">⚡ ' + msg + '</span>');
+        }
+
+        function clearLog() {
+            eventCount = 0;
+            document.getElementById('eventLog').innerHTML = '<div class="empty">Waiting for events...</div>';
+            document.getElementById('eventCount').textContent = '0 events';
+        }
+
+        function setStatus(connected) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            dot.className = 'status-dot ' + (connected ? 'connected' : 'disconnected');
+            text.textContent = connected ? 'Connected' : 'Disconnected';
+        }
+
+        function connect() {
+            const key = document.getElementById('appKey').value;
+            const host = document.getElementById('host').value;
+            const wsUrl = 'ws://' + host + '/app/' + key + '?protocol=7&client=js&version=7.0.0';
+
+            logStatus('Connecting to ' + wsUrl + '...');
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                setStatus(true);
+                logStatus('Connected to Soketi');
+            };
+
+            ws.onmessage = function (evt) {
+                try {
+                    const msg = JSON.parse(evt.data);
+                    const event = msg.event || 'unknown';
+                    const channel = msg.channel || '';
+                    const data = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data;
+
+                    if (event === 'pusher:connection_established') {
+                        socketId = data.socket_id || '';
+                        logStatus('Connection established: ' + JSON.stringify(data));
+                        return;
+                    }
+                    if (event === 'pusher_internal:subscription_succeeded') {
+                        subscribedChannels.add(channel);
+                        var membersList = '';
+                        if (data && data.presence) {
+                            membersList = ', members: ' + JSON.stringify(data.presence.ids || []);
+                        }
+                        logStatus('Subscribed to ' + channel + membersList);
+                        return;
+                    }
+                    if (event === 'pusher_internal:member_added') {
+                        logStatus('Member joined ' + channel + ': ' + JSON.stringify(data));
+                        return;
+                    }
+                    if (event === 'pusher_internal:member_removed') {
+                        logStatus('Member left ' + channel + ': ' + JSON.stringify(data));
+                        return;
+                    }
+                    logEvent(event, channel, { data: data });
+                } catch (e) {
+                    log('<span class="event-time">' + time() + '</span> <span style="color:#ef4444">Raw: ' + evt.data + '</span>');
+                }
+            };
+
+            ws.onclose = function () {
+                setStatus(false);
+                logStatus('Disconnected');
+            };
+
+            ws.onerror = function () {
+                logStatus('Connection error');
+            };
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                ws = null;
+                subscribedChannels.clear();
+            }
+        }
+
+        function subscribe() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                logStatus('Not connected');
+                return;
+            }
+            const name = document.getElementById('channelName').value;
+            subscribeChannel(name);
+        }
+
+        async function subscribeChannel(name) {
+            let auth = '';
+            let channelData = '';
+            if (name.startsWith('private-') || name.startsWith('presence-')) {
+                if (!jwtToken) { logStatus('Not logged in — click Login first'); return; }
+                if (!socketId) { logStatus('No socket_id yet — connect first'); return; }
+
+                const authUrl = document.getElementById('authEndpoint').value;
+                try {
+                    const resp = await fetch(authUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'Authorization': jwtToken
+                        },
+                        body: 'socket_id=' + encodeURIComponent(socketId) +
+                              '&channel_name=' + encodeURIComponent(name)
+                    });
+                    const result = await resp.json();
+                    auth = result.auth || '';
+                    channelData = result.channel_data || '';
+                    if (!auth) {
+                        logStatus('Auth failed (' + resp.status + '): ' + JSON.stringify(result));
+                        return;
+                    }
+                    logStatus('Auth obtained for ' + name);
+                } catch (e) {
+                    logStatus('Auth request failed: ' + e.message);
+                    return;
+                }
+            }
+
+            logStatus('Subscribing to ' + name + '...');
+            var data = { channel: name, auth: auth };
+            if (channelData) { data.channel_data = channelData; }
+            ws.send(JSON.stringify({
+                event: 'pusher:subscribe',
+                data: data
+            }));
+        }
+
+        async function login() {
+            const name = document.getElementById('userName').value || 'test';
+            try {
+                const resp = await fetch(apiBase() + '/jwt/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'name=' + encodeURIComponent(name)
+                });
+                jwtToken = resp.headers.get('Authorization');
+                document.getElementById('jwtStatus').textContent = jwtToken ? 'logged in as ' + name : 'failed';
+                logStatus(jwtToken ? 'Logged in as ' + name : 'Login failed');
+            } catch (e) {
+                logStatus('Login request failed: ' + e.message);
+            }
+        }
+
+        async function doDispatch() {
+            var name = document.getElementById('channelName').value.trim();
+            if (!name) { logStatus('Enter a channel to subscribe & dispatch'); return; }
+            var type = channelTypeFromName(name);
+            var dataStr = document.getElementById('dispatchData').value;
+            var payload = { channel_type: type, channel: name };
+
+            function val(id) { var el = document.getElementById(id); return el && el.value ? el.value : ''; }
+            function setIf(id, key) { var v = val(id); if (v) payload[key] = v; }
+            function setInt(id, key) { var el = document.getElementById(id); if (!el || !el.value) return; var v = parseInt(el.value); if (!isNaN(v) && v) payload[key] = v; }
+
+            try {
+                var data = JSON.parse(dataStr);
+                if (type === 'presence') {
+                    payload.team_data = data;
+                } else {
+                    payload.order_data = data;
+                    payload.should_fire = document.getElementById('dispatchShouldFire').checked;
+                    if (type === 'public') {
+                        payload.broadcast_now = true;
+                    } else {
+                        payload.broadcast_now = document.getElementById('dispatchBroadcastNow').checked;
+                    }
+                    setIf('dispatchQueueConn', 'queue_conn');
+                    setIf('dispatchQueueName', 'queue_name');
+                    setInt('dispatchTimeout', 'timeout');
+                    setInt('dispatchDelay', 'delay');
+                    var conns = val('dispatchConns');
+                    if (conns) payload.conns = conns.split(',').map(function(s){return s.trim()});
+                }
+            } catch (e) {
+                logStatus('Invalid JSON data: ' + e.message);
+                return;
+            }
+
+            console.log('Dispatch payload:', payload);
+
+            try {
+                var resp = await fetch(apiBase() + '/broadcasting/dispatch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                var result = await resp.json();
+                if (resp.ok) {
+                    logStatus('Dispatched: ' + result.message + ' → ' + result.channel);
+                } else {
+                    logStatus('Dispatch failed (' + resp.status + '): ' + (result.error || JSON.stringify(result)));
+                }
+            } catch (e) {
+                logStatus('Dispatch request failed: ' + e.message);
+            }
+        }
+
+        document.getElementById('toggleAdv').addEventListener('click', function() {
+            var opts = document.getElementById('advancedOpts');
+            var show = opts.style.display === 'none';
+            opts.style.display = show ? 'flex' : 'none';
+            this.textContent = show ? '▼ Advanced' : '▶ Advanced';
+        });
+
+        updateAuthEndpoint();
+    </script>
+</body>
+</html>

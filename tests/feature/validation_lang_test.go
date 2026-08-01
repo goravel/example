@@ -15,14 +15,14 @@ import (
 	"goravel/tests"
 )
 
-//go:linkname translationLoaded github.com/goravel/framework/translation.loaded
-//
 // The translation package caches loaded lang messages in a package-level
 // `loaded` map that never expires. When lang:publish populates this cache
 // with custom messages during TestValidationLangTestSuite, those messages
 // leak into TestValidationTestSuite (which runs next alphabetically),
 // causing default-message assertions to fail. Resetting the map here forces
 // the translator to reload from the embedded defaults fresh after each test.
+//
+//go:linkname translationLoaded github.com/goravel/framework/translation.loaded
 var translationLoaded map[string]map[string]map[string]any
 
 type ValidationLangTestSuite struct {

@@ -1,6 +1,26 @@
 version: '3.8'
 
 services:
+  soketi:
+    image: quay.io/soketi/soketi:latest
+    restart: always
+    environment:
+      SOKETI_DEBUG: "1"
+      SOKETI_DEFAULT_APP_ID: "test-app"
+      SOKETI_DEFAULT_APP_KEY: "test-key"
+      SOKETI_DEFAULT_APP_SECRET: "test-secret"
+      SOKETI_DEFAULT_APP_ENABLE_CLIENT_MESSAGES: "1"
+      SOKETI_DEFAULT_APP_ENABLE_CLIENT_CHANNELS: "1"
+      SOKETI_DEFAULT_APP_ENABLE_CLIENT_STATS: "1"
+      SOKETI_METRICS_ENABLED: "0"
+      # Set the adapter driver to Redis in production to enable horizontal scaling of Soketi instances.
+      # SOKETI_ADAPTER_DRIVER: redis
+      # SOKETI_ADAPTER_REDIS_HOST: redis
+      # SOKETI_ADAPTER_REDIS_PORT: "6379"
+    ports:
+      - "6001:6001"
+      - "9601:9601"
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:latest
     restart: always

@@ -6,6 +6,7 @@ import (
 	"github.com/goravel/fiber"
 	"github.com/goravel/framework/ai"
 	"github.com/goravel/framework/auth"
+	"github.com/goravel/framework/broadcasting"
 	"github.com/goravel/framework/cache"
 	"github.com/goravel/framework/contracts/foundation"
 	"github.com/goravel/framework/crypt"
@@ -27,7 +28,6 @@ import (
 	"github.com/goravel/framework/translation"
 	"github.com/goravel/framework/validation"
 	"github.com/goravel/framework/view"
-	"goravel/packages/viewtest"
 	"github.com/goravel/gemini"
 	"github.com/goravel/gin"
 	"github.com/goravel/minio"
@@ -39,6 +39,7 @@ import (
 	"github.com/goravel/s3"
 	"github.com/goravel/sqlite"
 	"github.com/goravel/sqlserver"
+	"goravel/packages/viewtest"
 )
 
 func Providers() []foundation.ServiceProvider {
@@ -54,6 +55,7 @@ func Providers() []foundation.ServiceProvider {
 		&auth.ServiceProvider{},
 		&crypt.ServiceProvider{},
 		&queue.ServiceProvider{},
+		&broadcasting.ServiceProvider{},
 		&event.ServiceProvider{},
 		&grpc.ServiceProvider{},
 		&hash.ServiceProvider{},

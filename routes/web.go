@@ -87,4 +87,10 @@ func Web() {
 	facades.Route().Fallback(func(ctx http.Context) http.Response {
 		return ctx.Response().String(http.StatusNotFound, "fallback")
 	})
+
+	// Test Broadcasting
+	broadcastController := controllers.NewBroadcastController()
+	facades.Route().Post("broadcasting/dispatch", broadcastController.Dispatch)
+	facades.Route().StaticFile("broadcast.html", "./resources/views/broadcast.html")
+	facades.Route().StaticFile("echo.html", "./resources/views/echo.html")
 }
