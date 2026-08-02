@@ -28,6 +28,8 @@ type DispatchRequest struct {
 	Conns        []string       `form:"conns" json:"conns"`
 	Delay        int64          `form:"delay" json:"delay"`
 	Timeout      int64          `form:"timeout" json:"timeout"`
+	Tries        int            `form:"tries" json:"tries"`
+	Backoff      []float64      `form:"backoff" json:"backoff"` // seconds per attempt, fractional allowed, e.g. [0.5,1]
 	BroadcastNow bool           `form:"broadcast_now" json:"broadcast_now"`
 }
 
@@ -73,6 +75,11 @@ func (c *BroadcastController) dispatchPrivate(ctx http.Context, req *DispatchReq
 		delayedAt = time.Now().UTC().Add(time.Duration(req.Delay) * time.Second)
 	}
 
+	var backoff []time.Duration
+	for _, b := range req.Backoff {
+		backoff = append(backoff, time.Duration(b*float64(time.Second)))
+	}
+
 	err := facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		OrderData:          req.OrderData,
 		ShouldFire:         req.ShouldFire,
@@ -81,6 +88,8 @@ func (c *BroadcastController) dispatchPrivate(ctx http.Context, req *DispatchReq
 		QueueConn:          req.QueueConn,
 		DelayedAt:          delayedAt,
 		Timeout:            time.Duration(req.Timeout) * time.Second,
+		Tries:              req.Tries,
+		Backoff:            backoff,
 		ShouldBroadcastNow: req.BroadcastNow,
 		ChannelName:        stripPrivatePrefix(req.Channel),
 	})

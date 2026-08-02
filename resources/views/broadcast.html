@@ -4,40 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Broadcasting Test</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 24px; }
-        h1 { font-size: 24px; margin-bottom: 8px; }
-        .subtitle { color: #94a3b8; margin-bottom: 24px; font-size: 14px; }
-        .controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; align-items: center; }
-        button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; }
-        .btn-connect { background: #2563eb; color: #fff; }
-        .btn-connect:hover { background: #1d4ed8; }
-        .btn-disconnect { background: #dc2626; color: #fff; }
-        .btn-disconnect:hover { background: #b91c1c; }
-        .btn-subscribe { background: #16a34a; color: #fff; }
-        .btn-subscribe:hover { background: #15803d; }
-        .btn-dispatch { background: #9333ea; color: #fff; }
-        .btn-dispatch:hover { background: #7e22ce; }
-        .status { display: flex; gap: 8px; align-items: center; margin-bottom: 20px; font-size: 13px; }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .status-dot.disconnected { background: #dc2626; }
-        .status-dot.connected { background: #16a34a; }
-        .event-log { background: #1e293b; border-radius: 8px; padding: 16px; max-height: 500px; overflow-y: auto; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; }
-        .event-item { padding: 8px 0; border-bottom: 1px solid #334155; }
-        .event-item:last-child { border-bottom: none; }
-        .event-time { color: #64748b; margin-right: 8px; }
-        .event-name { color: #38bdf8; font-weight: 600; }
-        .event-channel { color: #a78bfa; }
-        .event-data { color: #94a3b8; white-space: pre-wrap; word-break: break-all; margin-top: 4px; }
-        .input-group { display: flex; gap: 8px; align-items: center; }
-        input { padding: 8px 12px; border: 1px solid #334155; border-radius: 6px; background: #1e293b; color: #e2e8f0; font-size: 13px; outline: none; }
-        input:focus { border-color: #2563eb; }
-        label { font-size: 13px; color: #94a3b8; }
-        .empty { color: #64748b; font-style: italic; }
-        .clear-btn { background: transparent; color: #94a3b8; border: 1px solid #334155; }
-        .clear-btn:hover { background: #1e293b; }
-    </style>
+    <link rel="stylesheet" href="/css/broadcast.css" />
 </head>
 <body>
     <h1>Broadcasting Test</h1>
@@ -125,6 +92,14 @@
         <div class="input-group">
             <label>Delay (s)</label>
             <input id="dispatchDelay" type="number" value="" style="width:120px" />
+        </div>
+        <div class="input-group">
+            <label>Tries</label>
+            <input id="dispatchTries" type="number" value="" style="width:60px" />
+        </div>
+        <div class="input-group">
+            <label>Backoff (s, csv)</label>
+            <input id="dispatchBackoff" placeholder="1,2" style="width:120px" />
         </div>
     </div>
 
@@ -364,6 +339,24 @@
                     setIf('dispatchQueueName', 'queue_name');
                     setInt('dispatchTimeout', 'timeout');
                     setInt('dispatchDelay', 'delay');
+                    // tries/backoff only take effect on the queued (private) path:
+                    // dispatchPublic forces broadcast_now=true and dispatchPresence
+                    // uses TeamPresenceBroadcast — both ignore them.
+                    if (type === 'private') {
+                        setInt('dispatchTries', 'tries');
+                        var backoff = val('dispatchBackoff');
+                        if (backoff) {
+                            var backoffArr = backoff.split(',').map(function (s) {
+                                return s.trim();
+                            }).filter(function (s) {
+                                return s !== ''; // empty slots ("1,,2") are omitted, not 0s
+                            }).map(function (s) {
+                                var n = Number(s); // Number("0.5") = 0.5, fractional seconds kept
+                                return isFinite(n) ? n : NaN; // non-numeric garbage omitted
+                            }).filter(function (n) { return isFinite(n); });
+                            if (backoffArr.length > 0) payload.backoff = backoffArr;
+                        }
+                    }
                     var conns = val('dispatchConns');
                     if (conns) payload.conns = conns.split(',').map(function(s){return s.trim()});
                 }
@@ -371,8 +364,6 @@
                 logStatus('Invalid JSON data: ' + e.message);
                 return;
             }
-
-            console.log('Dispatch payload:', payload);
 
             try {
                 var resp = await fetch(apiBase() + '/broadcasting/dispatch', {

@@ -977,6 +977,211 @@ func (s *BroadcastTestSuite) TestDispatch_WithConnections() {
 	s.Contains(logText, "Connections Order", "expected log driver to record the broadcast payload")
 }
 
+func (s *BroadcastTestSuite) TestDispatch_WithTriesAndBackoff() {
+	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "database"})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	s.NoError(facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
+		ChannelType: "public",
+		ChannelName: "retry-orders",
+		ShouldFire:  true,
+		// "broken" is intentionally NOT in config/broadcasting.go: broadcastToConns
+		// iterates conns in order, so the "log" driver emits its per-attempt line
+		// first, then cfg.Connection("broken") returns connection-not-found and the
+		// attempt fails. "log" must stay first; adding a "broken" connection to the
+		// config would silently change this test's behavior.
+		Conns:     []string{"log", "broken"},
+		Tries:     3,
+		Backoff:   []time.Duration{100 * time.Millisecond, 200 * time.Millisecond},
+		OrderData: map[string]any{"id": 1, "name": "Retryable Broadcast"},
+	}))
+
+	// Dispatch-time capture: queued payload carries tries/backoff (ms).
+	var jobs []frameworkmodels.Job
+	s.NoError(facades.DB().Table("jobs").Where("queue", "default").Get(&jobs))
+	s.Require().Len(jobs, 1)
+	var payload struct {
+		Args []struct {
+			Value string `json:"value"`
+		} `json:"args"`
+	}
+	s.NoError(json.Unmarshal([]byte(jobs[0].Payload), &payload))
+	s.Require().Len(payload.Args, 1)
+	var item struct {
+		Tries   int     `json:"tries"`
+		Backoff []int64 `json:"backoff"`
+	}
+	s.NoError(json.Unmarshal([]byte(payload.Args[0].Value), &item))
+	s.Equal(3, item.Tries)
+	s.Equal([]int64{100, 200}, item.Backoff)
+
+	before := s.countBroadcastEvents("Retryable Broadcast")
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Connection: "database",
+		Queue:      "default",
+		Concurrent: 1,
+		Tries:      1, // event policy must override the worker's tries
+	})
+	workerErr := make(chan error, 1)
+	start := time.Now()
+	go func() { workerErr <- worker.Run() }()
+
+	// The queued broadcast always FAILS (the "broken" connection), so the
+	// completion signal is the failed job landing in the failer. Poll with a
+	// bounded timeout instead of a fixed sleep so a slow worker can't strand
+	// the job or mask a startup failure.
+	elapsed, ok := s.waitForFailedBroadcast(start, 5*time.Second)
+	_ = worker.Shutdown()
+	s.Require().True(ok, "expected goravel_broadcast job to fail within 5s")
+	s.NoError(<-workerErr, "worker should start and stop cleanly")
+
+	// The worker pops the job from the jobs table before retries run in-process,
+	// so jobs==0 alone is not a timing signal — keep it as a separate check.
+	count, err := facades.DB().Table("jobs").Count()
+	s.NoError(err)
+	s.Equal(int64(0), count, "job should be consumed")
+
+	// Without the 100ms+200ms backoff sleeps this would be ~0 and FAIL; the
+	// upper bound catches pathological slowness.
+	s.GreaterOrEqual(elapsed, 300*time.Millisecond, "100ms + 200ms backoff should have slept before the final attempt")
+	s.Less(elapsed, 3*time.Second, "retries should complete quickly")
+	s.Equal(before+3, s.countBroadcastEvents("Retryable Broadcast"),
+		"event BroadcastTries=3 should override worker Tries=1")
+}
+
+func (s *BroadcastTestSuite) TestDispatch_WithoutTries_SingleShot() {
+	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "database"})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	s.NoError(facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
+		ChannelType: "public",
+		ChannelName: "single-shot-orders",
+		ShouldFire:  true,
+		// Same phantom-connection mechanism as TestDispatch_WithTriesAndBackoff:
+		// "log" emits its line first, then the unconfigured "broken" connection
+		// fails the attempt (broadcastToConns short-circuits on the first error).
+		Conns:     []string{"log", "broken"},
+		OrderData: map[string]any{"id": 2, "name": "Single Shot Broadcast"},
+	}))
+
+	var jobs []frameworkmodels.Job
+	s.NoError(facades.DB().Table("jobs").Where("queue", "default").Get(&jobs))
+	s.Require().Len(jobs, 1)
+	s.NotContains(jobs[0].Payload, `"tries"`) // omitempty: no retry policy serialized
+	s.NotContains(jobs[0].Payload, `"backoff"`)
+
+	before := s.countBroadcastEvents("Single Shot Broadcast")
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Connection: "database",
+		Queue:      "default",
+		Concurrent: 1,
+		Tries:      3, // worker would retry, but the event stays single-shot
+	})
+	workerErr := make(chan error, 1)
+	start := time.Now()
+	go func() { workerErr <- worker.Run() }()
+
+	// Same completion signal as the retry test: the failed job landing in the
+	// failer, polled with a bounded timeout instead of a fixed sleep.
+	_, ok := s.waitForFailedBroadcast(start, 5*time.Second)
+	_ = worker.Shutdown()
+	s.Require().True(ok, "expected goravel_broadcast job to fail within 5s")
+	s.NoError(<-workerErr, "worker should start and stop cleanly")
+
+	count, err := facades.DB().Table("jobs").Count()
+	s.NoError(err)
+	s.Equal(int64(0), count)
+	s.Equal(before+1, s.countBroadcastEvents("Single Shot Broadcast"),
+		"broadcast without BroadcastTries must fail after a single attempt despite worker Tries=3")
+}
+
+func (s *BroadcastTestSuite) TestDispatch_BackoffWithoutTries_Suppressed() {
+	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "database"})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	s.NoError(facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
+		ChannelType: "public",
+		ChannelName: "backoff-only-orders",
+		ShouldFire:  true,
+		Conns:       []string{"null"},
+		Backoff:     []time.Duration{time.Second}, // no BroadcastTries → ignored
+		OrderData:   map[string]any{"id": 3},
+	}))
+
+	var jobs []frameworkmodels.Job
+	s.NoError(facades.DB().Table("jobs").Where("queue", "default").Get(&jobs))
+	s.Require().Len(jobs, 1)
+	s.NotContains(jobs[0].Payload, `"backoff"`, "backoff must not serialize without tries")
+}
+
+// countBroadcastEvents returns the number of "Broadcasting event" log entries
+// that carry the given OrderData marker. Each entry corresponds to exactly one
+// broadcast attempt by the log driver. Counting only entries that contain the
+// marker keeps the count immune to (a) SQL log lines that embed the same
+// marker via the queued/failed payload, and (b) accumulation across test runs
+// when combined with a before/after delta.
+//
+// Formatter coupling: the matcher relies on the "single" channel's JSON
+// formatter putting `"message":"Broadcasting event"` and the payload on one
+// line. The "daily" text channel splits the payload onto its own `[With]`
+// line, so those entries are naturally excluded. If config/logging.go ever
+// switches "single" to a non-JSON formatter (or "daily" to JSON), the count
+// will silently drift — the first symptom is `before+3`/`before+1` failing.
+func (s *BroadcastTestSuite) countBroadcastEvents(marker string) int {
+	matches, err := filepath.Glob("../../storage/logs/*.log")
+	s.Require().NoError(err)
+	count := 0
+	for _, m := range matches {
+		if b, rErr := os.ReadFile(m); rErr == nil {
+			for _, line := range strings.Split(string(b), "\n") {
+				// Tighten to the JSON formatter's line shape so a formatter
+				// change fails loudly instead of double-counting (daily→json).
+				if strings.Contains(line, `"message":"Broadcasting event"`) && strings.Contains(line, marker) {
+					count++
+				}
+			}
+		}
+	}
+	return count
+}
+
+// waitForFailedBroadcast polls the queue failer until a failed goravel_broadcast
+// job appears (the queued broadcast always fails via the phantom "broken"
+// connection), returning the elapsed time since start. The failure is recorded
+// by the worker's failed-job processor after all in-process retries are
+// exhausted, so its appearance in the failer is the reliable completion signal —
+// unlike the jobs table, which the worker empties before retries run. Returns
+// ok=false if the timeout elapses.
+//
+// Invariants this relies on: (a) SetupTest's RefreshDatabase (migrate:refresh)
+// drops and recreates failed_jobs before every test, so the table starts empty;
+// and (b) each new test dispatches exactly one queued broadcast, so the first
+// failed goravel_broadcast row this helper sees is that job's. If a future test
+// stops calling RefreshDatabase or dispatches a second queued broadcast, the
+// poll would latch onto a stale/foreign row instead of timing out.
+func (s *BroadcastTestSuite) waitForFailedBroadcast(start time.Time, timeout time.Duration) (time.Duration, bool) {
+	deadline := time.Now().Add(timeout)
+	for {
+		failedJobs, err := facades.Queue().Failer().All()
+		if err != nil {
+			s.T().Logf("failed to list failed jobs: %v", err)
+		} else {
+			for _, fj := range failedJobs {
+				if fj.Signature() == "goravel_broadcast" {
+					return time.Since(start), true
+				}
+			}
+		}
+		if time.Now().After(deadline) {
+			return time.Since(start), false
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
 func soketiTrigger(channel, event string, data map[string]any) error {
 	return soketiTriggerMulti([]string{channel}, event, data)
 }
