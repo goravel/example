@@ -28,6 +28,8 @@ type DispatchRequest struct {
 	Conns        []string       `form:"conns" json:"conns"`
 	Delay        int64          `form:"delay" json:"delay"`
 	Timeout      int64          `form:"timeout" json:"timeout"`
+	Tries        int            `form:"tries" json:"tries"`
+	Backoff      []float64      `form:"backoff" json:"backoff"` // seconds per attempt, fractional allowed, e.g. [0.5,1]
 	BroadcastNow bool           `form:"broadcast_now" json:"broadcast_now"`
 }
 
@@ -61,6 +63,18 @@ func stripPresencePrefix(name string) string {
 	return strings.TrimPrefix(name, "presence-")
 }
 
+// queueOptions converts the request's delay/backoff/timeout (seconds) into the
+// queue-option values forwarded to broadcast events.
+func queueOptions(req *DispatchRequest) (delayedAt time.Time, timeout time.Duration, tries int, backoff []time.Duration) {
+	if req.Delay > 0 {
+		delayedAt = time.Now().UTC().Add(time.Duration(req.Delay) * time.Second)
+	}
+	for _, b := range req.Backoff {
+		backoff = append(backoff, time.Duration(b*float64(time.Second)))
+	}
+	return delayedAt, time.Duration(req.Timeout) * time.Second, req.Tries, backoff
+}
+
 func (c *BroadcastController) dispatchPrivate(ctx http.Context, req *DispatchRequest) http.Response {
 	if req.ShouldFire && req.OrderData == nil {
 		req.OrderData = map[string]any{
@@ -68,10 +82,7 @@ func (c *BroadcastController) dispatchPrivate(ctx http.Context, req *DispatchReq
 			"price": 1200,
 		}
 	}
-	var delayedAt time.Time
-	if req.Delay > 0 {
-		delayedAt = time.Now().UTC().Add(time.Duration(req.Delay) * time.Second)
-	}
+	delayedAt, timeout, tries, backoff := queueOptions(req)
 
 	err := facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		OrderData:          req.OrderData,
@@ -80,7 +91,9 @@ func (c *BroadcastController) dispatchPrivate(ctx http.Context, req *DispatchReq
 		Conns:              req.Conns,
 		QueueConn:          req.QueueConn,
 		DelayedAt:          delayedAt,
-		Timeout:            time.Duration(req.Timeout) * time.Second,
+		Timeout:            timeout,
+		Tries:              tries,
+		Backoff:            backoff,
 		ShouldBroadcastNow: req.BroadcastNow,
 		ChannelName:        stripPrivatePrefix(req.Channel),
 	})
@@ -100,10 +113,19 @@ func (c *BroadcastController) dispatchPublic(ctx http.Context, req *DispatchRequ
 			"price": 1200,
 		}
 	}
+	delayedAt, timeout, tries, backoff := queueOptions(req)
+
 	err := facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		ChannelType:        "public",
 		OrderData:          req.OrderData,
-		ShouldFire:         true,
+		ShouldFire:         req.ShouldFire,
+		QueueName:          req.QueueName,
+		Conns:              req.Conns,
+		QueueConn:          req.QueueConn,
+		DelayedAt:          delayedAt,
+		Timeout:            timeout,
+		Tries:              tries,
+		Backoff:            backoff,
 		ShouldBroadcastNow: req.BroadcastNow,
 		ChannelName:        req.Channel,
 	})
@@ -122,9 +144,19 @@ func (c *BroadcastController) dispatchPresence(ctx http.Context, req *DispatchRe
 			"name": "goravel",
 		}
 	}
+	delayedAt, timeout, tries, backoff := queueOptions(req)
+
 	err := facades.Broadcast().Dispatch(context.Background(), &events.TeamPresenceBroadcast{
-		TeamData:    req.TeamData,
-		ChannelName: stripPresencePrefix(req.Channel),
+		TeamData:           req.TeamData,
+		ChannelName:        stripPresencePrefix(req.Channel),
+		ShouldBroadcastNow: req.BroadcastNow,
+		QueueName:          req.QueueName,
+		Conns:              req.Conns,
+		QueueConn:          req.QueueConn,
+		DelayedAt:          delayedAt,
+		Timeout:            timeout,
+		Tries:              tries,
+		Backoff:            backoff,
 	})
 	if err != nil {
 		return ctx.Response().Json(http.StatusInternalServerError, http.Json{"error": err.Error()})

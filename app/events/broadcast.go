@@ -15,6 +15,8 @@ type OrderShippedBroadcast struct {
 	QueueConn          string
 	DelayedAt          time.Time
 	Timeout            time.Duration
+	Tries              int
+	Backoff            []time.Duration
 	ShouldBroadcastNow bool
 	ChannelType        string
 	ChannelName        string
@@ -63,6 +65,14 @@ func (e *OrderShippedBroadcast) BroadcastTimeout() time.Duration {
 	return e.Timeout
 }
 
+func (e *OrderShippedBroadcast) BroadcastTries() int {
+	return e.Tries
+}
+
+func (e *OrderShippedBroadcast) BroadcastBackoff() []time.Duration {
+	return e.Backoff
+}
+
 func (e *OrderShippedBroadcast) BroadcastNow() bool {
 	return e.ShouldBroadcastNow
 }
@@ -86,8 +96,16 @@ func (e *EmptyBroadcastEvent) BroadcastWhen() bool {
 }
 
 type TeamPresenceBroadcast struct {
-	TeamData    map[string]any
-	ChannelName string
+	TeamData           map[string]any
+	ChannelName        string
+	ShouldBroadcastNow bool
+	QueueName          string
+	Conns              []string
+	QueueConn          string
+	DelayedAt          time.Time
+	Timeout            time.Duration
+	Tries              int
+	Backoff            []time.Duration
 }
 
 func (e *TeamPresenceBroadcast) BroadcastOn() []contracts.Channel {
@@ -106,4 +124,36 @@ func (e *TeamPresenceBroadcast) BroadcastWith() map[string]any {
 
 func (e *TeamPresenceBroadcast) BroadcastWhen() bool {
 	return true
+}
+
+func (e *TeamPresenceBroadcast) BroadcastNow() bool {
+	return e.ShouldBroadcastNow
+}
+
+func (e *TeamPresenceBroadcast) BroadcastQueue() string {
+	return e.QueueName
+}
+
+func (e *TeamPresenceBroadcast) BroadcastConnections() []string {
+	return e.Conns
+}
+
+func (e *TeamPresenceBroadcast) BroadcastQueueConnection() string {
+	return e.QueueConn
+}
+
+func (e *TeamPresenceBroadcast) BroadcastDelay() time.Time {
+	return e.DelayedAt
+}
+
+func (e *TeamPresenceBroadcast) BroadcastTimeout() time.Duration {
+	return e.Timeout
+}
+
+func (e *TeamPresenceBroadcast) BroadcastTries() int {
+	return e.Tries
+}
+
+func (e *TeamPresenceBroadcast) BroadcastBackoff() []time.Duration {
+	return e.Backoff
 }
