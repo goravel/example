@@ -331,30 +331,28 @@
                 } else {
                     payload.order_data = data;
                     payload.should_fire = document.getElementById('dispatchShouldFire').checked;
-                    setIf('dispatchQueueConn', 'queue_conn');
-                    setIf('dispatchQueueName', 'queue_name');
-                    setInt('dispatchTimeout', 'timeout');
-                    setInt('dispatchDelay', 'delay');
-                    // tries/backoff only take effect on the queued private path: dispatchPublic
-                    // and dispatchPresence don't forward them, and sync broadcasts never retry.
-                    if (type === 'private') {
-                        setInt('dispatchTries', 'tries');
-                        var backoff = val('dispatchBackoff');
-                        if (backoff) {
-                            var backoffArr = backoff.split(',').map(function (s) {
-                                return s.trim();
-                            }).filter(function (s) {
-                                return s !== ''; // empty slots ("1,,2") are omitted, not 0s
-                            }).map(function (s) {
-                                var n = Number(s); // Number("0.5") = 0.5, fractional seconds kept
-                                return isFinite(n) ? n : NaN; // non-numeric garbage omitted
-                            }).filter(function (n) { return isFinite(n); });
-                            if (backoffArr.length > 0) payload.backoff = backoffArr;
-                        }
-                    }
-                    var conns = val('dispatchConns');
-                    if (conns) payload.conns = conns.split(',').map(function(s){return s.trim()});
                 }
+                // queue options (incl. tries/backoff) apply to all channel types
+                // on the queued path; sync broadcasts never retry.
+                setIf('dispatchQueueConn', 'queue_conn');
+                setIf('dispatchQueueName', 'queue_name');
+                setInt('dispatchTimeout', 'timeout');
+                setInt('dispatchDelay', 'delay');
+                setInt('dispatchTries', 'tries');
+                var backoff = val('dispatchBackoff');
+                if (backoff) {
+                    var backoffArr = backoff.split(',').map(function (s) {
+                        return s.trim();
+                    }).filter(function (s) {
+                        return s !== ''; // empty slots ("1,,2") are omitted, not 0s
+                    }).map(function (s) {
+                        var n = Number(s); // Number("0.5") = 0.5, fractional seconds kept
+                        return isFinite(n) ? n : NaN; // non-numeric garbage omitted
+                    }).filter(function (n) { return isFinite(n); });
+                    if (backoffArr.length > 0) payload.backoff = backoffArr;
+                }
+                var conns = val('dispatchConns');
+                if (conns) payload.conns = conns.split(',').map(function(s){return s.trim()});
             } catch (e) {
                 logStatus('Invalid JSON data: ' + e.message);
                 return;

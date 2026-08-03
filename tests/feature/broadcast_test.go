@@ -1117,6 +1117,122 @@ func (s *BroadcastTestSuite) TestDispatch_BackoffWithoutTries_Suppressed() {
 	s.NotContains(jobs[0].Payload, `"backoff"`, "backoff must not serialize without tries")
 }
 
+func (s *BroadcastTestSuite) TestDispatchViaHTTP_Public_WithQueueOptions() {
+	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "database"})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	body, err := supporthttp.NewBody().
+		SetField("channel_type", "public").
+		SetField("channel", "public-http-orders").
+		SetField("order_data", map[string]any{"id": 1, "name": "Public HTTP Broadcast"}).
+		SetField("should_fire", true).
+		SetField("queue_name", "public-http-queue").
+		SetField("delay", 1).
+		SetField("tries", 3).
+		SetField("backoff", []float64{1, 2}).
+		Build()
+	s.Require().NoError(err)
+
+	resp, err := s.Http(s.T()).
+		WithHeader("Content-Type", body.ContentType()).
+		Post("/broadcasting/dispatch", body.Reader())
+	s.NoError(err)
+	resp.AssertOk()
+
+	// dispatchPublic must forward queue options: the job lands in the named
+	// queue, the payload serializes tries/backoff (ms), and the delay is
+	// converted seconds → available_at (future).
+	var jobs []frameworkmodels.Job
+	s.NoError(facades.DB().Table("jobs").Where("queue", "public-http-queue").Get(&jobs))
+	s.Require().Len(jobs, 1)
+	s.Equal("public-http-queue", jobs[0].Queue)
+	s.Require().NotNil(jobs[0].AvailableAt)
+	s.Greater(jobs[0].AvailableAt.StdTime(), time.Now())
+	var payload struct {
+		Args []struct {
+			Value string `json:"value"`
+		} `json:"args"`
+	}
+	s.NoError(json.Unmarshal([]byte(jobs[0].Payload), &payload))
+	s.Require().Len(payload.Args, 1)
+	var item struct {
+		Tries   int     `json:"tries"`
+		Backoff []int64 `json:"backoff"`
+	}
+	s.NoError(json.Unmarshal([]byte(payload.Args[0].Value), &item))
+	s.Equal(3, item.Tries)
+	s.Equal([]int64{1000, 2000}, item.Backoff) // backoff 1s/2s → ms
+}
+
+func (s *BroadcastTestSuite) TestDispatchViaHTTP_Public_ShouldFireFalse_SkipsDispatch() {
+	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "database"})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	body, err := supporthttp.NewBody().
+		SetField("channel_type", "public").
+		SetField("channel", "public-http-skip").
+		SetField("order_data", map[string]any{"id": 2, "name": "Public HTTP Skip"}).
+		SetField("should_fire", false).
+		SetField("queue_name", "public-http-skip-queue").
+		SetField("tries", 3).
+		Build()
+	s.Require().NoError(err)
+
+	resp, err := s.Http(s.T()).
+		WithHeader("Content-Type", body.ContentType()).
+		Post("/broadcasting/dispatch", body.Reader())
+	s.NoError(err)
+	resp.AssertOk()
+
+	// dispatchPublic must honor should_fire (not hardcode true): with
+	// should_fire=false nothing is queued, even though queue options are set.
+	count, err := facades.DB().Table("jobs").Where("queue", "public-http-skip-queue").Count()
+	s.NoError(err)
+	s.Equal(int64(0), count, "no job should be queued when should_fire is false")
+}
+
+func (s *BroadcastTestSuite) TestDispatchViaHTTP_Presence_WithQueueOptions() {
+	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "database"})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	body, err := supporthttp.NewBody().
+		SetField("channel_type", "presence").
+		SetField("channel", "presence-team.http").
+		SetField("team_data", map[string]any{"id": 1, "name": "Presence HTTP Broadcast"}).
+		SetField("queue_name", "presence-http-queue").
+		SetField("tries", 3).
+		Build()
+	s.Require().NoError(err)
+
+	resp, err := s.Http(s.T()).
+		WithHeader("Content-Type", body.ContentType()).
+		Post("/broadcasting/dispatch", body.Reader())
+	s.NoError(err)
+	resp.AssertOk()
+
+	// dispatchPresence must forward queue options: the job lands in the named
+	// queue and the payload serializes the retry policy.
+	var jobs []frameworkmodels.Job
+	s.NoError(facades.DB().Table("jobs").Where("queue", "presence-http-queue").Get(&jobs))
+	s.Require().Len(jobs, 1)
+	s.Equal("presence-http-queue", jobs[0].Queue)
+	var payload struct {
+		Args []struct {
+			Value string `json:"value"`
+		} `json:"args"`
+	}
+	s.NoError(json.Unmarshal([]byte(jobs[0].Payload), &payload))
+	s.Require().Len(payload.Args, 1)
+	var item struct {
+		Tries int `json:"tries"`
+	}
+	s.NoError(json.Unmarshal([]byte(payload.Args[0].Value), &item))
+	s.Equal(3, item.Tries)
+}
+
 // countBroadcastEvents returns the number of "Broadcasting event" log entries
 // that carry the given OrderData marker. Each entry corresponds to exactly one
 // broadcast attempt by the log driver. Counting only entries that contain the
