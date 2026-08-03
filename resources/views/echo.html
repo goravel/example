@@ -311,6 +311,7 @@
             var type = channelTypeFromName(name);
             var dataStr = document.getElementById('dispatchData').value;
             var payload = { channel_type: type, channel: name };
+            payload.broadcast_now = document.getElementById('dispatchBroadcastNow').checked;
 
             function val(id) { var el = document.getElementById(id); return el && el.value ? el.value : ''; }
             function setIf(id, key) { var v = val(id); if (v) payload[key] = v; }
@@ -323,18 +324,12 @@
                 } else {
                     payload.order_data = data;
                     payload.should_fire = document.getElementById('dispatchShouldFire').checked;
-                    if (type === 'public') {
-                        payload.broadcast_now = true;
-                    } else {
-                        payload.broadcast_now = document.getElementById('dispatchBroadcastNow').checked;
-                    }
                     setIf('dispatchQueueConn', 'queue_conn');
                     setIf('dispatchQueueName', 'queue_name');
                     setInt('dispatchTimeout', 'timeout');
                     setInt('dispatchDelay', 'delay');
-                    // tries/backoff only take effect on the queued (private) path:
-                    // dispatchPublic forces broadcast_now=true and dispatchPresence
-                    // uses TeamPresenceBroadcast — both ignore them.
+                    // tries/backoff only take effect on the queued private path: dispatchPublic
+                    // and dispatchPresence don't forward them, and sync broadcasts never retry.
                     if (type === 'private') {
                         setInt('dispatchTries', 'tries');
                         var backoff = val('dispatchBackoff');

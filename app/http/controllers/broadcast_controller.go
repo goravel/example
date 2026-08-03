@@ -132,8 +132,9 @@ func (c *BroadcastController) dispatchPresence(ctx http.Context, req *DispatchRe
 		}
 	}
 	err := facades.Broadcast().Dispatch(context.Background(), &events.TeamPresenceBroadcast{
-		TeamData:    req.TeamData,
-		ChannelName: stripPresencePrefix(req.Channel),
+		TeamData:           req.TeamData,
+		ChannelName:        stripPresencePrefix(req.Channel),
+		ShouldBroadcastNow: req.BroadcastNow,
 	})
 	if err != nil {
 		return ctx.Response().Json(http.StatusInternalServerError, http.Json{"error": err.Error()})

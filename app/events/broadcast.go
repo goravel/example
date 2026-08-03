@@ -96,8 +96,9 @@ func (e *EmptyBroadcastEvent) BroadcastWhen() bool {
 }
 
 type TeamPresenceBroadcast struct {
-	TeamData    map[string]any
-	ChannelName string
+	TeamData           map[string]any
+	ChannelName        string
+	ShouldBroadcastNow bool
 }
 
 func (e *TeamPresenceBroadcast) BroadcastOn() []contracts.Channel {
@@ -116,4 +117,8 @@ func (e *TeamPresenceBroadcast) BroadcastWith() map[string]any {
 
 func (e *TeamPresenceBroadcast) BroadcastWhen() bool {
 	return true
+}
+
+func (e *TeamPresenceBroadcast) BroadcastNow() bool {
+	return e.ShouldBroadcastNow
 }
