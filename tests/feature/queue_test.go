@@ -170,6 +170,46 @@ func (s *QueueTestSuite) TestReleaseBasedRetry() {
 	s.Equal([]any{"retryable", "retryable", "retryable"}, jobs.TestRetryableResult)
 }
 
+func (s *QueueTestSuite) TestReleaseBasedRetryExhausted() {
+	if facades.Config().GetString("queue.default") == "sync" {
+		s.T().Skip("skip test due to only for non-sync")
+	}
+
+	// neverSucceed=true forces Handle to always fail, so ShouldRetry is the
+	// only terminator. With failUntil=2, ShouldRetry returns true for
+	// attempts 1-2 and false for attempt 3, causing the job to land in
+	// failed_jobs after 3 handle calls.
+	jobs.TestRetryableNeverSucceed = true
+	s.NoError(facades.Queue().Job(jobs.NewTestRetryable(2), []contractsqueue.Arg{
+		{Type: "string", Value: "exhausted"},
+	}).Dispatch())
+
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Queue:      "default",
+		Concurrent: 1,
+	})
+	go func() { _ = worker.Run() }()
+	defer func() { _ = worker.Shutdown() }()
+
+	// The job exhausts retries and lands in failed_jobs. Poll the failer
+	// until the signature appears.
+	s.Require().Eventually(func() bool {
+		failedJobs, err := facades.Queue().Failer().All()
+		if err != nil {
+			return false
+		}
+		for _, fj := range failedJobs {
+			if fj.Signature() == "test_retryable" {
+				return true
+			}
+		}
+		return false
+	}, 10*time.Second, 25*time.Millisecond, "expected test_retryable to land in failed_jobs")
+
+	// 3 Handle calls (attempts 1,2,3 → all fail), then ShouldRetry gives up.
+	s.Equal([]any{"exhausted", "exhausted", "exhausted"}, jobs.TestRetryableResult)
+}
+
 var (
 	testQueueArgs = []contractsqueue.Arg{
 		{

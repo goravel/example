@@ -9,12 +9,15 @@ import (
 var (
 	// TestRetryableResult records the arguments received by TestRetryable.Handle.
 	// TestRetryableFailUntil is the attempt count up to which Handle fails.
+	// TestRetryableNeverSucceed makes Handle always fail, so ShouldRetry is the
+	// sole terminator (used to test the retry-exhausted path).
 	//
-	// Both are package globals (like TestResult/TestErrResult) because queue
+	// All are package globals (like TestResult/TestErrResult) because queue
 	// dispatch resolves jobs by signature: the worker always constructs a fresh
 	// &TestRetryable{}, so instance state set at dispatch time never reaches it.
-	TestRetryableResult    []any
-	TestRetryableFailUntil int
+	TestRetryableResult       []any
+	TestRetryableFailUntil    int
+	TestRetryableNeverSucceed bool
 
 	testRetryableMu sync.Mutex
 )
@@ -39,6 +42,7 @@ func ResetTestRetryable() {
 
 	TestRetryableResult = nil
 	TestRetryableFailUntil = 0
+	TestRetryableNeverSucceed = false
 }
 
 // TestRetryableResultLen returns the current number of records in
@@ -56,8 +60,9 @@ func (r *TestRetryable) Signature() string {
 	return "test_retryable"
 }
 
-// Handle executes the job, recording args into TestRetryableResult and
-// failing while len(TestRetryableResult) <= TestRetryableFailUntil.
+// Handle executes the job, recording args into TestRetryableResult. It
+// fails when TestRetryableNeverSucceed is true, or while
+// len(TestRetryableResult) <= TestRetryableFailUntil.
 func (r *TestRetryable) Handle(args ...any) error {
 	// args is a per-invocation parameter, so len(args) needs no
 	// synchronization and is checked before acquiring the mutex.
@@ -70,16 +75,17 @@ func (r *TestRetryable) Handle(args ...any) error {
 	testRetryableMu.Lock()
 	defer testRetryableMu.Unlock()
 
-	if len(TestRetryableResult) <= TestRetryableFailUntil {
+	if TestRetryableNeverSucceed || len(TestRetryableResult) <= TestRetryableFailUntil {
 		return errors.New("test retryable error")
 	}
 
 	return nil
 }
 
-// ShouldRetry implements queue.JobWithShouldRetry. It retries with a 100ms
-// delay while the attempt count is within TestRetryableFailUntil, and gives
-// up afterwards, matching Handle's failure window.
+// ShouldRetry implements queue.JobWithShouldRetry. It retries while the
+// attempt count is within TestRetryableFailUntil, and gives up afterwards,
+// matching Handle's failure window. The 100ms delay is truncated to 0s by
+// the database queue driver, which only supports second resolution.
 func (r *TestRetryable) ShouldRetry(err error, attempt int) (bool, time.Duration) {
 	// TestRetryableFailUntil is set once at dispatch time and never mutated
 	// during the run, so a plain read without the mutex is safe here.
