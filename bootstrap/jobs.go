@@ -10,5 +10,6 @@ func Jobs() []queue.Job {
 	return []queue.Job{
 		&jobs.Test{},
 		&jobs.TestErr{},
+		&jobs.TestRetryable{},
 	}
 }
