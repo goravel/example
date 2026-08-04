@@ -993,7 +993,7 @@ func (s *BroadcastTestSuite) TestDispatch_WithTriesAndBackoff() {
 		// config would silently change this test's behavior.
 		Conns:     []string{"log", "broken"},
 		Tries:     3,
-		Backoff:   []time.Duration{1 * time.Second, 2 * time.Second},
+		Backoff:   []time.Duration{100 * time.Millisecond, 200 * time.Millisecond},
 		OrderData: map[string]any{"id": 1, "name": "Retryable Broadcast"},
 	}))
 
@@ -1014,7 +1014,7 @@ func (s *BroadcastTestSuite) TestDispatch_WithTriesAndBackoff() {
 	}
 	s.NoError(json.Unmarshal([]byte(payload.Args[0].Value), &item))
 	s.Equal(3, item.Tries)
-	s.Equal([]int64{1000, 2000}, item.Backoff)
+	s.Equal([]int64{100, 200}, item.Backoff)
 
 	before := s.countBroadcastEvents("Retryable Broadcast")
 	worker := facades.Queue().Worker(contractsqueue.Args{
@@ -1031,9 +1031,9 @@ func (s *BroadcastTestSuite) TestDispatch_WithTriesAndBackoff() {
 	// completion signal is the failed job landing in the failer. Poll with a
 	// bounded timeout instead of a fixed sleep so a slow worker can't strand
 	// the job or mask a startup failure.
-	elapsed, ok := s.waitForFailedBroadcast(start, 10*time.Second)
+	elapsed, ok := s.waitForFailedBroadcast(start, 5*time.Second)
 	_ = worker.Shutdown()
-	s.Require().True(ok, "expected goravel_broadcast job to fail within 10s")
+	s.Require().True(ok, "expected goravel_broadcast job to fail within 5s")
 	s.NoError(<-workerErr, "worker should start and stop cleanly")
 
 	// The worker releases the job back to the queue between retries
@@ -1043,10 +1043,10 @@ func (s *BroadcastTestSuite) TestDispatch_WithTriesAndBackoff() {
 	s.NoError(err)
 	s.Equal(int64(0), count, "job should be consumed")
 
-	// Without the 1s+2s release delays this would be ~0 and FAIL; the upper
-	// bound catches pathological slowness.
-	s.GreaterOrEqual(elapsed, 3*time.Second, "1s + 2s backoff should have elapsed before the final attempt")
-	s.Less(elapsed, 8*time.Second, "retries should complete within 8s")
+	// Without the 100ms+200ms release delays this would be ~0 and FAIL; the
+	// upper bound catches pathological slowness.
+	s.GreaterOrEqual(elapsed, 300*time.Millisecond, "100ms + 200ms backoff should have elapsed before the final attempt")
+	s.Less(elapsed, 5*time.Second, "retries should complete within 5s")
 	s.Equal(before+3, s.countBroadcastEvents("Retryable Broadcast"),
 		"event BroadcastTries=3 should override worker Tries=1")
 }
