@@ -1036,16 +1036,17 @@ func (s *BroadcastTestSuite) TestDispatch_WithTriesAndBackoff() {
 	s.Require().True(ok, "expected goravel_broadcast job to fail within 5s")
 	s.NoError(<-workerErr, "worker should start and stop cleanly")
 
-	// The worker pops the job from the jobs table before retries run in-process,
-	// so jobs==0 alone is not a timing signal — keep it as a separate check.
+	// The worker releases the job back to the queue between retries
+	// (Release(delay)), so jobs==0 alone is not a timing signal — keep it as a
+	// separate check.
 	count, err := facades.DB().Table("jobs").Count()
 	s.NoError(err)
 	s.Equal(int64(0), count, "job should be consumed")
 
-	// Without the 100ms+200ms backoff sleeps this would be ~0 and FAIL; the
+	// Without the 100ms+200ms release delays this would be ~0 and FAIL; the
 	// upper bound catches pathological slowness.
-	s.GreaterOrEqual(elapsed, 300*time.Millisecond, "100ms + 200ms backoff should have slept before the final attempt")
-	s.Less(elapsed, 3*time.Second, "retries should complete quickly")
+	s.GreaterOrEqual(elapsed, 300*time.Millisecond, "100ms + 200ms backoff should have elapsed before the final attempt")
+	s.Less(elapsed, 5*time.Second, "retries should complete within 5s")
 	s.Equal(before+3, s.countBroadcastEvents("Retryable Broadcast"),
 		"event BroadcastTries=3 should override worker Tries=1")
 }
@@ -1267,8 +1268,9 @@ func (s *BroadcastTestSuite) countBroadcastEvents(marker string) int {
 // waitForFailedBroadcast polls the queue failer until a failed goravel_broadcast
 // job appears (the queued broadcast always fails via the phantom "broken"
 // connection), returning the elapsed time since start. The failure is recorded
-// by the worker's failed-job processor after all in-process retries are
-// exhausted, so its appearance in the failer is the reliable completion signal —
+// by the worker's failed-job processor after all retries (in-process or
+// release-based) are exhausted, so its appearance in the failer is the
+// reliable completion signal —
 // unlike the jobs table, which the worker empties before retries run. Returns
 // ok=false if the timeout elapses.
 //

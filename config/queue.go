@@ -26,12 +26,18 @@ func init() {
 				"connection": "sqlite",
 				"queue":      "default",
 				"concurrent": 5,
+				// Retry_after is the number of seconds a job is reserved for before a
+				// crashed worker's reservation expires and the job is recovered by
+				// other workers. It must exceed the maximum job runtime.
+				"retry_after": 60,
 			},
 			"redis1": map[string]any{
 				"driver":     "custom",
 				"connection": "default",
 				"queue":      "default",
 				"concurrent": 5,
+				// retry_after: crashed-worker reservation expiry window (seconds), see database comment above
+				"retry_after": 60,
 				"via": func() (queue.Driver, error) {
 					return redisfacades.Queue("redis1") // The `redis` value is the key of `connections`
 				},
@@ -41,6 +47,8 @@ func init() {
 				"connection": "default",
 				"queue":      "default",
 				"concurrent": 5,
+				// retry_after: crashed-worker reservation expiry window (seconds), see database comment above
+				"retry_after": 60,
 				"via": func() (queue.Driver, error) {
 					return redisfacades.Queue("redis") // The `redis` value is the key of `connections`
 				},

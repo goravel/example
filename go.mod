@@ -8,7 +8,7 @@ require (
 	github.com/goravel/cos v1.18.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.18.0
-	github.com/goravel/framework v1.18.1-0.20260802085640-2aa82fd133a7
+	github.com/goravel/framework v1.18.1-0.20260804104356-c0b610b049d7
 	github.com/goravel/gemini v1.18.0
 	github.com/goravel/gin v1.18.0
 	github.com/goravel/minio v1.18.0
@@ -16,7 +16,7 @@ require (
 	github.com/goravel/openai v1.18.0
 	github.com/goravel/oss v1.18.0
 	github.com/goravel/postgres v1.18.0
-	github.com/goravel/redis v1.18.0
+	github.com/goravel/redis v1.18.1-0.20260804080002-ea3e2dcfbdf6
 	github.com/goravel/s3 v1.18.0
 	github.com/goravel/sqlite v1.18.0
 	github.com/goravel/sqlserver v1.18.0
@@ -32,7 +32,7 @@ require (
 	go.opentelemetry.io/otel v1.44.0
 	go.opentelemetry.io/otel/metric v1.44.0
 	go.opentelemetry.io/otel/trace v1.44.0
-	google.golang.org/grpc v1.82.1
+	google.golang.org/grpc v1.83.0
 	google.golang.org/protobuf v1.36.11
 )
 
@@ -41,7 +41,7 @@ require (
 	atomicgo.dev/keyboard v0.2.9 // indirect
 	atomicgo.dev/schedule v0.1.0 // indirect
 	cloud.google.com/go v0.116.0 // indirect
-	cloud.google.com/go/auth v0.9.3 // indirect
+	cloud.google.com/go/auth v0.18.2 // indirect
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
@@ -120,13 +120,13 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
-	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/google/s2a-go v0.1.8 // indirect
+	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/googleapis/enterprise-certificate-proxy v0.3.4 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.11 // indirect
+	github.com/googleapis/gax-go/v2 v2.17.0 // indirect
 	github.com/gookit/color v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
@@ -212,7 +212,6 @@ require (
 	github.com/xrash/smetrics v0.0.0-20250705151800-55b8f293f342 // indirect
 	github.com/zeebo/xxh3 v1.1.0 // indirect
 	go.mongodb.org/mongo-driver/v2 v2.5.0 // indirect
-	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.69.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.69.0 // indirect
@@ -236,14 +235,14 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/arch v0.22.0 // indirect
 	golang.org/x/crypto v0.54.0 // indirect
-	golang.org/x/exp v0.0.0-20260718201538-764159d718ef // indirect
+	golang.org/x/exp v0.0.0-20260727155853-b88d891fe743 // indirect
 	golang.org/x/mod v0.38.0 // indirect
 	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/text v0.40.0 // indirect
-	golang.org/x/time v0.12.0 // indirect
+	golang.org/x/time v0.14.0 // indirect
 	golang.org/x/tools v0.48.0 // indirect
 	google.golang.org/genai v1.58.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa // indirect
@@ -256,5 +255,4 @@ require (
 	gorm.io/gorm v1.31.2 // indirect
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
-
-replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20260802085640-2aa82fd133a7
+replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20260804104356-c0b610b049d7

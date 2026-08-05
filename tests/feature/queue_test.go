@@ -28,6 +28,7 @@ func TestQueueTestSuite(t *testing.T) {
 func (s *QueueTestSuite) SetupTest() {
 	jobs.TestResult = nil
 	jobs.TestErrResult = nil
+	jobs.ResetTestRetryable()
 }
 
 // TearDownTest will run after each test in the suite.
@@ -135,6 +136,78 @@ func (s *QueueTestSuite) TestFailedJobAndRetry() {
 	time.Sleep(1 * time.Second)
 
 	s.Equal([]any{"test", "test"}, jobs.TestErrResult)
+}
+
+func (s *QueueTestSuite) TestReleaseBasedRetry() {
+	if facades.Config().GetString("queue.default") == "sync" {
+		s.T().Skip("skip test due to only for non-sync")
+	}
+
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Queue:      "default",
+		Concurrent: 1,
+	})
+	go func() { _ = worker.Run() }()
+	defer func() { _ = worker.Shutdown() }()
+
+	// The job fails the first two attempts and succeeds on the third, proving
+	// the reserved job is released back to the queue (Release(delay)) with its
+	// attempt count preserved instead of being retried purely in-process.
+	s.NoError(facades.Queue().Job(jobs.NewTestRetryable(2), []contractsqueue.Arg{
+		{
+			Type:  "string",
+			Value: "retryable",
+		},
+	}).Dispatch())
+
+	// Wait for all three attempts. Eventually fails loudly on timeout, and
+	// TestRetryableResultLen reads the shared slice under the mutex so the
+	// poll does not race Handle's append.
+	s.Require().Eventually(func() bool {
+		return jobs.TestRetryableResultLen() >= 3
+	}, 5*time.Second, 25*time.Millisecond)
+
+	s.Equal([]any{"retryable", "retryable", "retryable"}, jobs.TestRetryableResult)
+}
+
+func (s *QueueTestSuite) TestReleaseBasedRetryExhausted() {
+	if facades.Config().GetString("queue.default") == "sync" {
+		s.T().Skip("skip test due to only for non-sync")
+	}
+
+	// neverSucceed=true forces Handle to always fail, so ShouldRetry is the
+	// only terminator. With failUntil=2, ShouldRetry returns true for
+	// attempts 1-2 and false for attempt 3, causing the job to land in
+	// failed_jobs after 3 handle calls.
+	jobs.TestRetryableNeverSucceed = true
+	s.NoError(facades.Queue().Job(jobs.NewTestRetryable(2), []contractsqueue.Arg{
+		{Type: "string", Value: "exhausted"},
+	}).Dispatch())
+
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Queue:      "default",
+		Concurrent: 1,
+	})
+	go func() { _ = worker.Run() }()
+	defer func() { _ = worker.Shutdown() }()
+
+	// The job exhausts retries and lands in failed_jobs. Poll the failer
+	// until the signature appears.
+	s.Require().Eventually(func() bool {
+		failedJobs, err := facades.Queue().Failer().All()
+		if err != nil {
+			return false
+		}
+		for _, fj := range failedJobs {
+			if fj.Signature() == "test_retryable" {
+				return true
+			}
+		}
+		return false
+	}, 10*time.Second, 25*time.Millisecond, "expected test_retryable to land in failed_jobs")
+
+	// 3 Handle calls (attempts 1,2,3 → all fail), then ShouldRetry gives up.
+	s.Equal([]any{"exhausted", "exhausted", "exhausted"}, jobs.TestRetryableResult)
 }
 
 var (
