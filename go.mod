@@ -8,7 +8,7 @@ require (
 	github.com/goravel/cos v1.18.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.18.0
-	github.com/goravel/framework v1.18.1-0.20260804104356-c0b610b049d7
+	github.com/goravel/framework v1.18.1-0.20260805080351-d2e95f66f306
 	github.com/goravel/gemini v1.18.0
 	github.com/goravel/gin v1.18.0
 	github.com/goravel/minio v1.18.0
@@ -255,4 +255,5 @@ require (
 	gorm.io/gorm v1.31.2 // indirect
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
-replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20260804104356-c0b610b049d7
+
+replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20260805080351-d2e95f66f306
