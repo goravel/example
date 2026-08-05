@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/goravel/framework/broadcasting"
-	contracts "github.com/goravel/framework/contracts/broadcasting"
 )
 
 type OrderShippedBroadcast struct {
@@ -22,13 +21,13 @@ type OrderShippedBroadcast struct {
 	ChannelName        string
 }
 
-func (e *OrderShippedBroadcast) BroadcastOn() []contracts.Channel {
+func (e *OrderShippedBroadcast) BroadcastOn() []string {
 	if e.ChannelType == "public" {
-		return []contracts.Channel{
+		return []string{
 			broadcasting.PublicChannel(e.ChannelName),
 		}
 	}
-	return []contracts.Channel{
+	return []string{
 		broadcasting.PrivateChannel(e.ChannelName),
 	}
 }
@@ -79,7 +78,7 @@ func (e *OrderShippedBroadcast) BroadcastNow() bool {
 
 type EmptyBroadcastEvent struct{}
 
-func (e *EmptyBroadcastEvent) BroadcastOn() []contracts.Channel {
+func (e *EmptyBroadcastEvent) BroadcastOn() []string {
 	return nil
 }
 
@@ -108,8 +107,8 @@ type TeamPresenceBroadcast struct {
 	Backoff            []time.Duration
 }
 
-func (e *TeamPresenceBroadcast) BroadcastOn() []contracts.Channel {
-	return []contracts.Channel{
+func (e *TeamPresenceBroadcast) BroadcastOn() []string {
+	return []string{
 		broadcasting.PresenceChannel(e.ChannelName),
 	}
 }

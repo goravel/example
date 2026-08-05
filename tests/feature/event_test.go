@@ -246,6 +246,50 @@ func (s *EventTestSuite) TestCommandMakeEvent() {
 	s.True(file.Contains(nestedPath, "type "+nestedEventName+" struct {"))
 }
 
+func (s *EventTestSuite) TestCommandMakeEventBroadcast() {
+	eventName := s.uniqueName("EventBroadcast")
+	eventPath := path.App("events", str.Of(eventName).Snake().String()+".go")
+
+	s.NoError(os.RemoveAll(eventPath))
+	s.T().Cleanup(func() {
+		s.NoError(os.RemoveAll(eventPath))
+	})
+
+	s.NoError(facades.Artisan().Call("--no-ansi make:event --broadcast " + eventName))
+	s.True(file.Exists(eventPath))
+	s.True(file.Contains(eventPath, `"github.com/goravel/framework/contracts/broadcasting"`))
+	s.True(file.Contains(eventPath, "var _ broadcasting.ShouldBroadcast = (*"+eventName+")(nil)"))
+	s.True(file.Contains(eventPath, "func (receiver *"+eventName+") BroadcastOn() []string {"))
+	s.True(file.Contains(eventPath, "func (receiver *"+eventName+") BroadcastAs() string {"))
+	s.True(file.Contains(eventPath, "func (receiver *"+eventName+") BroadcastWith() map[string]any {"))
+	s.True(file.Contains(eventPath, "func (receiver *"+eventName+") BroadcastWhen() bool {"))
+	s.False(file.Contains(eventPath, `"github.com/goravel/framework/contracts/event"`))
+	s.False(file.Contains(eventPath, "Handle("))
+	s.False(file.Contains(eventPath, "BroadcastNow()"))
+}
+
+func (s *EventTestSuite) TestCommandMakeEventBroadcastNow() {
+	eventName := s.uniqueName("EventBroadcastNow")
+	eventPath := path.App("events", str.Of(eventName).Snake().String()+".go")
+
+	s.NoError(os.RemoveAll(eventPath))
+	s.T().Cleanup(func() {
+		s.NoError(os.RemoveAll(eventPath))
+	})
+
+	s.NoError(facades.Artisan().Call("--no-ansi make:event --broadcast --now " + eventName))
+	s.True(file.Exists(eventPath))
+	s.True(file.Contains(eventPath, `"github.com/goravel/framework/contracts/broadcasting"`))
+	s.True(file.Contains(eventPath, "var _ broadcasting.ShouldBroadcast = (*"+eventName+")(nil)"))
+	s.True(file.Contains(eventPath, "func (receiver *"+eventName+") BroadcastOn() []string {"))
+	s.True(file.Contains(eventPath, "func (receiver *"+eventName+") BroadcastAs() string {"))
+	s.True(file.Contains(eventPath, "func (receiver *"+eventName+") BroadcastWith() map[string]any {"))
+	s.True(file.Contains(eventPath, "func (receiver *"+eventName+") BroadcastWhen() bool {"))
+	s.True(file.Contains(eventPath, "func (receiver *"+eventName+") BroadcastNow() bool {\n\treturn true\n}"))
+	s.False(file.Contains(eventPath, `"github.com/goravel/framework/contracts/event"`))
+	s.False(file.Contains(eventPath, "Handle("))
+}
+
 func (s *EventTestSuite) TestCommandMakeListener() {
 	listenerName := s.uniqueName("ListenerFeature")
 	nestedPackage := s.uniqueName("ListenerFeatureNested")
