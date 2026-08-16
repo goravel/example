@@ -39,3 +39,15 @@ func (r *UserTag) Scan(value any) error {
 func (r *UserTag) Value() (driver.Value, error) {
 	return json.Marshal(r)
 }
+
+// RouteNotificationFor resolves the delivery address per channel.
+func (r *User) RouteNotificationFor(channel string) any {
+	switch channel {
+	case "mail":
+		return r.Mail
+	case "database":
+		return r.ID
+	default:
+		return nil
+	}
+}
