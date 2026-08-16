@@ -4,8 +4,6 @@ import (
 	"database/sql/driver"
 	"errors"
 
-	"github.com/spf13/cast"
-
 	"github.com/goravel/framework/database/orm"
 	"github.com/goravel/framework/support/json"
 )
@@ -48,7 +46,7 @@ func (r *User) RouteNotificationFor(channel string) any {
 	case "mail":
 		return r.Mail
 	case "database":
-		return cast.ToString(r.ID)
+		return r.ID
 	default:
 		return nil
 	}

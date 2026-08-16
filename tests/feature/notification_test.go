@@ -5,13 +5,19 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
+	sqlitefacades "github.com/goravel/sqlite/facades"
 	"github.com/spf13/cast"
 	"github.com/stretchr/testify/suite"
 
+	contractsdriver "github.com/goravel/framework/contracts/database/driver"
+	contractsschema "github.com/goravel/framework/contracts/database/schema"
 	"github.com/goravel/framework/contracts/notification"
+	contractsqueue "github.com/goravel/framework/contracts/queue"
 	frameworkerrors "github.com/goravel/framework/errors"
 	"github.com/goravel/framework/support/file"
 	"github.com/goravel/framework/support/path"
@@ -73,52 +79,143 @@ func (s *NotificationTestSuite) TestSendDatabaseNotification() {
 }
 
 // TestSendNowDatabaseNotification covers Manager.SendNow delivering
-// synchronously.
+// synchronously. SendNow always calls dispatchSync even for notifications
+// implementing ShouldQueue, so with the async database queue driver and no
+// workers running the notification row appears immediately and the jobs
+// table stays empty.
 func (s *NotificationTestSuite) TestSendNowDatabaseNotification() {
 	user := &models.User{Name: "Now"}
 	s.Require().NoError(facades.Orm().Query().Create(user))
 
-	s.NoError(facades.Notification().SendNow(user, notifications.NewWelcome("Now")))
+	// Use the async database queue driver and disable the booted queue
+	// workers so a queued notification could never be delivered by a
+	// background runner.
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default":        "database",
+		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	s.NoError(facades.Notification().SendNow(user, notifications.NewOrderProcessed("Now")))
 
 	var rows []notificationRow
 	s.NoError(facades.DB().Table("notifications").Get(&rows))
 	s.Require().Len(rows, 1)
 	s.Equal(cast.ToString(user.ID), rows[0].NotifiableID)
-	s.Contains(rows[0].Data, "Welcome Now")
+	s.Contains(rows[0].Data, "Now")
+
+	// SendNow must not have queued anything.
+	jobsCount, err := facades.DB().Table("jobs").Count()
+	s.NoError(err)
+	s.Equal(int64(0), jobsCount)
 }
 
-// TestSendQueuedDatabaseNotification covers the ShouldQueue contract
-// (default queue/connection) via the queued-dispatch round-trip. The
-// example's default queue driver is sync, so Delivery executes inline and
-// the row is visible once Send returns.
+// TestSendQueuedDatabaseNotification covers the ShouldQueue contract via the
+// async database queue driver: Send must leave the notification undelivered
+// (no row yet) and enqueue exactly one job, which an in-test worker then
+// delivers.
 func (s *NotificationTestSuite) TestSendQueuedDatabaseNotification() {
 	user := &models.User{Name: "Queued"}
 	s.Require().NoError(facades.Orm().Query().Create(user))
 
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default":        "database",
+		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
 	s.NoError(facades.Notification().Send(user, notifications.NewOrderProcessed("42")))
 
+	// The notification is queued, not delivered inline.
 	var rows []notificationRow
 	s.NoError(facades.DB().Table("notifications").Get(&rows))
-	s.Require().Len(rows, 1)
+	s.Require().Len(rows, 0)
+
+	// Empty OnQueue/OnConnection default to the "default" queue on the
+	// database connection.
+	var jobRows []jobRow
+	s.NoError(facades.DB().Table("jobs").Get(&jobRows))
+	s.Require().Len(jobRows, 1)
+	s.Equal("default", jobRows[0].Queue)
+
+	worker := facades.Queue().Worker(contractsqueue.Args{Queue: "default", Concurrent: 1})
+	workerErr := make(chan error, 1)
+	go func() { workerErr <- worker.Run() }()
+	var shutdownOnce sync.Once
+	defer func() { shutdownOnce.Do(func() { _ = worker.Shutdown() }) }()
+
+	s.Require().Eventually(func() bool {
+		rows = nil
+		if err := facades.DB().Table("notifications").Get(&rows); err != nil {
+			return false
+		}
+		return len(rows) == 1
+	}, 5*time.Second, 25*time.Millisecond)
 	s.Contains(rows[0].Type, "OrderProcessed")
 	s.Equal(cast.ToString(user.ID), rows[0].NotifiableID)
 	s.Contains(rows[0].Data, "42")
+
+	shutdownOnce.Do(func() { _ = worker.Shutdown() })
+	s.NoError(<-workerErr, "worker should start and stop cleanly")
+
+	// The job was consumed: the queue must be drained.
+	jobsCount, err := facades.DB().Table("jobs").Count()
+	s.NoError(err)
+	s.Equal(int64(0), jobsCount)
 }
 
 // TestSendQueuedDatabaseNotificationWithQueueAndConnection covers
-// ShouldQueue.OnQueue/OnConnection returning non-empty values. The sync
-// driver accepts an explicit connection/queue and still delivers inline.
+// ShouldQueue.OnQueue/OnConnection returning non-empty values. The
+// notification self-routes off the default sync connection onto the
+// database connection / "notifications" queue, so the job lands in the jobs
+// table and is only delivered by a worker consuming that exact queue.
 func (s *NotificationTestSuite) TestSendQueuedDatabaseNotificationWithQueueAndConnection() {
 	user := &models.User{Name: "Routed"}
 	s.Require().NoError(facades.Orm().Query().Create(user))
 
 	s.NoError(facades.Notification().Send(user, &routedQueuedNotification{}))
 
+	// Not delivered inline: the notification is queued.
 	var rows []notificationRow
 	s.NoError(facades.DB().Table("notifications").Get(&rows))
-	s.Require().Len(rows, 1)
+	s.Require().Len(rows, 0)
+
+	// OnConnection("database") + OnQueue("notifications") are both observable
+	// in the jobs table.
+	var jobRows []jobRow
+	s.NoError(facades.DB().Table("jobs").Get(&jobRows))
+	s.Require().Len(jobRows, 1)
+	s.Equal("notifications", jobRows[0].Queue)
+
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Connection: "database",
+		Queue:      "notifications",
+		Concurrent: 1,
+	})
+	workerErr := make(chan error, 1)
+	go func() { workerErr <- worker.Run() }()
+	var shutdownOnce sync.Once
+	defer func() { shutdownOnce.Do(func() { _ = worker.Shutdown() }) }()
+
+	s.Require().Eventually(func() bool {
+		rows = nil
+		if err := facades.DB().Table("notifications").Get(&rows); err != nil {
+			return false
+		}
+		return len(rows) == 1
+	}, 5*time.Second, 25*time.Millisecond)
 	s.Equal(cast.ToString(user.ID), rows[0].NotifiableID)
 	s.Contains(rows[0].Data, "routed")
+
+	shutdownOnce.Do(func() { _ = worker.Shutdown() })
+	s.NoError(<-workerErr, "worker should start and stop cleanly")
+
+	// The job was consumed: the queue must be drained.
+	jobsCount, err := facades.DB().Table("jobs").Count()
+	s.NoError(err)
+	s.Equal(int64(0), jobsCount)
 }
 
 // TestOnDemandNotification covers Manager.Route + OnDemandNotifiable.Notify.
@@ -187,6 +284,49 @@ func (s *NotificationTestSuite) TestDatabaseRoutableConnection() {
 	count, err := facades.DB().Table("notifications").Count()
 	s.NoError(err)
 	s.Equal(int64(1), count)
+}
+
+// TestDatabaseRoutableCustomConnection covers DatabaseRoutable.DatabaseConnection
+// returning a non-empty name: delivery is routed to that connection and the
+// default connection stays untouched.
+func (s *NotificationTestSuite) TestDatabaseRoutableCustomConnection() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"database.connections.reporting": map[string]any{
+			"database": filepath.Join(s.T().TempDir(), "reporting.db"),
+			"prefix":   "",
+			"singular": false,
+			"via": func() (contractsdriver.Driver, error) {
+				return sqlitefacades.Sqlite("reporting")
+			},
+		},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	// Mirror database/migrations/20260805000001_create_notifications_table.go
+	// on the reporting connection; keep this blueprint in sync with that
+	// migration if it changes.
+	s.Require().NoError(facades.Schema().Connection("reporting").Create("notifications", func(table contractsschema.Blueprint) {
+		table.String("id", 36)
+		table.Primary("id")
+		table.String("type")
+		table.String("notifiable_type")
+		table.String("notifiable_id")
+		table.Text("data")
+		table.Timestamp("read_at").Nullable()
+		table.Timestamps()
+		table.Index("notifiable_type", "notifiable_id")
+	}))
+
+	s.NoError(facades.Notification().Route("database", "101").NotifyNow(&reportingRoutableNotification{}))
+
+	count, err := facades.DB().Connection("reporting").Table("notifications").Count()
+	s.NoError(err)
+	s.Equal(int64(1), count)
+
+	count, err = facades.DB().Table("notifications").Count()
+	s.NoError(err)
+	s.Equal(int64(0), count)
 }
 
 // TestCustomChannel covers Manager.Extend + Channel.Name/Channel.Send with a
@@ -404,6 +544,11 @@ type notificationRow struct {
 	Data           string `db:"data"`
 }
 
+// jobRow mirrors the jobs table column asserted in the queue tests.
+type jobRow struct {
+	Queue string `db:"queue"`
+}
+
 // ---- Test-local notifications / channels / notifiables ----
 
 // routedQueuedNotification implements ShouldQueue with non-empty
@@ -419,7 +564,7 @@ func (r *routedQueuedNotification) ToDatabase(notifiable notification.Notifiable
 }
 
 func (r *routedQueuedNotification) OnQueue() string      { return "notifications" }
-func (r *routedQueuedNotification) OnConnection() string { return "sync" }
+func (r *routedQueuedNotification) OnConnection() string { return "database" }
 
 // shouldSendNotification implements NotificationWithShouldSend.
 type shouldSendNotification struct {
@@ -467,6 +612,20 @@ func (r *databaseRoutableNotification) ToDatabase(notifiable notification.Notifi
 }
 
 func (r *databaseRoutableNotification) DatabaseConnection() string { return "" }
+
+// reportingRoutableNotification implements DatabaseRoutable using a custom
+// "reporting" connection.
+type reportingRoutableNotification struct{}
+
+func (r *reportingRoutableNotification) Via(notifiable notification.Notifiable) []string {
+	return []string{"database"}
+}
+
+func (r *reportingRoutableNotification) ToDatabase(notifiable notification.Notifiable) map[string]any {
+	return map[string]any{"message": "reporting"}
+}
+
+func (r *reportingRoutableNotification) DatabaseConnection() string { return "reporting" }
 
 // captureChannel implements notification.Channel with an observable Send
 // side effect.
