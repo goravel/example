@@ -354,32 +354,18 @@ func (s *NotificationTestSuite) TestSendToUnknownChannel() {
 // Notifiable.RouteNotificationFor("mail") against a real SMTP server.
 // Skipped when mail.host is unset (resolved from config, which loads .env).
 func (s *NotificationTestSuite) TestSendMailNotification() {
-	if facades.Config().GetString("mail.host") == "" {
-		s.T().Skip("skipping mail notification test: set MAIL_HOST to run against a real SMTP server")
-	}
-	mailTo := os.Getenv("MAIL_TO") // MAIL_TO is intentionally env-only (not a mail config key)
-	if mailTo == "" {
-		mailTo = facades.Config().GetString("mail.from.address")
-	}
-	s.Require().NotEmpty(mailTo)
+	mailTo := s.mailRecipient()
 
-	s.NoError(facades.Notification().Send(&models.User{Mail: mailTo}, notifications.NewOrderShipped("42")))
+	s.NoError(facades.Notification().Send(&models.User{Mail: mailTo}, notifications.NewOrderShipped("notification-mail")))
 }
 
 // TestSendMailNotificationMailRoutable covers MailRoutable.RouteNotificationForMail
 // against a real SMTP server. Skipped when mail.host is unset (resolved from
 // config, which loads .env).
 func (s *NotificationTestSuite) TestSendMailNotificationMailRoutable() {
-	if facades.Config().GetString("mail.host") == "" {
-		s.T().Skip("skipping mail notification test: set MAIL_HOST to run against a real SMTP server")
-	}
-	mailTo := os.Getenv("MAIL_TO") // MAIL_TO is intentionally env-only (not a mail config key)
-	if mailTo == "" {
-		mailTo = facades.Config().GetString("mail.from.address")
-	}
-	s.Require().NotEmpty(mailTo)
+	mailTo := s.mailRecipient()
 
-	s.NoError(facades.Notification().Send(&mailRoutableNotifiable{to: mailTo}, notifications.NewOrderShipped("42")))
+	s.NoError(facades.Notification().Send(&mailRoutableNotifiable{to: mailTo}, notifications.NewOrderShipped("notification-mail-routable")))
 }
 
 // TestCommandMakeNotification covers the make:notification command: stub
@@ -505,6 +491,21 @@ func (s *NotificationTestSuite) TestCommandNotificationsTable() {
 	// generic prefix that the permanent notifications migration would match.
 	ts := strings.TrimSuffix(createdFiles[0], "_create_notifications_table.go")
 	s.Contains(string(updatedBootstrap), "&migrations.M"+ts+"CreateNotificationsTable{}")
+}
+
+// mailRecipient skips the test when mail is not configured and resolves the
+// recipient address: MAIL_TO env if set, otherwise the global
+// mail.from.address config.
+func (s *NotificationTestSuite) mailRecipient() string {
+	if facades.Config().GetString("mail.host") == "" {
+		s.T().Skip("skipping mail notification test: set MAIL_HOST to run against a real SMTP server")
+	}
+	mailTo := os.Getenv("MAIL_TO") // MAIL_TO is intentionally env-only (not a mail config key)
+	if mailTo == "" {
+		mailTo = facades.Config().GetString("mail.from.address")
+	}
+	s.Require().NotEmpty(mailTo)
+	return mailTo
 }
 
 func (s *NotificationTestSuite) uniqueName(prefix string) string {

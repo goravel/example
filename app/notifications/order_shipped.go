@@ -19,7 +19,7 @@ func (r *OrderShipped) Via(notifiable notification.Notifiable) []string {
 
 func (r *OrderShipped) ToMail(notifiable notification.Notifiable) notification.MailMessage {
 	return mail.NewMessage().
-		Subject("Your order has shipped").
+		Subject("Order " + r.OrderID + " has shipped").
 		Html("<p>Order " + r.OrderID + " has shipped.</p>").
 		Build()
 }
