@@ -3,7 +3,9 @@ package models
 import (
 	"database/sql/driver"
 	"errors"
+	"strconv"
 
+	"github.com/goravel/framework/contracts/notification"
 	"github.com/goravel/framework/database/orm"
 	"github.com/goravel/framework/support/json"
 )
@@ -40,14 +42,21 @@ func (r *UserTag) Value() (driver.Value, error) {
 	return json.Marshal(r)
 }
 
-// RouteNotificationFor resolves the delivery address per channel.
+// RouteNotificationForMail implements contracts/notification.MailRoutable:
+// the type-safe mail delivery route, preferred over RouteNotificationFor.
+func (r *User) RouteNotificationForMail(notification notification.Notification) map[string]string {
+	return map[string]string{r.Mail: r.Name}
+}
+
+// RouteNotificationForDatabase implements contracts/notification.DatabaseRoutable:
+// the type-safe database delivery route, preferred over RouteNotificationFor.
+func (r *User) RouteNotificationForDatabase() string {
+	return strconv.FormatUint(uint64(r.ID), 10)
+}
+
+// RouteNotificationFor resolves the delivery address per channel. The built-in
+// mail and database channels resolve via the typed interfaces above, so no
+// route is left to match on the channel name here.
 func (r *User) RouteNotificationFor(channel string) any {
-	switch channel {
-	case "mail":
-		return r.Mail
-	case "database":
-		return r.ID
-	default:
-		return nil
-	}
+	return nil
 }

@@ -55,8 +55,8 @@ func (s *NotificationTestSuite) SetupTest() {
 // both registered and unknown channel names.
 func (s *NotificationTestSuite) TestFacadeResolves() {
 	s.NotNil(facades.Notification())
-	s.NotNil(facades.Notification().Channel("database"))
-	s.NotNil(facades.Notification().Channel("mail"))
+	s.NotNil(facades.Notification().Channel(notification.ChannelDatabase))
+	s.NotNil(facades.Notification().Channel(notification.ChannelMail))
 	s.Nil(facades.Notification().Channel("slack"))
 }
 
@@ -220,7 +220,7 @@ func (s *NotificationTestSuite) TestSendQueuedDatabaseNotificationWithQueueAndCo
 
 // TestOnDemandNotification covers Manager.Route + OnDemandNotifiable.Notify.
 func (s *NotificationTestSuite) TestOnDemandNotification() {
-	s.NoError(facades.Notification().Route("database", "123").Notify(notifications.NewWelcome("OnDemand")))
+	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "123").Notify(notifications.NewWelcome("OnDemand")))
 
 	var rows []notificationRow
 	s.NoError(facades.DB().Table("notifications").Get(&rows))
@@ -238,7 +238,7 @@ func (s *NotificationTestSuite) TestOnDemandChainedRouteNotifyNow() {
 	manager.Extend(&captureChannel{name: channelName})
 
 	cn := &chainedViaNotification{channel: channelName}
-	s.NoError(manager.Route("database", "456").Route(channelName, "route").NotifyNow(cn))
+	s.NoError(manager.Route(notification.ChannelDatabase, "456").Route(channelName, "route").NotifyNow(cn))
 
 	var rows []notificationRow
 	s.NoError(facades.DB().Table("notifications").Get(&rows))
@@ -251,13 +251,13 @@ func (s *NotificationTestSuite) TestOnDemandChainedRouteNotifyNow() {
 // TestShouldSendSkipsChannel covers NotificationWithShouldSend: returning
 // false must skip delivery entirely (no row), true must deliver.
 func (s *NotificationTestSuite) TestShouldSendSkipsChannel() {
-	s.NoError(facades.Notification().Route("database", "789").NotifyNow(&shouldSendNotification{shouldSend: false}))
+	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "789").NotifyNow(&shouldSendNotification{shouldSend: false}))
 
 	count, err := facades.DB().Table("notifications").Count()
 	s.NoError(err)
 	s.Equal(int64(0), count)
 
-	s.NoError(facades.Notification().Route("database", "789").NotifyNow(&shouldSendNotification{shouldSend: true}))
+	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "789").NotifyNow(&shouldSendNotification{shouldSend: true}))
 
 	count, err = facades.DB().Table("notifications").Count()
 	s.NoError(err)
@@ -267,7 +267,7 @@ func (s *NotificationTestSuite) TestShouldSendSkipsChannel() {
 // TestAfterSendingHook covers NotificationWithAfterSending: the hook must
 // run after a successful channel delivery.
 func (s *NotificationTestSuite) TestAfterSendingHook() {
-	s.NoError(facades.Notification().Route("database", "1").NotifyNow(&afterSendingNotification{}))
+	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "1").NotifyNow(&afterSendingNotification{}))
 	s.True(afterSendingCalled)
 
 	count, err := facades.DB().Table("notifications").Count()
@@ -275,21 +275,23 @@ func (s *NotificationTestSuite) TestAfterSendingHook() {
 	s.Equal(int64(1), count)
 }
 
-// TestDatabaseRoutableConnection covers DatabaseRoutable.DatabaseConnection:
-// an empty connection name routes to the default connection and the row is
+// TestNotificationWithDatabaseConnectionDefault covers
+// NotificationWithDatabaseConnection.DatabaseConnection: an empty
+// connection name routes to the default connection and the row is
 // persisted there.
-func (s *NotificationTestSuite) TestDatabaseRoutableConnection() {
-	s.NoError(facades.Notification().Route("database", "101").NotifyNow(&databaseRoutableNotification{}))
+func (s *NotificationTestSuite) TestNotificationWithDatabaseConnectionDefault() {
+	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "101").NotifyNow(&defaultConnectionNotification{}))
 
 	count, err := facades.DB().Table("notifications").Count()
 	s.NoError(err)
 	s.Equal(int64(1), count)
 }
 
-// TestDatabaseRoutableCustomConnection covers DatabaseRoutable.DatabaseConnection
-// returning a non-empty name: delivery is routed to that connection and the
-// default connection stays untouched.
-func (s *NotificationTestSuite) TestDatabaseRoutableCustomConnection() {
+// TestNotificationWithDatabaseConnectionCustomConnection covers
+// NotificationWithDatabaseConnection.DatabaseConnection returning a
+// non-empty name: delivery is routed to that connection and the default
+// connection stays untouched.
+func (s *NotificationTestSuite) TestNotificationWithDatabaseConnectionCustomConnection() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"database.connections.reporting": map[string]any{
 			"database": filepath.Join(s.T().TempDir(), "reporting.db"),
@@ -318,7 +320,7 @@ func (s *NotificationTestSuite) TestDatabaseRoutableCustomConnection() {
 		table.Index("notifiable_type", "notifiable_id")
 	}))
 
-	s.NoError(facades.Notification().Route("database", "101").NotifyNow(&reportingRoutableNotification{}))
+	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "101").NotifyNow(&reportingConnectionNotification{}))
 
 	count, err := facades.DB().Connection("reporting").Table("notifications").Count()
 	s.NoError(err)
@@ -368,6 +370,60 @@ func (s *NotificationTestSuite) TestSendMailNotificationMailRoutable() {
 	s.NoError(facades.Notification().Send(&mailRoutableNotifiable{to: mailTo}, notifications.NewOrderShipped("notification-mail-routable")))
 }
 
+// TestDatabaseRoutableTypedRoute covers DatabaseRoutable.RouteNotificationForDatabase:
+// the typed route is preferred over RouteNotificationFor, so the persisted
+// NotifiableID comes from the typed route even when the generic route
+// returns a different value.
+func (s *NotificationTestSuite) TestDatabaseRoutableTypedRoute() {
+	s.NoError(facades.Notification().Send(
+		&databaseRoutableNotifiable{typed: "42", fallback: "wrong-route"},
+		notifications.NewWelcome("typed"),
+	))
+
+	var rows []notificationRow
+	s.NoError(facades.DB().Table("notifications").Get(&rows))
+	s.Require().Len(rows, 1)
+	s.Equal("42", rows[0].NotifiableID)
+}
+
+// TestDatabaseRoutableFallbackToGenericRoute covers the empty-typed-route
+// fallback: an empty RouteNotificationForDatabase result is not an error by
+// itself — the channel falls back to RouteNotificationFor(ChannelDatabase).
+func (s *NotificationTestSuite) TestDatabaseRoutableFallbackToGenericRoute() {
+	s.NoError(facades.Notification().Send(
+		&databaseRoutableNotifiable{typed: "", fallback: "43"},
+		notifications.NewWelcome("fallback"),
+	))
+
+	var rows []notificationRow
+	s.NoError(facades.DB().Table("notifications").Get(&rows))
+	s.Require().Len(rows, 1)
+	s.Equal("43", rows[0].NotifiableID)
+}
+
+// TestDatabaseRoutableEmptyRouteError covers the error path: only an empty
+// result from both RouteNotificationForDatabase and RouteNotificationFor is
+// an error.
+func (s *NotificationTestSuite) TestDatabaseRoutableEmptyRouteError() {
+	err := facades.Notification().Send(
+		&databaseRoutableNotifiable{},
+		notifications.NewWelcome("empty"),
+	)
+	s.ErrorIs(err, frameworkerrors.NotificationDatabaseEmptyRoute)
+}
+
+// TestSendMailNotificationEmptyRoute covers the reworded
+// NotificationMailEmptyRoute error: a notifiable with no mail route (and no
+// MailRoutable) errors in resolveAddresses before any SMTP send, so the
+// test runs even when mail.host is unset.
+func (s *NotificationTestSuite) TestSendMailNotificationEmptyRoute() {
+	err := facades.Notification().Send(
+		&mailEmptyRouteNotifiable{},
+		notifications.NewOrderShipped("empty-mail"),
+	)
+	s.ErrorIs(err, frameworkerrors.NotificationMailEmptyRoute)
+}
+
 // TestCommandMakeNotification covers the make:notification command: stub
 // generation, already-exists behavior, nested packages and the --database
 // variant.
@@ -392,6 +448,7 @@ func (s *NotificationTestSuite) TestCommandMakeNotification() {
 	s.True(file.Contains(notificationPath, "func (r *"+notificationName+") Via(notifiable notification.Notifiable) []string {"))
 	s.True(file.Contains(notificationPath, "func (r *"+notificationName+") ToMail(notifiable notification.Notifiable) notification.MailMessage {"))
 	s.True(file.Contains(notificationPath, `"github.com/goravel/framework/notification/mail"`))
+	s.True(file.Contains(notificationPath, "return []string{notification.ChannelMail}"))
 
 	originalContent, err := os.ReadFile(notificationPath)
 	s.NoError(err)
@@ -414,6 +471,7 @@ func (s *NotificationTestSuite) TestCommandMakeNotification() {
 	s.NoError(facades.Artisan().Call("--no-ansi make:notification --database " + databaseName))
 	s.True(file.Exists(databasePath))
 	s.True(file.Contains(databasePath, "func (r *"+databaseName+") ToDatabase(notifiable notification.Notifiable) map[string]any {"))
+	s.True(file.Contains(databasePath, "return []string{notification.ChannelDatabase}"))
 	s.False(file.Contains(databasePath, "ToMail"))
 	s.False(file.Contains(databasePath, `"github.com/goravel/framework/notification/mail"`))
 
@@ -557,7 +615,7 @@ type jobRow struct {
 type routedQueuedNotification struct{}
 
 func (r *routedQueuedNotification) Via(notifiable notification.Notifiable) []string {
-	return []string{"database"}
+	return []string{notification.ChannelDatabase}
 }
 
 func (r *routedQueuedNotification) ToDatabase(notifiable notification.Notifiable) map[string]any {
@@ -573,7 +631,7 @@ type shouldSendNotification struct {
 }
 
 func (r *shouldSendNotification) Via(notifiable notification.Notifiable) []string {
-	return []string{"database"}
+	return []string{notification.ChannelDatabase}
 }
 
 func (r *shouldSendNotification) ToDatabase(notifiable notification.Notifiable) map[string]any {
@@ -588,7 +646,7 @@ func (r *shouldSendNotification) ShouldSend(notifiable notification.Notifiable, 
 type afterSendingNotification struct{}
 
 func (r *afterSendingNotification) Via(notifiable notification.Notifiable) []string {
-	return []string{"database"}
+	return []string{notification.ChannelDatabase}
 }
 
 func (r *afterSendingNotification) ToDatabase(notifiable notification.Notifiable) map[string]any {
@@ -600,33 +658,34 @@ func (r *afterSendingNotification) AfterSending(notifiable notification.Notifiab
 	return nil
 }
 
-// databaseRoutableNotification implements DatabaseRoutable using the default
-// connection (empty name).
-type databaseRoutableNotification struct{}
+// defaultConnectionNotification implements
+// NotificationWithDatabaseConnection using the default connection (empty
+// name).
+type defaultConnectionNotification struct{}
 
-func (r *databaseRoutableNotification) Via(notifiable notification.Notifiable) []string {
-	return []string{"database"}
+func (r *defaultConnectionNotification) Via(notifiable notification.Notifiable) []string {
+	return []string{notification.ChannelDatabase}
 }
 
-func (r *databaseRoutableNotification) ToDatabase(notifiable notification.Notifiable) map[string]any {
+func (r *defaultConnectionNotification) ToDatabase(notifiable notification.Notifiable) map[string]any {
 	return map[string]any{"message": "routable"}
 }
 
-func (r *databaseRoutableNotification) DatabaseConnection() string { return "" }
+func (r *defaultConnectionNotification) DatabaseConnection() string { return "" }
 
-// reportingRoutableNotification implements DatabaseRoutable using a custom
-// "reporting" connection.
-type reportingRoutableNotification struct{}
+// reportingConnectionNotification implements
+// NotificationWithDatabaseConnection using a custom "reporting" connection.
+type reportingConnectionNotification struct{}
 
-func (r *reportingRoutableNotification) Via(notifiable notification.Notifiable) []string {
-	return []string{"database"}
+func (r *reportingConnectionNotification) Via(notifiable notification.Notifiable) []string {
+	return []string{notification.ChannelDatabase}
 }
 
-func (r *reportingRoutableNotification) ToDatabase(notifiable notification.Notifiable) map[string]any {
+func (r *reportingConnectionNotification) ToDatabase(notifiable notification.Notifiable) map[string]any {
 	return map[string]any{"message": "reporting"}
 }
 
-func (r *reportingRoutableNotification) DatabaseConnection() string { return "reporting" }
+func (r *reportingConnectionNotification) DatabaseConnection() string { return "reporting" }
 
 // captureChannel implements notification.Channel with an observable Send
 // side effect.
@@ -657,7 +716,7 @@ type chainedViaNotification struct {
 }
 
 func (r *chainedViaNotification) Via(notifiable notification.Notifiable) []string {
-	return []string{"database", r.channel}
+	return []string{notification.ChannelDatabase, r.channel}
 }
 
 func (r *chainedViaNotification) ToDatabase(notifiable notification.Notifiable) map[string]any {
@@ -682,4 +741,34 @@ func (r *mailRoutableNotifiable) RouteNotificationFor(channel string) any {
 
 func (r *mailRoutableNotifiable) RouteNotificationForMail(notification notification.Notification) map[string]string {
 	return map[string]string{r.to: "Test User"}
+}
+
+// databaseRoutableNotifiable implements contracts/notification.DatabaseRoutable
+// (typed route) in addition to Notifiable. typed is what
+// RouteNotificationForDatabase returns and fallback is what
+// RouteNotificationFor(ChannelDatabase) returns, so tests can pin which
+// route the database channel prefers and what happens when either is empty.
+type databaseRoutableNotifiable struct {
+	typed    string
+	fallback any
+}
+
+func (r *databaseRoutableNotifiable) RouteNotificationFor(channel string) any {
+	if channel == notification.ChannelDatabase {
+		return r.fallback
+	}
+	return nil
+}
+
+func (r *databaseRoutableNotifiable) RouteNotificationForDatabase() string {
+	return r.typed
+}
+
+// mailEmptyRouteNotifiable provides no mail route: RouteNotificationFor
+// returns nil for every channel, so the mail channel reports an empty
+// route without touching SMTP.
+type mailEmptyRouteNotifiable struct{}
+
+func (r *mailEmptyRouteNotifiable) RouteNotificationFor(channel string) any {
+	return nil
 }

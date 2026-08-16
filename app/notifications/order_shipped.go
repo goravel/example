@@ -14,7 +14,7 @@ func NewOrderShipped(orderID string) *OrderShipped {
 }
 
 func (r *OrderShipped) Via(notifiable notification.Notifiable) []string {
-	return []string{"mail"}
+	return []string{notification.ChannelMail}
 }
 
 func (r *OrderShipped) ToMail(notifiable notification.Notifiable) notification.MailMessage {
