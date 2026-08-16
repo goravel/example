@@ -42,20 +42,21 @@ func (r *UserTag) Value() (driver.Value, error) {
 	return json.Marshal(r)
 }
 
-// RouteNotificationFor resolves the delivery address per channel.
-func (r *User) RouteNotificationFor(channel string) any {
-	switch channel {
-	case notification.ChannelMail:
-		return r.Mail
-	case notification.ChannelDatabase:
-		return r.RouteNotificationForDatabase()
-	default:
-		return nil
-	}
+// RouteNotificationForMail implements contracts/notification.MailRoutable:
+// the type-safe mail delivery route, preferred over RouteNotificationFor.
+func (r *User) RouteNotificationForMail(notification notification.Notification) map[string]string {
+	return map[string]string{r.Mail: r.Name}
 }
 
 // RouteNotificationForDatabase implements contracts/notification.DatabaseRoutable:
 // the type-safe database delivery route, preferred over RouteNotificationFor.
 func (r *User) RouteNotificationForDatabase() string {
 	return strconv.FormatUint(uint64(r.ID), 10)
+}
+
+// RouteNotificationFor resolves the delivery address per channel. The built-in
+// mail and database channels resolve via the typed interfaces above, so no
+// route is left to match on the channel name here.
+func (r *User) RouteNotificationFor(channel string) any {
+	return nil
 }
