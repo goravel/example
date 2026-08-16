@@ -13,7 +13,7 @@ func NewOrderProcessed(orderID string) *OrderProcessed {
 }
 
 func (r *OrderProcessed) Via(notifiable notification.Notifiable) []string {
-	return []string{"database"}
+	return []string{notification.ChannelDatabase}
 }
 
 func (r *OrderProcessed) ToDatabase(notifiable notification.Notifiable) map[string]any {

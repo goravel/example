@@ -13,7 +13,7 @@ func NewWelcome(name string) *Welcome {
 }
 
 func (r *Welcome) Via(notifiable notification.Notifiable) []string {
-	return []string{"database"}
+	return []string{notification.ChannelDatabase}
 }
 
 func (r *Welcome) ID() string {
