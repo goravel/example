@@ -1,6 +1,8 @@
 package feature
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -19,6 +21,7 @@ import (
 	"github.com/goravel/framework/contracts/notification"
 	contractsqueue "github.com/goravel/framework/contracts/queue"
 	frameworkerrors "github.com/goravel/framework/errors"
+	frameworknotification "github.com/goravel/framework/notification"
 	"github.com/goravel/framework/support/file"
 	"github.com/goravel/framework/support/path"
 	"github.com/goravel/framework/support/str"
@@ -570,6 +573,265 @@ func (s *NotificationTestSuite) uniqueName(prefix string) string {
 	return fmt.Sprintf("%s%d", prefix, atomic.AddUint64(&s.counter, 1))
 }
 
+// extendFlakyChannel registers a flaky custom channel on the notification
+// Manager that the queued DispatchJob will use, and re-registers the
+// DispatchJob against that Manager through the shared queue facade.
+//
+// This is a workaround for the framework's transient notification Manager:
+// each facades.Notification() call returns a fresh instance (the service is
+// container-bound with shared:false), so the boot-time DispatchJob registered
+// by registerJobs holds a reference to a Manager that can never see runtime
+// Extend calls. Re-registering the DispatchJob with the freshly-extended
+// Manager makes the worker's delivery resolve the flaky channel. The
+// underlying transient binding is arguably a framework bug; if it is ever
+// fixed to bind the Manager as a singleton, this helper's Register call can
+// be dropped.
+//
+// Caution: this mutates global queue state (the shared JobStorer), so the
+// tests that call it MUST NOT be run with t.Parallel(). Cleanup relies on
+// each test's OverrideConfig defer scope.Restore() → facades.App().Restart(),
+// which re-runs registerJobs and re-registers the default DispatchJob.
+// Returns the extended Manager (to dispatch through it) and the flaky channel
+// (to assert the attempt count).
+func (s *NotificationTestSuite) extendFlakyChannel(name string, failUntil int, alwaysFail bool) (*frameworknotification.Manager, *flakyChannel) {
+	manager, ok := facades.Notification().(*frameworknotification.Manager)
+	s.Require().True(ok, "notification facade should resolve to a *notification.Manager")
+
+	flaky := &flakyChannel{name: name, failUntil: failUntil, alwaysFail: alwaysFail}
+	manager.Extend(flaky)
+	facades.Queue().Register([]contractsqueue.Job{frameworknotification.NewDispatchJob(manager)})
+
+	return manager, flaky
+}
+
+// TestSendQueuedNotificationWithTriesAndBackoff covers a queued notification
+// with both Tries and Backoff: the retry policy is captured into the jobs
+// payload at dispatch time, and a failing worker retries up to Tries times
+// honoring the release-based Backoff schedule.
+func (s *NotificationTestSuite) TestSendQueuedNotificationWithTriesAndBackoff() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default":        "database",
+		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	channelName := s.uniqueName("flaky")
+	manager, flaky := s.extendFlakyChannel(channelName, 0, true)
+
+	s.NoError(manager.Route(channelName, "route").Notify(
+		&retryableNotification{channel: channelName, tries: 3, backoff: []time.Duration{100 * time.Millisecond, 200 * time.Millisecond}},
+	))
+
+	// Dispatch-time capture: the retry policy is serialized to the payload.
+	item := s.readQueuedNotificationItem("default")
+	s.Equal(3, item.Tries)
+	s.Equal([]int64{100, 200}, item.Backoff) // backoff in ms
+
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Connection: "database",
+		Queue:      "default",
+		Concurrent: 1,
+		Tries:      1, // notification policy must override the worker's tries
+	})
+	workerErr := make(chan error, 1)
+	start := time.Now()
+	go func() { workerErr <- worker.Run() }()
+
+	elapsed, ok := s.waitForFailedNotification(start, 5*time.Second)
+	_ = worker.Shutdown()
+	s.Require().True(ok, "expected goravel_notifications:dispatch job to fail within 5s")
+	s.NoError(<-workerErr, "worker should start and stop cleanly")
+
+	count, err := facades.DB().Table("jobs").Count()
+	s.NoError(err)
+	s.Equal(int64(0), count, "job should be consumed")
+
+	s.Equal(3, flaky.attempts(), "notification Tries=3 should override worker Tries=1")
+	// Coarse sanity check only: the database worker's pop loop sleeps a fixed
+	// ~1s interval between retries, so elapsed is dominated by that poll
+	// interval rather than by the 100ms/200ms backoff. The lower bound catches
+	// a missing retry path (e.g. no retries at all), not backoff regressions.
+	s.GreaterOrEqual(elapsed, 300*time.Millisecond, "retries should not complete before the release delays")
+	s.Less(elapsed, 5*time.Second, "retries should complete within 5s")
+}
+
+// TestSendQueuedNotificationWithoutTriesSingleShot covers a queued
+// notification that implements NotificationWithTries but returns 0: the retry
+// policy must not serialize to the payload and delivery stays single-shot
+// even though the worker would retry.
+func (s *NotificationTestSuite) TestSendQueuedNotificationWithoutTriesSingleShot() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default":        "database",
+		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	channelName := s.uniqueName("flaky")
+	manager, flaky := s.extendFlakyChannel(channelName, 0, true)
+
+	s.NoError(manager.Route(channelName, "route").Notify(
+		&retryableNotification{channel: channelName, tries: 0},
+	))
+
+	item := s.readQueuedNotificationItem("default")
+	s.Zero(item.Tries) // omitempty: no retry policy serialized
+	s.Empty(item.Backoff)
+
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Connection: "database",
+		Queue:      "default",
+		Concurrent: 1,
+		Tries:      3, // worker would retry, but the notification stays single-shot
+	})
+	workerErr := make(chan error, 1)
+	start := time.Now()
+	go func() { workerErr <- worker.Run() }()
+
+	_, ok := s.waitForFailedNotification(start, 5*time.Second)
+	_ = worker.Shutdown()
+	s.Require().True(ok, "expected goravel_notifications:dispatch job to fail within 5s")
+	s.NoError(<-workerErr, "worker should start and stop cleanly")
+
+	count, err := facades.DB().Table("jobs").Count()
+	s.NoError(err)
+	s.Equal(int64(0), count)
+	s.Equal(1, flaky.attempts(), "notification without Tries must fail after a single attempt despite worker Tries=3")
+}
+
+// TestSendQueuedNotificationBackoffWithoutTriesSuppressed covers a queued
+// notification with Backoff but Tries == 0: the backoff must not serialize to
+// the payload at all.
+func (s *NotificationTestSuite) TestSendQueuedNotificationBackoffWithoutTriesSuppressed() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default":        "database",
+		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	channelName := s.uniqueName("flaky")
+	manager, _ := s.extendFlakyChannel(channelName, 0, true)
+
+	s.NoError(manager.Route(channelName, "route").Notify(
+		&retryableNotification{channel: channelName, tries: 0, backoff: []time.Duration{time.Second}},
+	))
+
+	// Dispatch only (no worker): backoff must not serialize without tries.
+	item := s.readQueuedNotificationItem("default")
+	s.Zero(item.Tries)
+	s.Empty(item.Backoff)
+}
+
+// TestSendQueuedOrderFailedCapturesRetryPolicy exercises the permanent
+// OrderFailed demo notification end-to-end through the database channel and
+// asserts its Tries/Backoff policy is captured into the queued payload.
+func (s *NotificationTestSuite) TestSendQueuedOrderFailedCapturesRetryPolicy() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default":        "database",
+		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	user := &models.User{Name: "Bowen", Mail: "bowen@example.com"}
+	s.Require().NoError(facades.Orm().Query().Create(user))
+
+	s.NoError(facades.Notification().Send(user, notifications.NewOrderFailed("42")))
+
+	item := s.readQueuedNotificationItem("default")
+	s.Equal(3, item.Tries)
+	s.Equal([]int64{1000, 2000}, item.Backoff) // demo [1s, 2s] → ms
+}
+
+// TestSendQueuedNotificationRetriesTransientFailure covers the recovery case
+// (beyond broadcast's always-fail design): delivery fails twice transiently
+// then succeeds, proving the release-based retry actually recovers.
+func (s *NotificationTestSuite) TestSendQueuedNotificationRetriesTransientFailure() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default":        "database",
+		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	channelName := s.uniqueName("flaky")
+	manager, flaky := s.extendFlakyChannel(channelName, 2, false)
+
+	s.NoError(manager.Route(channelName, "route").Notify(
+		&retryableNotification{channel: channelName, tries: 3, backoff: []time.Duration{100 * time.Millisecond, 200 * time.Millisecond}},
+	))
+
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Connection: "database",
+		Queue:      "default",
+		Concurrent: 1,
+		Tries:      1,
+	})
+	workerErr := make(chan error, 1)
+	go func() { workerErr <- worker.Run() }()
+
+	s.Require().Eventually(func() bool { return flaky.attempts() >= 3 }, 5*time.Second, 100*time.Millisecond)
+	_ = worker.Shutdown()
+	s.NoError(<-workerErr, "worker should start and stop cleanly")
+
+	s.Equal(3, flaky.attempts(), "delivery should have succeeded on the third attempt")
+	count, err := facades.DB().Table("jobs").Count()
+	s.NoError(err)
+	s.Equal(int64(0), count, "job should be consumed after recovery")
+
+	// No failed job: the retry recovered instead of failing.
+	failedJobs, err := facades.Queue().Failer().All()
+	s.NoError(err)
+	s.Empty(failedJobs)
+}
+
+// waitForFailedNotification polls the queue failer until a failed
+// goravel_notifications:dispatch job appears, returning elapsed time since
+// start. Mirrors waitForFailedBroadcast; relies on RefreshDatabase resetting
+// failed_jobs in SetupTest and each test dispatching exactly one queued
+// notification.
+func (s *NotificationTestSuite) waitForFailedNotification(start time.Time, timeout time.Duration) (time.Duration, bool) {
+	deadline := time.Now().Add(timeout)
+	for {
+		failedJobs, err := facades.Queue().Failer().All()
+		if err != nil {
+			s.T().Logf("failed to list failed jobs: %v", err)
+		} else {
+			for _, fj := range failedJobs {
+				if fj.Signature() == "goravel_notifications:dispatch" {
+					return time.Since(start), true
+				}
+			}
+		}
+		if time.Now().After(deadline) {
+			return time.Since(start), false
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
+// readQueuedNotificationItem decodes the dispatch-time Tries/Backoff carried
+// in the jobs table payload for the given queue.
+func (s *NotificationTestSuite) readQueuedNotificationItem(queue string) queuedNotificationItem {
+	var jobs []jobRow
+	s.Require().NoError(facades.DB().Table("jobs").Where("queue", queue).Get(&jobs))
+	s.Require().Len(jobs, 1)
+
+	var payload struct {
+		Args []struct {
+			Value string `json:"value"`
+		} `json:"args"`
+	}
+	s.Require().NoError(json.Unmarshal([]byte(jobs[0].Payload), &payload))
+	s.Require().Len(payload.Args, 1)
+
+	var item queuedNotificationItem
+	s.Require().NoError(json.Unmarshal([]byte(payload.Args[0].Value), &item))
+	return item
+}
+
 // listRelativeMigrationFiles lists *.go files under the cwd-relative
 // database/migrations directory (the path the notifications:table command
 // writes to).
@@ -605,7 +867,87 @@ type notificationRow struct {
 
 // jobRow mirrors the jobs table column asserted in the queue tests.
 type jobRow struct {
-	Queue string `db:"queue"`
+	Queue   string `db:"queue"`
+	Payload string `db:"payload"`
+}
+
+// flakyChannel implements notification.ResolvableChannel. Deliver fails the
+// first failUntil invocations (or always, when alwaysFail is set), then
+// succeeds, recording every invocation so tests can assert the exact attempt
+// count without racing the worker goroutine.
+type flakyChannel struct {
+	name       string
+	failUntil  int
+	alwaysFail bool
+
+	mu           sync.Mutex
+	deliverCount int
+}
+
+func (f *flakyChannel) Name() string { return f.name }
+
+// Send satisfies Channel (embedded in ResolvableChannel); the queued path
+// calls Resolve+Deliver directly, so this mirrors DatabaseChannel.Send.
+func (f *flakyChannel) Send(notifiable notification.Notifiable, n notification.Notification) error {
+	route, payload, err := f.Resolve(notifiable, n)
+	if err != nil {
+		return err
+	}
+	return f.Deliver(route, payload)
+}
+
+func (f *flakyChannel) Resolve(notifiable notification.Notifiable, n notification.Notification) (string, []byte, error) {
+	return "route", []byte(`{}`), nil
+}
+
+func (f *flakyChannel) Deliver(route string, payload []byte) error {
+	f.mu.Lock()
+	f.deliverCount++
+	count := f.deliverCount
+	f.mu.Unlock()
+
+	if f.alwaysFail || count <= f.failUntil {
+		return errors.New("transient delivery failure")
+	}
+	return nil
+}
+
+func (f *flakyChannel) attempts() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.deliverCount
+}
+
+// retryableNotification implements ShouldQueue + NotificationWithTries +
+// NotificationWithBackoff, routing to a flaky custom channel so the queued
+// DispatchJob's Tries/Backoff policy is exercised end-to-end.
+type retryableNotification struct {
+	channel string
+	tries   int
+	backoff []time.Duration
+}
+
+func (r *retryableNotification) Via(notifiable notification.Notifiable) []string {
+	return []string{r.channel}
+}
+
+func (r *retryableNotification) OnQueue() string      { return "" }
+func (r *retryableNotification) OnConnection() string { return "" }
+
+func (r *retryableNotification) Tries(channel string) int {
+	return r.tries
+}
+
+func (r *retryableNotification) Backoff(channel string) []time.Duration {
+	return r.backoff
+}
+
+// queuedNotificationItem decodes the dispatch-time Tries/Backoff carried in
+// the jobs table payload. The dispatch arg is a JSON string whose fields
+// mirror broadcasting's broadcastItem wire format (backoff in ms).
+type queuedNotificationItem struct {
+	Tries   int     `json:"tries"`
+	Backoff []int64 `json:"backoff"`
 }
 
 // ---- Test-local notifications / channels / notifiables ----
