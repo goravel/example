@@ -21,7 +21,6 @@ import (
 	"github.com/goravel/framework/contracts/notification"
 	contractsqueue "github.com/goravel/framework/contracts/queue"
 	frameworkerrors "github.com/goravel/framework/errors"
-	frameworknotification "github.com/goravel/framework/notification"
 	"github.com/goravel/framework/support/file"
 	"github.com/goravel/framework/support/path"
 	"github.com/goravel/framework/support/str"
@@ -574,18 +573,11 @@ func (s *NotificationTestSuite) uniqueName(prefix string) string {
 }
 
 // extendFlakyChannel registers a flaky custom channel on the notification
-// Manager that the queued DispatchJob will use, and re-registers the
-// DispatchJob against that Manager through the shared queue facade.
-//
-// This is a workaround for the framework's transient notification Manager:
-// each facades.Notification() call returns a fresh instance (the service is
-// container-bound with shared:false), so the boot-time DispatchJob registered
-// by registerJobs holds a reference to a Manager that can never see runtime
-// Extend calls. Re-registering the DispatchJob with the freshly-extended
-// Manager makes the worker's delivery resolve the flaky channel. The
-// underlying transient binding is arguably a framework bug; if it is ever
-// fixed to bind the Manager as a singleton, this helper's Register call can
-// be dropped.
+// Manager that the queued DispatchJob will use. The Manager is bound as a
+// singleton (framework#1537), so facades.Notification() returns the same
+// instance that the boot-time DispatchJob registered by registerJobs holds:
+// runtime Extend calls are visible to the worker's delivery without any
+// re-registration.
 //
 // Caution: this mutates global queue state (the shared JobStorer), so the
 // tests that call it MUST NOT be run with t.Parallel(). Cleanup relies on
@@ -593,13 +585,10 @@ func (s *NotificationTestSuite) uniqueName(prefix string) string {
 // which re-runs registerJobs and re-registers the default DispatchJob.
 // Returns the extended Manager (to dispatch through it) and the flaky channel
 // (to assert the attempt count).
-func (s *NotificationTestSuite) extendFlakyChannel(name string, failUntil int, alwaysFail bool) (*frameworknotification.Manager, *flakyChannel) {
-	manager, ok := facades.Notification().(*frameworknotification.Manager)
-	s.Require().True(ok, "notification facade should resolve to a *notification.Manager")
-
+func (s *NotificationTestSuite) extendFlakyChannel(name string, failUntil int, alwaysFail bool) (notification.Manager, *flakyChannel) {
 	flaky := &flakyChannel{name: name, failUntil: failUntil, alwaysFail: alwaysFail}
+	manager := facades.Notification()
 	manager.Extend(flaky)
-	facades.Queue().Register([]contractsqueue.Job{frameworknotification.NewDispatchJob(manager)})
 
 	return manager, flaky
 }
