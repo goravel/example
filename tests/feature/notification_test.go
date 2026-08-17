@@ -53,8 +53,6 @@ func (s *NotificationTestSuite) SetupTest() {
 	capturedSends = nil
 }
 
-// TestFacadeResolves covers the Manager contract plus Manager.Channel for
-// both registered and unknown channel names.
 func (s *NotificationTestSuite) TestFacadeResolves() {
 	s.NotNil(facades.Notification())
 	s.NotNil(facades.Notification().Channel(notification.ChannelDatabase))
@@ -62,9 +60,6 @@ func (s *NotificationTestSuite) TestFacadeResolves() {
 	s.Nil(facades.Notification().Channel("slack"))
 }
 
-// TestSendDatabaseNotification covers Via, Notifiable.RouteNotificationFor,
-// DatabaseNotification.ToDatabase and NotificationWithID by asserting the
-// persisted row's identity and payload.
 func (s *NotificationTestSuite) TestSendDatabaseNotification() {
 	user := &models.User{Name: "Bowen", Mail: "bowen@example.com"}
 	s.Require().NoError(facades.Orm().Query().Create(user))
@@ -80,11 +75,6 @@ func (s *NotificationTestSuite) TestSendDatabaseNotification() {
 	s.Contains(rows[0].Data, "Welcome Bowen")
 }
 
-// TestSendNowDatabaseNotification covers Manager.SendNow delivering
-// synchronously. SendNow always calls dispatchSync even for notifications
-// implementing ShouldQueue, so with the async database queue driver and no
-// workers running the notification row appears immediately and the jobs
-// table stays empty.
 func (s *NotificationTestSuite) TestSendNowDatabaseNotification() {
 	user := &models.User{Name: "Now"}
 	s.Require().NoError(facades.Orm().Query().Create(user))
@@ -113,10 +103,6 @@ func (s *NotificationTestSuite) TestSendNowDatabaseNotification() {
 	s.Equal(int64(0), jobsCount)
 }
 
-// TestSendQueuedDatabaseNotification covers the ShouldQueue contract via the
-// async database queue driver: Send must leave the notification undelivered
-// (no row yet) and enqueue exactly one job, which an in-test worker then
-// delivers.
 func (s *NotificationTestSuite) TestSendQueuedDatabaseNotification() {
 	user := &models.User{Name: "Queued"}
 	s.Require().NoError(facades.Orm().Query().Create(user))
@@ -168,11 +154,6 @@ func (s *NotificationTestSuite) TestSendQueuedDatabaseNotification() {
 	s.Equal(int64(0), jobsCount)
 }
 
-// TestSendQueuedDatabaseNotificationWithQueueAndConnection covers
-// ShouldQueue.OnQueue/OnConnection returning non-empty values. The
-// notification self-routes off the default sync connection onto the
-// database connection / "notifications" queue, so the job lands in the jobs
-// table and is only delivered by a worker consuming that exact queue.
 func (s *NotificationTestSuite) TestSendQueuedDatabaseNotificationWithQueueAndConnection() {
 	user := &models.User{Name: "Routed"}
 	s.Require().NoError(facades.Orm().Query().Create(user))
@@ -220,7 +201,6 @@ func (s *NotificationTestSuite) TestSendQueuedDatabaseNotificationWithQueueAndCo
 	s.Equal(int64(0), jobsCount)
 }
 
-// TestOnDemandNotification covers Manager.Route + OnDemandNotifiable.Notify.
 func (s *NotificationTestSuite) TestOnDemandNotification() {
 	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "123").Notify(notifications.NewWelcome("OnDemand")))
 
@@ -231,9 +211,6 @@ func (s *NotificationTestSuite) TestOnDemandNotification() {
 	s.Contains(rows[0].Data, "Welcome OnDemand")
 }
 
-// TestOnDemandChainedRouteNotifyNow covers OnDemandNotifiable.Route chaining
-// and NotifyNow. The notification routes to both the database and a custom
-// channel, so every chained route is actually exercised.
 func (s *NotificationTestSuite) TestOnDemandChainedRouteNotifyNow() {
 	channelName := s.uniqueName("chained_capture")
 	manager := facades.Notification()
@@ -250,8 +227,6 @@ func (s *NotificationTestSuite) TestOnDemandChainedRouteNotifyNow() {
 	s.Equal([]any{cn}, capturedSends)
 }
 
-// TestShouldSendSkipsChannel covers NotificationWithShouldSend: returning
-// false must skip delivery entirely (no row), true must deliver.
 func (s *NotificationTestSuite) TestShouldSendSkipsChannel() {
 	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "789").NotifyNow(&shouldSendNotification{shouldSend: false}))
 
@@ -266,8 +241,6 @@ func (s *NotificationTestSuite) TestShouldSendSkipsChannel() {
 	s.Equal(int64(1), count)
 }
 
-// TestAfterSendingHook covers NotificationWithAfterSending: the hook must
-// run after a successful channel delivery.
 func (s *NotificationTestSuite) TestAfterSendingHook() {
 	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "1").NotifyNow(&afterSendingNotification{}))
 	s.True(afterSendingCalled)
@@ -277,10 +250,6 @@ func (s *NotificationTestSuite) TestAfterSendingHook() {
 	s.Equal(int64(1), count)
 }
 
-// TestNotificationWithDatabaseConnectionDefault covers
-// NotificationWithDatabaseConnection.DatabaseConnection: an empty
-// connection name routes to the default connection and the row is
-// persisted there.
 func (s *NotificationTestSuite) TestNotificationWithDatabaseConnectionDefault() {
 	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "101").NotifyNow(&defaultConnectionNotification{}))
 
@@ -289,10 +258,6 @@ func (s *NotificationTestSuite) TestNotificationWithDatabaseConnectionDefault() 
 	s.Equal(int64(1), count)
 }
 
-// TestNotificationWithDatabaseConnectionCustomConnection covers
-// NotificationWithDatabaseConnection.DatabaseConnection returning a
-// non-empty name: delivery is routed to that connection and the default
-// connection stays untouched.
 func (s *NotificationTestSuite) TestNotificationWithDatabaseConnectionCustomConnection() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"database.connections.reporting": map[string]any{
@@ -333,8 +298,6 @@ func (s *NotificationTestSuite) TestNotificationWithDatabaseConnectionCustomConn
 	s.Equal(int64(0), count)
 }
 
-// TestCustomChannel covers Manager.Extend + Channel.Name/Channel.Send with a
-// user channel whose Send produces an observable side effect.
 func (s *NotificationTestSuite) TestCustomChannel() {
 	channelName := s.uniqueName("capture_channel")
 	manager := facades.Notification()
@@ -346,36 +309,24 @@ func (s *NotificationTestSuite) TestCustomChannel() {
 	s.Equal([]any{cn}, capturedSends)
 }
 
-// TestSendToUnknownChannel covers the error path for an unregistered
-// channel name.
 func (s *NotificationTestSuite) TestSendToUnknownChannel() {
 	err := facades.Notification().Route("slack", "route").NotifyNow(&unknownChannelNotification{})
 	s.Error(err)
 	s.ErrorIs(err, frameworkerrors.NotificationChannelNotFound.Args("slack"))
 }
 
-// TestSendMailNotification covers MailableNotification.ToMail plus
-// Notifiable.RouteNotificationFor("mail") against a real SMTP server.
-// Skipped when mail.host is unset (resolved from config, which loads .env).
 func (s *NotificationTestSuite) TestSendMailNotification() {
 	mailTo := s.mailRecipient()
 
 	s.NoError(facades.Notification().Send(&models.User{Mail: mailTo}, notifications.NewOrderShipped("notification-mail")))
 }
 
-// TestSendMailNotificationMailRoutable covers MailRoutable.RouteNotificationForMail
-// against a real SMTP server. Skipped when mail.host is unset (resolved from
-// config, which loads .env).
 func (s *NotificationTestSuite) TestSendMailNotificationMailRoutable() {
 	mailTo := s.mailRecipient()
 
 	s.NoError(facades.Notification().Send(&mailRoutableNotifiable{to: mailTo}, notifications.NewOrderShipped("notification-mail-routable")))
 }
 
-// TestDatabaseRoutableTypedRoute covers DatabaseRoutable.RouteNotificationForDatabase:
-// the typed route is preferred over RouteNotificationFor, so the persisted
-// NotifiableID comes from the typed route even when the generic route
-// returns a different value.
 func (s *NotificationTestSuite) TestDatabaseRoutableTypedRoute() {
 	s.NoError(facades.Notification().Send(
 		&databaseRoutableNotifiable{typed: "42", fallback: "wrong-route"},
@@ -388,9 +339,6 @@ func (s *NotificationTestSuite) TestDatabaseRoutableTypedRoute() {
 	s.Equal("42", rows[0].NotifiableID)
 }
 
-// TestDatabaseRoutableFallbackToGenericRoute covers the empty-typed-route
-// fallback: an empty RouteNotificationForDatabase result is not an error by
-// itself — the channel falls back to RouteNotificationFor(ChannelDatabase).
 func (s *NotificationTestSuite) TestDatabaseRoutableFallbackToGenericRoute() {
 	s.NoError(facades.Notification().Send(
 		&databaseRoutableNotifiable{typed: "", fallback: "43"},
@@ -403,9 +351,6 @@ func (s *NotificationTestSuite) TestDatabaseRoutableFallbackToGenericRoute() {
 	s.Equal("43", rows[0].NotifiableID)
 }
 
-// TestDatabaseRoutableEmptyRouteError covers the error path: only an empty
-// result from both RouteNotificationForDatabase and RouteNotificationFor is
-// an error.
 func (s *NotificationTestSuite) TestDatabaseRoutableEmptyRouteError() {
 	err := facades.Notification().Send(
 		&databaseRoutableNotifiable{},
@@ -414,10 +359,6 @@ func (s *NotificationTestSuite) TestDatabaseRoutableEmptyRouteError() {
 	s.ErrorIs(err, frameworkerrors.NotificationDatabaseEmptyRoute)
 }
 
-// TestSendMailNotificationEmptyRoute covers the reworded
-// NotificationMailEmptyRoute error: a notifiable with no mail route (and no
-// MailRoutable) errors in resolveAddresses before any SMTP send, so the
-// test runs even when mail.host is unset.
 func (s *NotificationTestSuite) TestSendMailNotificationEmptyRoute() {
 	err := facades.Notification().Send(
 		&mailEmptyRouteNotifiable{},
@@ -426,9 +367,6 @@ func (s *NotificationTestSuite) TestSendMailNotificationEmptyRoute() {
 	s.ErrorIs(err, frameworkerrors.NotificationMailEmptyRoute)
 }
 
-// TestCommandMakeNotification covers the make:notification command: stub
-// generation, already-exists behavior, nested packages and the --database
-// variant.
 func (s *NotificationTestSuite) TestCommandMakeNotification() {
 	notificationName := s.uniqueName("NotificationFeature")
 	nestedPackage := s.uniqueName("NotificationFeatureNested")
@@ -483,9 +421,6 @@ func (s *NotificationTestSuite) TestCommandMakeNotification() {
 	s.True(file.Contains(nestedPath, "type "+nestedNotificationName+" struct {"))
 }
 
-// TestCommandNotificationsTable covers the notifications:table command: it
-// generates a migration file, auto-registers it in bootstrap/migrations.go
-// and warns when the migration already exists.
 func (s *NotificationTestSuite) TestCommandNotificationsTable() {
 	migrationsPath := path.Bootstrap("migrations.go")
 	originalContent, err := os.ReadFile(migrationsPath)
@@ -583,20 +518,13 @@ func (s *NotificationTestSuite) uniqueName(prefix string) string {
 // tests that call it MUST NOT be run with t.Parallel(). Cleanup relies on
 // each test's OverrideConfig defer scope.Restore() → facades.App().Restart(),
 // which re-runs registerJobs and re-registers the default DispatchJob.
-// Returns the extended Manager (to dispatch through it) and the flaky channel
-// (to assert the attempt count).
-func (s *NotificationTestSuite) extendFlakyChannel(name string, failUntil int, alwaysFail bool) (notification.Manager, *flakyChannel) {
+func (s *NotificationTestSuite) extendFlakyChannel(name string, failUntil int, alwaysFail bool) *flakyChannel {
 	flaky := &flakyChannel{name: name, failUntil: failUntil, alwaysFail: alwaysFail}
-	manager := facades.Notification()
-	manager.Extend(flaky)
+	facades.Notification().Extend(flaky)
 
-	return manager, flaky
+	return flaky
 }
 
-// TestSendQueuedNotificationWithTriesAndBackoff covers a queued notification
-// with both Tries and Backoff: the retry policy is captured into the jobs
-// payload at dispatch time, and a failing worker retries up to Tries times
-// honoring the release-based Backoff schedule.
 func (s *NotificationTestSuite) TestSendQueuedNotificationWithTriesAndBackoff() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"queue.default":        "database",
@@ -606,9 +534,9 @@ func (s *NotificationTestSuite) TestSendQueuedNotificationWithTriesAndBackoff() 
 	defer func() { s.NoError(scope.Restore()) }()
 
 	channelName := s.uniqueName("flaky")
-	manager, flaky := s.extendFlakyChannel(channelName, 0, true)
+	flaky := s.extendFlakyChannel(channelName, 0, true)
 
-	s.NoError(manager.Route(channelName, "route").Notify(
+	s.NoError(facades.Notification().Route(channelName, "route").Notify(
 		&retryableNotification{channel: channelName, tries: 3, backoff: []time.Duration{100 * time.Millisecond, 200 * time.Millisecond}},
 	))
 
@@ -645,10 +573,6 @@ func (s *NotificationTestSuite) TestSendQueuedNotificationWithTriesAndBackoff() 
 	s.Less(elapsed, 5*time.Second, "retries should complete within 5s")
 }
 
-// TestSendQueuedNotificationWithoutTriesSingleShot covers a queued
-// notification that implements NotificationWithTries but returns 0: the retry
-// policy must not serialize to the payload and delivery stays single-shot
-// even though the worker would retry.
 func (s *NotificationTestSuite) TestSendQueuedNotificationWithoutTriesSingleShot() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"queue.default":        "database",
@@ -658,9 +582,9 @@ func (s *NotificationTestSuite) TestSendQueuedNotificationWithoutTriesSingleShot
 	defer func() { s.NoError(scope.Restore()) }()
 
 	channelName := s.uniqueName("flaky")
-	manager, flaky := s.extendFlakyChannel(channelName, 0, true)
+	flaky := s.extendFlakyChannel(channelName, 0, true)
 
-	s.NoError(manager.Route(channelName, "route").Notify(
+	s.NoError(facades.Notification().Route(channelName, "route").Notify(
 		&retryableNotification{channel: channelName, tries: 0},
 	))
 
@@ -689,9 +613,6 @@ func (s *NotificationTestSuite) TestSendQueuedNotificationWithoutTriesSingleShot
 	s.Equal(1, flaky.attempts(), "notification without Tries must fail after a single attempt despite worker Tries=3")
 }
 
-// TestSendQueuedNotificationBackoffWithoutTriesSuppressed covers a queued
-// notification with Backoff but Tries == 0: the backoff must not serialize to
-// the payload at all.
 func (s *NotificationTestSuite) TestSendQueuedNotificationBackoffWithoutTriesSuppressed() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"queue.default":        "database",
@@ -701,9 +622,9 @@ func (s *NotificationTestSuite) TestSendQueuedNotificationBackoffWithoutTriesSup
 	defer func() { s.NoError(scope.Restore()) }()
 
 	channelName := s.uniqueName("flaky")
-	manager, _ := s.extendFlakyChannel(channelName, 0, true)
+	s.extendFlakyChannel(channelName, 0, true)
 
-	s.NoError(manager.Route(channelName, "route").Notify(
+	s.NoError(facades.Notification().Route(channelName, "route").Notify(
 		&retryableNotification{channel: channelName, tries: 0, backoff: []time.Duration{time.Second}},
 	))
 
@@ -713,9 +634,6 @@ func (s *NotificationTestSuite) TestSendQueuedNotificationBackoffWithoutTriesSup
 	s.Empty(item.Backoff)
 }
 
-// TestSendQueuedOrderFailedCapturesRetryPolicy exercises the permanent
-// OrderFailed demo notification end-to-end through the database channel and
-// asserts its Tries/Backoff policy is captured into the queued payload.
 func (s *NotificationTestSuite) TestSendQueuedOrderFailedCapturesRetryPolicy() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"queue.default":        "database",
@@ -734,9 +652,6 @@ func (s *NotificationTestSuite) TestSendQueuedOrderFailedCapturesRetryPolicy() {
 	s.Equal([]int64{1000, 2000}, item.Backoff) // demo [1s, 2s] → ms
 }
 
-// TestSendQueuedNotificationRetriesTransientFailure covers the recovery case
-// (beyond broadcast's always-fail design): delivery fails twice transiently
-// then succeeds, proving the release-based retry actually recovers.
 func (s *NotificationTestSuite) TestSendQueuedNotificationRetriesTransientFailure() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"queue.default":        "database",
@@ -746,9 +661,9 @@ func (s *NotificationTestSuite) TestSendQueuedNotificationRetriesTransientFailur
 	defer func() { s.NoError(scope.Restore()) }()
 
 	channelName := s.uniqueName("flaky")
-	manager, flaky := s.extendFlakyChannel(channelName, 2, false)
+	flaky := s.extendFlakyChannel(channelName, 2, false)
 
-	s.NoError(manager.Route(channelName, "route").Notify(
+	s.NoError(facades.Notification().Route(channelName, "route").Notify(
 		&retryableNotification{channel: channelName, tries: 3, backoff: []time.Duration{100 * time.Millisecond, 200 * time.Millisecond}},
 	))
 
