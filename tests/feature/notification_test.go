@@ -1,6 +1,8 @@
 package feature
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -51,8 +53,6 @@ func (s *NotificationTestSuite) SetupTest() {
 	capturedSends = nil
 }
 
-// TestFacadeResolves covers the Manager contract plus Manager.Channel for
-// both registered and unknown channel names.
 func (s *NotificationTestSuite) TestFacadeResolves() {
 	s.NotNil(facades.Notification())
 	s.NotNil(facades.Notification().Channel(notification.ChannelDatabase))
@@ -60,9 +60,6 @@ func (s *NotificationTestSuite) TestFacadeResolves() {
 	s.Nil(facades.Notification().Channel("slack"))
 }
 
-// TestSendDatabaseNotification covers Via, Notifiable.RouteNotificationFor,
-// DatabaseNotification.ToDatabase and NotificationWithID by asserting the
-// persisted row's identity and payload.
 func (s *NotificationTestSuite) TestSendDatabaseNotification() {
 	user := &models.User{Name: "Bowen", Mail: "bowen@example.com"}
 	s.Require().NoError(facades.Orm().Query().Create(user))
@@ -78,11 +75,6 @@ func (s *NotificationTestSuite) TestSendDatabaseNotification() {
 	s.Contains(rows[0].Data, "Welcome Bowen")
 }
 
-// TestSendNowDatabaseNotification covers Manager.SendNow delivering
-// synchronously. SendNow always calls dispatchSync even for notifications
-// implementing ShouldQueue, so with the async database queue driver and no
-// workers running the notification row appears immediately and the jobs
-// table stays empty.
 func (s *NotificationTestSuite) TestSendNowDatabaseNotification() {
 	user := &models.User{Name: "Now"}
 	s.Require().NoError(facades.Orm().Query().Create(user))
@@ -111,10 +103,6 @@ func (s *NotificationTestSuite) TestSendNowDatabaseNotification() {
 	s.Equal(int64(0), jobsCount)
 }
 
-// TestSendQueuedDatabaseNotification covers the ShouldQueue contract via the
-// async database queue driver: Send must leave the notification undelivered
-// (no row yet) and enqueue exactly one job, which an in-test worker then
-// delivers.
 func (s *NotificationTestSuite) TestSendQueuedDatabaseNotification() {
 	user := &models.User{Name: "Queued"}
 	s.Require().NoError(facades.Orm().Query().Create(user))
@@ -166,11 +154,6 @@ func (s *NotificationTestSuite) TestSendQueuedDatabaseNotification() {
 	s.Equal(int64(0), jobsCount)
 }
 
-// TestSendQueuedDatabaseNotificationWithQueueAndConnection covers
-// ShouldQueue.OnQueue/OnConnection returning non-empty values. The
-// notification self-routes off the default sync connection onto the
-// database connection / "notifications" queue, so the job lands in the jobs
-// table and is only delivered by a worker consuming that exact queue.
 func (s *NotificationTestSuite) TestSendQueuedDatabaseNotificationWithQueueAndConnection() {
 	user := &models.User{Name: "Routed"}
 	s.Require().NoError(facades.Orm().Query().Create(user))
@@ -218,7 +201,6 @@ func (s *NotificationTestSuite) TestSendQueuedDatabaseNotificationWithQueueAndCo
 	s.Equal(int64(0), jobsCount)
 }
 
-// TestOnDemandNotification covers Manager.Route + OnDemandNotifiable.Notify.
 func (s *NotificationTestSuite) TestOnDemandNotification() {
 	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "123").Notify(notifications.NewWelcome("OnDemand")))
 
@@ -229,9 +211,6 @@ func (s *NotificationTestSuite) TestOnDemandNotification() {
 	s.Contains(rows[0].Data, "Welcome OnDemand")
 }
 
-// TestOnDemandChainedRouteNotifyNow covers OnDemandNotifiable.Route chaining
-// and NotifyNow. The notification routes to both the database and a custom
-// channel, so every chained route is actually exercised.
 func (s *NotificationTestSuite) TestOnDemandChainedRouteNotifyNow() {
 	channelName := s.uniqueName("chained_capture")
 	manager := facades.Notification()
@@ -248,8 +227,6 @@ func (s *NotificationTestSuite) TestOnDemandChainedRouteNotifyNow() {
 	s.Equal([]any{cn}, capturedSends)
 }
 
-// TestShouldSendSkipsChannel covers NotificationWithShouldSend: returning
-// false must skip delivery entirely (no row), true must deliver.
 func (s *NotificationTestSuite) TestShouldSendSkipsChannel() {
 	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "789").NotifyNow(&shouldSendNotification{shouldSend: false}))
 
@@ -264,8 +241,6 @@ func (s *NotificationTestSuite) TestShouldSendSkipsChannel() {
 	s.Equal(int64(1), count)
 }
 
-// TestAfterSendingHook covers NotificationWithAfterSending: the hook must
-// run after a successful channel delivery.
 func (s *NotificationTestSuite) TestAfterSendingHook() {
 	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "1").NotifyNow(&afterSendingNotification{}))
 	s.True(afterSendingCalled)
@@ -275,10 +250,6 @@ func (s *NotificationTestSuite) TestAfterSendingHook() {
 	s.Equal(int64(1), count)
 }
 
-// TestNotificationWithDatabaseConnectionDefault covers
-// NotificationWithDatabaseConnection.DatabaseConnection: an empty
-// connection name routes to the default connection and the row is
-// persisted there.
 func (s *NotificationTestSuite) TestNotificationWithDatabaseConnectionDefault() {
 	s.NoError(facades.Notification().Route(notification.ChannelDatabase, "101").NotifyNow(&defaultConnectionNotification{}))
 
@@ -287,10 +258,6 @@ func (s *NotificationTestSuite) TestNotificationWithDatabaseConnectionDefault() 
 	s.Equal(int64(1), count)
 }
 
-// TestNotificationWithDatabaseConnectionCustomConnection covers
-// NotificationWithDatabaseConnection.DatabaseConnection returning a
-// non-empty name: delivery is routed to that connection and the default
-// connection stays untouched.
 func (s *NotificationTestSuite) TestNotificationWithDatabaseConnectionCustomConnection() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"database.connections.reporting": map[string]any{
@@ -331,8 +298,6 @@ func (s *NotificationTestSuite) TestNotificationWithDatabaseConnectionCustomConn
 	s.Equal(int64(0), count)
 }
 
-// TestCustomChannel covers Manager.Extend + Channel.Name/Channel.Send with a
-// user channel whose Send produces an observable side effect.
 func (s *NotificationTestSuite) TestCustomChannel() {
 	channelName := s.uniqueName("capture_channel")
 	manager := facades.Notification()
@@ -344,36 +309,24 @@ func (s *NotificationTestSuite) TestCustomChannel() {
 	s.Equal([]any{cn}, capturedSends)
 }
 
-// TestSendToUnknownChannel covers the error path for an unregistered
-// channel name.
 func (s *NotificationTestSuite) TestSendToUnknownChannel() {
 	err := facades.Notification().Route("slack", "route").NotifyNow(&unknownChannelNotification{})
 	s.Error(err)
 	s.ErrorIs(err, frameworkerrors.NotificationChannelNotFound.Args("slack"))
 }
 
-// TestSendMailNotification covers MailableNotification.ToMail plus
-// Notifiable.RouteNotificationFor("mail") against a real SMTP server.
-// Skipped when mail.host is unset (resolved from config, which loads .env).
 func (s *NotificationTestSuite) TestSendMailNotification() {
 	mailTo := s.mailRecipient()
 
 	s.NoError(facades.Notification().Send(&models.User{Mail: mailTo}, notifications.NewOrderShipped("notification-mail")))
 }
 
-// TestSendMailNotificationMailRoutable covers MailRoutable.RouteNotificationForMail
-// against a real SMTP server. Skipped when mail.host is unset (resolved from
-// config, which loads .env).
 func (s *NotificationTestSuite) TestSendMailNotificationMailRoutable() {
 	mailTo := s.mailRecipient()
 
 	s.NoError(facades.Notification().Send(&mailRoutableNotifiable{to: mailTo}, notifications.NewOrderShipped("notification-mail-routable")))
 }
 
-// TestDatabaseRoutableTypedRoute covers DatabaseRoutable.RouteNotificationForDatabase:
-// the typed route is preferred over RouteNotificationFor, so the persisted
-// NotifiableID comes from the typed route even when the generic route
-// returns a different value.
 func (s *NotificationTestSuite) TestDatabaseRoutableTypedRoute() {
 	s.NoError(facades.Notification().Send(
 		&databaseRoutableNotifiable{typed: "42", fallback: "wrong-route"},
@@ -386,9 +339,6 @@ func (s *NotificationTestSuite) TestDatabaseRoutableTypedRoute() {
 	s.Equal("42", rows[0].NotifiableID)
 }
 
-// TestDatabaseRoutableFallbackToGenericRoute covers the empty-typed-route
-// fallback: an empty RouteNotificationForDatabase result is not an error by
-// itself — the channel falls back to RouteNotificationFor(ChannelDatabase).
 func (s *NotificationTestSuite) TestDatabaseRoutableFallbackToGenericRoute() {
 	s.NoError(facades.Notification().Send(
 		&databaseRoutableNotifiable{typed: "", fallback: "43"},
@@ -401,9 +351,6 @@ func (s *NotificationTestSuite) TestDatabaseRoutableFallbackToGenericRoute() {
 	s.Equal("43", rows[0].NotifiableID)
 }
 
-// TestDatabaseRoutableEmptyRouteError covers the error path: only an empty
-// result from both RouteNotificationForDatabase and RouteNotificationFor is
-// an error.
 func (s *NotificationTestSuite) TestDatabaseRoutableEmptyRouteError() {
 	err := facades.Notification().Send(
 		&databaseRoutableNotifiable{},
@@ -412,10 +359,6 @@ func (s *NotificationTestSuite) TestDatabaseRoutableEmptyRouteError() {
 	s.ErrorIs(err, frameworkerrors.NotificationDatabaseEmptyRoute)
 }
 
-// TestSendMailNotificationEmptyRoute covers the reworded
-// NotificationMailEmptyRoute error: a notifiable with no mail route (and no
-// MailRoutable) errors in resolveAddresses before any SMTP send, so the
-// test runs even when mail.host is unset.
 func (s *NotificationTestSuite) TestSendMailNotificationEmptyRoute() {
 	err := facades.Notification().Send(
 		&mailEmptyRouteNotifiable{},
@@ -424,9 +367,6 @@ func (s *NotificationTestSuite) TestSendMailNotificationEmptyRoute() {
 	s.ErrorIs(err, frameworkerrors.NotificationMailEmptyRoute)
 }
 
-// TestCommandMakeNotification covers the make:notification command: stub
-// generation, already-exists behavior, nested packages and the --database
-// variant.
 func (s *NotificationTestSuite) TestCommandMakeNotification() {
 	notificationName := s.uniqueName("NotificationFeature")
 	nestedPackage := s.uniqueName("NotificationFeatureNested")
@@ -481,9 +421,6 @@ func (s *NotificationTestSuite) TestCommandMakeNotification() {
 	s.True(file.Contains(nestedPath, "type "+nestedNotificationName+" struct {"))
 }
 
-// TestCommandNotificationsTable covers the notifications:table command: it
-// generates a migration file, auto-registers it in bootstrap/migrations.go
-// and warns when the migration already exists.
 func (s *NotificationTestSuite) TestCommandNotificationsTable() {
 	migrationsPath := path.Bootstrap("migrations.go")
 	originalContent, err := os.ReadFile(migrationsPath)
@@ -570,6 +507,235 @@ func (s *NotificationTestSuite) uniqueName(prefix string) string {
 	return fmt.Sprintf("%s%d", prefix, atomic.AddUint64(&s.counter, 1))
 }
 
+// extendFlakyChannel registers a flaky custom channel on the notification
+// Manager that the queued DispatchJob will use. The Manager is bound as a
+// singleton (framework#1537), so facades.Notification() returns the same
+// instance that the boot-time DispatchJob registered by registerJobs holds:
+// runtime Extend calls are visible to the worker's delivery without any
+// re-registration.
+//
+// Caution: this mutates global queue state (the shared JobStorer), so the
+// tests that call it MUST NOT be run with t.Parallel(). Cleanup relies on
+// each test's OverrideConfig defer scope.Restore() → facades.App().Restart(),
+// which re-runs registerJobs and re-registers the default DispatchJob.
+func (s *NotificationTestSuite) extendFlakyChannel(name string, failUntil int, alwaysFail bool) *flakyChannel {
+	flaky := &flakyChannel{name: name, failUntil: failUntil, alwaysFail: alwaysFail}
+	facades.Notification().Extend(flaky)
+
+	return flaky
+}
+
+func (s *NotificationTestSuite) TestSendQueuedNotificationWithTriesAndBackoff() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default":        "database",
+		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	channelName := s.uniqueName("flaky")
+	flaky := s.extendFlakyChannel(channelName, 0, true)
+
+	s.NoError(facades.Notification().Route(channelName, "route").Notify(
+		&retryableNotification{channel: channelName, tries: 3, backoff: []time.Duration{100 * time.Millisecond, 200 * time.Millisecond}},
+	))
+
+	// Dispatch-time capture: the retry policy is serialized to the payload.
+	item := s.readQueuedNotificationItem("default")
+	s.Equal(3, item.Tries)
+	s.Equal([]int64{100, 200}, item.Backoff) // backoff in ms
+
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Connection: "database",
+		Queue:      "default",
+		Concurrent: 1,
+		Tries:      1, // notification policy must override the worker's tries
+	})
+	workerErr := make(chan error, 1)
+	start := time.Now()
+	go func() { workerErr <- worker.Run() }()
+
+	elapsed, ok := s.waitForFailedNotification(start, 5*time.Second)
+	_ = worker.Shutdown()
+	s.Require().True(ok, "expected goravel_notifications:dispatch job to fail within 5s")
+	s.NoError(<-workerErr, "worker should start and stop cleanly")
+
+	count, err := facades.DB().Table("jobs").Count()
+	s.NoError(err)
+	s.Equal(int64(0), count, "job should be consumed")
+
+	s.Equal(3, flaky.attempts(), "notification Tries=3 should override worker Tries=1")
+	// Coarse sanity check only: the database worker's pop loop sleeps a fixed
+	// ~1s interval between retries, so elapsed is dominated by that poll
+	// interval rather than by the 100ms/200ms backoff. The lower bound catches
+	// a missing retry path (e.g. no retries at all), not backoff regressions.
+	s.GreaterOrEqual(elapsed, 300*time.Millisecond, "retries should not complete before the release delays")
+	s.Less(elapsed, 5*time.Second, "retries should complete within 5s")
+}
+
+func (s *NotificationTestSuite) TestSendQueuedNotificationWithoutTriesSingleShot() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default":        "database",
+		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	channelName := s.uniqueName("flaky")
+	flaky := s.extendFlakyChannel(channelName, 0, true)
+
+	s.NoError(facades.Notification().Route(channelName, "route").Notify(
+		&retryableNotification{channel: channelName, tries: 0},
+	))
+
+	item := s.readQueuedNotificationItem("default")
+	s.Zero(item.Tries) // omitempty: no retry policy serialized
+	s.Empty(item.Backoff)
+
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Connection: "database",
+		Queue:      "default",
+		Concurrent: 1,
+		Tries:      3, // worker would retry, but the notification stays single-shot
+	})
+	workerErr := make(chan error, 1)
+	start := time.Now()
+	go func() { workerErr <- worker.Run() }()
+
+	_, ok := s.waitForFailedNotification(start, 5*time.Second)
+	_ = worker.Shutdown()
+	s.Require().True(ok, "expected goravel_notifications:dispatch job to fail within 5s")
+	s.NoError(<-workerErr, "worker should start and stop cleanly")
+
+	count, err := facades.DB().Table("jobs").Count()
+	s.NoError(err)
+	s.Equal(int64(0), count)
+	s.Equal(1, flaky.attempts(), "notification without Tries must fail after a single attempt despite worker Tries=3")
+}
+
+func (s *NotificationTestSuite) TestSendQueuedNotificationBackoffWithoutTriesSuppressed() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default":        "database",
+		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	channelName := s.uniqueName("flaky")
+	s.extendFlakyChannel(channelName, 0, true)
+
+	s.NoError(facades.Notification().Route(channelName, "route").Notify(
+		&retryableNotification{channel: channelName, tries: 0, backoff: []time.Duration{time.Second}},
+	))
+
+	// Dispatch only (no worker): backoff must not serialize without tries.
+	item := s.readQueuedNotificationItem("default")
+	s.Zero(item.Tries)
+	s.Empty(item.Backoff)
+}
+
+func (s *NotificationTestSuite) TestSendQueuedOrderFailedCapturesRetryPolicy() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default":        "database",
+		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	user := &models.User{Name: "Bowen", Mail: "bowen@example.com"}
+	s.Require().NoError(facades.Orm().Query().Create(user))
+
+	s.NoError(facades.Notification().Send(user, notifications.NewOrderFailed("42")))
+
+	item := s.readQueuedNotificationItem("default")
+	s.Equal(3, item.Tries)
+	s.Equal([]int64{1000, 2000}, item.Backoff) // demo [1s, 2s] → ms
+}
+
+func (s *NotificationTestSuite) TestSendQueuedNotificationRetriesTransientFailure() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default":        "database",
+		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	channelName := s.uniqueName("flaky")
+	flaky := s.extendFlakyChannel(channelName, 2, false)
+
+	s.NoError(facades.Notification().Route(channelName, "route").Notify(
+		&retryableNotification{channel: channelName, tries: 3, backoff: []time.Duration{100 * time.Millisecond, 200 * time.Millisecond}},
+	))
+
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Connection: "database",
+		Queue:      "default",
+		Concurrent: 1,
+		Tries:      1,
+	})
+	workerErr := make(chan error, 1)
+	go func() { workerErr <- worker.Run() }()
+
+	s.Require().Eventually(func() bool { return flaky.attempts() >= 3 }, 5*time.Second, 100*time.Millisecond)
+	_ = worker.Shutdown()
+	s.NoError(<-workerErr, "worker should start and stop cleanly")
+
+	s.Equal(3, flaky.attempts(), "delivery should have succeeded on the third attempt")
+	count, err := facades.DB().Table("jobs").Count()
+	s.NoError(err)
+	s.Equal(int64(0), count, "job should be consumed after recovery")
+
+	// No failed job: the retry recovered instead of failing.
+	failedJobs, err := facades.Queue().Failer().All()
+	s.NoError(err)
+	s.Empty(failedJobs)
+}
+
+// waitForFailedNotification polls the queue failer until a failed
+// goravel_notifications:dispatch job appears, returning elapsed time since
+// start. Mirrors waitForFailedBroadcast; relies on RefreshDatabase resetting
+// failed_jobs in SetupTest and each test dispatching exactly one queued
+// notification.
+func (s *NotificationTestSuite) waitForFailedNotification(start time.Time, timeout time.Duration) (time.Duration, bool) {
+	deadline := time.Now().Add(timeout)
+	for {
+		failedJobs, err := facades.Queue().Failer().All()
+		if err != nil {
+			s.T().Logf("failed to list failed jobs: %v", err)
+		} else {
+			for _, fj := range failedJobs {
+				if fj.Signature() == "goravel_notifications:dispatch" {
+					return time.Since(start), true
+				}
+			}
+		}
+		if time.Now().After(deadline) {
+			return time.Since(start), false
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
+// readQueuedNotificationItem decodes the dispatch-time Tries/Backoff carried
+// in the jobs table payload for the given queue.
+func (s *NotificationTestSuite) readQueuedNotificationItem(queue string) queuedNotificationItem {
+	var jobs []jobRow
+	s.Require().NoError(facades.DB().Table("jobs").Where("queue", queue).Get(&jobs))
+	s.Require().Len(jobs, 1)
+
+	var payload struct {
+		Args []struct {
+			Value string `json:"value"`
+		} `json:"args"`
+	}
+	s.Require().NoError(json.Unmarshal([]byte(jobs[0].Payload), &payload))
+	s.Require().Len(payload.Args, 1)
+
+	var item queuedNotificationItem
+	s.Require().NoError(json.Unmarshal([]byte(payload.Args[0].Value), &item))
+	return item
+}
+
 // listRelativeMigrationFiles lists *.go files under the cwd-relative
 // database/migrations directory (the path the notifications:table command
 // writes to).
@@ -605,7 +771,87 @@ type notificationRow struct {
 
 // jobRow mirrors the jobs table column asserted in the queue tests.
 type jobRow struct {
-	Queue string `db:"queue"`
+	Queue   string `db:"queue"`
+	Payload string `db:"payload"`
+}
+
+// flakyChannel implements notification.ResolvableChannel. Deliver fails the
+// first failUntil invocations (or always, when alwaysFail is set), then
+// succeeds, recording every invocation so tests can assert the exact attempt
+// count without racing the worker goroutine.
+type flakyChannel struct {
+	name       string
+	failUntil  int
+	alwaysFail bool
+
+	mu           sync.Mutex
+	deliverCount int
+}
+
+func (f *flakyChannel) Name() string { return f.name }
+
+// Send satisfies Channel (embedded in ResolvableChannel); the queued path
+// calls Resolve+Deliver directly, so this mirrors DatabaseChannel.Send.
+func (f *flakyChannel) Send(notifiable notification.Notifiable, n notification.Notification) error {
+	route, payload, err := f.Resolve(notifiable, n)
+	if err != nil {
+		return err
+	}
+	return f.Deliver(route, payload)
+}
+
+func (f *flakyChannel) Resolve(notifiable notification.Notifiable, n notification.Notification) (string, []byte, error) {
+	return "route", []byte(`{}`), nil
+}
+
+func (f *flakyChannel) Deliver(route string, payload []byte) error {
+	f.mu.Lock()
+	f.deliverCount++
+	count := f.deliverCount
+	f.mu.Unlock()
+
+	if f.alwaysFail || count <= f.failUntil {
+		return errors.New("transient delivery failure")
+	}
+	return nil
+}
+
+func (f *flakyChannel) attempts() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.deliverCount
+}
+
+// retryableNotification implements ShouldQueue + NotificationWithTries +
+// NotificationWithBackoff, routing to a flaky custom channel so the queued
+// DispatchJob's Tries/Backoff policy is exercised end-to-end.
+type retryableNotification struct {
+	channel string
+	tries   int
+	backoff []time.Duration
+}
+
+func (r *retryableNotification) Via(notifiable notification.Notifiable) []string {
+	return []string{r.channel}
+}
+
+func (r *retryableNotification) OnQueue() string      { return "" }
+func (r *retryableNotification) OnConnection() string { return "" }
+
+func (r *retryableNotification) Tries(channel string) int {
+	return r.tries
+}
+
+func (r *retryableNotification) Backoff(channel string) []time.Duration {
+	return r.backoff
+}
+
+// queuedNotificationItem decodes the dispatch-time Tries/Backoff carried in
+// the jobs table payload. The dispatch arg is a JSON string whose fields
+// mirror broadcasting's broadcastItem wire format (backoff in ms).
+type queuedNotificationItem struct {
+	Tries   int     `json:"tries"`
+	Backoff []int64 `json:"backoff"`
 }
 
 // ---- Test-local notifications / channels / notifiables ----
