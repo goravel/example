@@ -573,10 +573,12 @@ func (s *NotificationTestSuite) TestSendQueuedNotificationWithTriesAndBackoff() 
 	s.Less(elapsed, 5*time.Second, "retries should complete within 5s")
 }
 
-func (s *NotificationTestSuite) TestSendQueuedNotificationWithoutTriesSingleShot() {
+func (s *NotificationTestSuite) TestSendQueuedNotificationWithoutTriesFallsBackToWorkerTries() {
 	scope, err := tests.OverrideConfig(map[string]any{
-		"queue.default":        "database",
-		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+		"queue.default": "database",
+		// Disable the framework's boot-time queue runner (Tries=1) so it can't
+		// steal the re-released job between attempts.
+		"app.disabled_runners": []string{"goravel:queue", "app:queue:database", "app:queue:test"},
 	})
 	s.Require().NoError(err)
 	defer func() { s.NoError(scope.Restore()) }()
@@ -596,24 +598,24 @@ func (s *NotificationTestSuite) TestSendQueuedNotificationWithoutTriesSingleShot
 		Connection: "database",
 		Queue:      "default",
 		Concurrent: 1,
-		Tries:      3, // worker would retry, but the notification stays single-shot
+		Tries:      3, // no declared Tries → the worker's Tries now governs
 	})
 	workerErr := make(chan error, 1)
 	start := time.Now()
 	go func() { workerErr <- worker.Run() }()
 
-	_, ok := s.waitForFailedNotification(start, 5*time.Second)
+	_, ok := s.waitForFailedNotification(start, 10*time.Second)
 	_ = worker.Shutdown()
-	s.Require().True(ok, "expected goravel_notifications:dispatch job to fail within 5s")
+	s.Require().True(ok, "expected goravel_notifications:dispatch job to fail within 10s")
 	s.NoError(<-workerErr, "worker should start and stop cleanly")
 
 	count, err := facades.DB().Table("jobs").Count()
 	s.NoError(err)
 	s.Equal(int64(0), count)
-	s.Equal(1, flaky.attempts(), "notification without Tries must fail after a single attempt despite worker Tries=3")
+	s.Equal(3, flaky.attempts(), "notification without Tries must fall back to the worker's Tries=3")
 }
 
-func (s *NotificationTestSuite) TestSendQueuedNotificationBackoffWithoutTriesSuppressed() {
+func (s *NotificationTestSuite) TestSendQueuedNotificationBackoffWithoutTriesSerialized() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"queue.default":        "database",
 		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
@@ -628,10 +630,51 @@ func (s *NotificationTestSuite) TestSendQueuedNotificationBackoffWithoutTriesSup
 		&retryableNotification{channel: channelName, tries: 0, backoff: []time.Duration{time.Second}},
 	))
 
-	// Dispatch only (no worker): backoff must not serialize without tries.
+	// Dispatch only (no worker): backoff must serialize even without tries,
+	// so worker-driven retries honor the declared delay.
 	item := s.readQueuedNotificationItem("default")
 	s.Zero(item.Tries)
-	s.Empty(item.Backoff)
+	s.Equal([]int64{1000}, item.Backoff) // 1s → ms
+}
+
+func (s *NotificationTestSuite) TestSendQueuedNotificationBackoffWithoutTriesFallsBackToWorkerTries() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default": "database",
+		// Disable the framework's boot-time queue runner (Tries=1) so it can't
+		// steal the job during the backoff release window.
+		"app.disabled_runners": []string{"goravel:queue", "app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	channelName := s.uniqueName("flaky")
+	flaky := s.extendFlakyChannel(channelName, 0, true)
+
+	s.NoError(facades.Notification().Route(channelName, "route").Notify(
+		&retryableNotification{channel: channelName, tries: 0, backoff: []time.Duration{100 * time.Millisecond, 200 * time.Millisecond}},
+	))
+
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Connection: "database",
+		Queue:      "default",
+		Concurrent: 1,
+		Tries:      3, // no declared Tries → worker's Tries governs, backoff still applies
+	})
+	workerErr := make(chan error, 1)
+	start := time.Now()
+	go func() { workerErr <- worker.Run() }()
+
+	elapsed, ok := s.waitForFailedNotification(start, 10*time.Second)
+	_ = worker.Shutdown()
+	s.Require().True(ok, "expected goravel_notifications:dispatch job to fail within 10s")
+	s.NoError(<-workerErr, "worker should start and stop cleanly")
+
+	s.Equal(3, flaky.attempts(), "worker Tries=3 should govern a notification without its own Tries")
+	// Coarse sanity check only: the database worker's pop loop sleeps a fixed
+	// ~1s interval between retries, so elapsed is dominated by that poll
+	// interval rather than by the 100ms/200ms backoff. This only confirms the
+	// retry path exists (3 attempts); it does not verify backoff is honored.
+	s.GreaterOrEqual(elapsed, 300*time.Millisecond, "retries should not complete before the release delays")
 }
 
 func (s *NotificationTestSuite) TestSendQueuedOrderFailedCapturesRetryPolicy() {
