@@ -1043,16 +1043,23 @@ func (s *BroadcastTestSuite) TestDispatch_WithTriesAndBackoff() {
 	s.NoError(err)
 	s.Equal(int64(0), count, "job should be consumed")
 
-	// Without the 100ms+200ms release delays this would be ~0 and FAIL; the
-	// upper bound catches pathological slowness.
-	s.GreaterOrEqual(elapsed, 300*time.Millisecond, "100ms + 200ms backoff should have elapsed before the final attempt")
+	// Coarse sanity check only: the database worker's pop loop sleeps a fixed
+	// ~1s interval between retries, so elapsed is dominated by that poll
+	// interval rather than by the 100ms/200ms backoff. The lower bound catches
+	// a missing retry path (e.g. no retries at all), not backoff regressions.
+	s.GreaterOrEqual(elapsed, 300*time.Millisecond, "retries should not complete before the release delays")
 	s.Less(elapsed, 5*time.Second, "retries should complete within 5s")
 	s.Equal(before+3, s.countBroadcastEvents("Retryable Broadcast"),
 		"event BroadcastTries=3 should override worker Tries=1")
 }
 
-func (s *BroadcastTestSuite) TestDispatch_WithoutTries_SingleShot() {
-	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "database"})
+func (s *BroadcastTestSuite) TestDispatch_WithoutTries_FallsBackToWorkerTries() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default": "database",
+		// Disable the framework's boot-time queue runner (Tries=1) so it can't
+		// steal the re-released job between attempts.
+		"app.disabled_runners": []string{"goravel:queue", "app:queue:database", "app:queue:test"},
+	})
 	s.Require().NoError(err)
 	defer func() { s.NoError(scope.Restore()) }()
 
@@ -1078,7 +1085,7 @@ func (s *BroadcastTestSuite) TestDispatch_WithoutTries_SingleShot() {
 		Connection: "database",
 		Queue:      "default",
 		Concurrent: 1,
-		Tries:      3, // worker would retry, but the event stays single-shot
+		Tries:      3, // no BroadcastTries → the worker's Tries now governs
 	})
 	workerErr := make(chan error, 1)
 	start := time.Now()
@@ -1094,11 +1101,11 @@ func (s *BroadcastTestSuite) TestDispatch_WithoutTries_SingleShot() {
 	count, err := facades.DB().Table("jobs").Count()
 	s.NoError(err)
 	s.Equal(int64(0), count)
-	s.Equal(before+1, s.countBroadcastEvents("Single Shot Broadcast"),
-		"broadcast without BroadcastTries must fail after a single attempt despite worker Tries=3")
+	s.Equal(before+3, s.countBroadcastEvents("Single Shot Broadcast"),
+		"broadcast without BroadcastTries must fall back to the worker's Tries=3")
 }
 
-func (s *BroadcastTestSuite) TestDispatch_BackoffWithoutTries_Suppressed() {
+func (s *BroadcastTestSuite) TestDispatch_BackoffWithoutTries_Serialized() {
 	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "database"})
 	s.Require().NoError(err)
 	defer func() { s.NoError(scope.Restore()) }()
@@ -1108,14 +1115,77 @@ func (s *BroadcastTestSuite) TestDispatch_BackoffWithoutTries_Suppressed() {
 		ChannelName: "backoff-only-orders",
 		ShouldFire:  true,
 		Conns:       []string{"null"},
-		Backoff:     []time.Duration{time.Second}, // no BroadcastTries → ignored
+		Backoff:     []time.Duration{time.Second}, // no BroadcastTries → applies to worker-driven retries
 		OrderData:   map[string]any{"id": 3},
 	}))
 
 	var jobs []frameworkmodels.Job
 	s.NoError(facades.DB().Table("jobs").Where("queue", "default").Get(&jobs))
 	s.Require().Len(jobs, 1)
-	s.NotContains(jobs[0].Payload, `"backoff"`, "backoff must not serialize without tries")
+	var payload struct {
+		Args []struct {
+			Value string `json:"value"`
+		} `json:"args"`
+	}
+	s.NoError(json.Unmarshal([]byte(jobs[0].Payload), &payload))
+	s.Require().Len(payload.Args, 1)
+	var item struct {
+		Tries   int     `json:"tries"`
+		Backoff []int64 `json:"backoff"`
+	}
+	s.NoError(json.Unmarshal([]byte(payload.Args[0].Value), &item))
+	s.Zero(item.Tries)
+	s.Equal([]int64{1000}, item.Backoff, "backoff must serialize even without tries")
+}
+
+func (s *BroadcastTestSuite) TestDispatch_BackoffWithoutTries_FallsBackToWorkerTries() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default": "database",
+		// Disable the framework's boot-time queue runner (Tries=1) so it can't
+		// steal the job during the backoff release window.
+		"app.disabled_runners": []string{"goravel:queue", "app:queue:database", "app:queue:test"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	s.NoError(facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
+		ChannelType: "public",
+		ChannelName: "backoff-fallback-orders",
+		ShouldFire:  true,
+		// "log" emits its per-attempt line, then the unconfigured "broken"
+		// connection fails the attempt (broadcastToConns short-circuits).
+		Conns:     []string{"log", "broken"},
+		Backoff:   []time.Duration{100 * time.Millisecond, 200 * time.Millisecond}, // no BroadcastTries
+		OrderData: map[string]any{"id": 4, "name": "Backoff Fallback Broadcast"},
+	}))
+
+	before := s.countBroadcastEvents("Backoff Fallback Broadcast")
+	worker := facades.Queue().Worker(contractsqueue.Args{
+		Connection: "database",
+		Queue:      "default",
+		Concurrent: 1,
+		Tries:      3, // no BroadcastTries → worker's Tries governs, backoff still applies
+	})
+	workerErr := make(chan error, 1)
+	start := time.Now()
+	go func() { workerErr <- worker.Run() }()
+
+	elapsed, ok := s.waitForFailedBroadcast(start, 10*time.Second)
+	_ = worker.Shutdown()
+	s.Require().True(ok, "expected goravel_broadcast job to fail within 10s")
+	s.NoError(<-workerErr, "worker should start and stop cleanly")
+
+	count, err := facades.DB().Table("jobs").Count()
+	s.NoError(err)
+	s.Equal(int64(0), count, "job should be consumed")
+	// Coarse sanity check only: the database worker's pop loop sleeps a fixed
+	// ~1s interval between retries, so elapsed is dominated by that poll
+	// interval rather than by the 100ms/200ms backoff. This only confirms the
+	// retry path exists (3 attempts); it does not verify backoff is honored.
+	s.GreaterOrEqual(elapsed, 300*time.Millisecond, "retries should not complete before the release delays")
+	s.Less(elapsed, 10*time.Second, "retries should complete within 10s")
+	s.Equal(before+3, s.countBroadcastEvents("Backoff Fallback Broadcast"),
+		"broadcast without BroadcastTries must fall back to the worker's Tries=3")
 }
 
 func (s *BroadcastTestSuite) TestDispatchViaHTTP_Public_WithQueueOptions() {

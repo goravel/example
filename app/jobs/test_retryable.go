@@ -84,9 +84,11 @@ func (r *TestRetryable) Handle(args ...any) error {
 
 // ShouldRetry implements queue.JobWithShouldRetry. It retries while the
 // attempt count is within TestRetryableFailUntil, and gives up afterwards,
-// matching Handle's failure window. The 100ms delay is preserved by the
-// database queue driver (time.Time precision).
-func (r *TestRetryable) ShouldRetry(err error, attempt int) (bool, time.Duration) {
+// matching Handle's failure window. maxTries is the queue worker's Tries
+// config and is ignored here because TestRetryable declares its own policy.
+// The 100ms delay is preserved by the database queue driver (time.Time
+// precision).
+func (r *TestRetryable) ShouldRetry(err error, attempt, maxTries int) (bool, time.Duration) {
 	// TestRetryableFailUntil is set once at dispatch time and never mutated
 	// during the run, so a plain read without the mutex is safe here.
 	if attempt <= TestRetryableFailUntil {
