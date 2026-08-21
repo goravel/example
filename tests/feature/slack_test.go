@@ -47,7 +47,7 @@ func (s *SlackTestSuite) TestSendSlackRichNotification() {
 	channel := s.requireSlack()
 
 	n := &slackRichNotification{msg: slackcontracts.Message{
-		Text: "Invoice paid",
+		Text: "Goravel Slack integration test — rich delivery",
 		Attachments: []slackcontracts.Attachment{
 			{
 				Title: "Details", Text: "Invoice #123", Color: "good",
