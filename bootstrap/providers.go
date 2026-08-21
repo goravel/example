@@ -38,7 +38,7 @@ import (
 	"github.com/goravel/postgres"
 	"github.com/goravel/redis"
 	"github.com/goravel/s3"
-	slack "github.com/goravel/slack"
+	"github.com/goravel/slack"
 	"github.com/goravel/sqlite"
 	"github.com/goravel/sqlserver"
 	"goravel/packages/viewtest"

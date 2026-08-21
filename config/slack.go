@@ -12,7 +12,5 @@ func init() {
 		// https://api.slack.com/apps — needs the chat:write scope, and
 		// the bot must be invited to any channel it should post in.
 		"token": config.Env("SLACK_BOT_TOKEN", ""),
-		// channel is the target channel or user ID the tests post to.
-		"channel": config.Env("SLACK_CHANNEL", ""),
 	})
 }

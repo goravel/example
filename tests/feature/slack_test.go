@@ -3,10 +3,9 @@ package feature
 import (
 	"testing"
 
-	"github.com/stretchr/testify/suite"
-
 	"github.com/goravel/framework/contracts/notification"
 	slackcontracts "github.com/goravel/slack/contracts"
+	"github.com/stretchr/testify/suite"
 
 	"goravel/app/facades"
 	"goravel/tests"
@@ -21,18 +20,14 @@ func TestSlackTestSuite(t *testing.T) {
 	suite.Run(t, &SlackTestSuite{})
 }
 
-// requireSlack skips the test unless a bot token and a target channel are
-// configured, and returns the channel to post to. Mirrors the mail live-test
-// pattern: skipped locally, exercised for real in CI when secrets are set.
+// requireSlack skips the test unless a bot token is configured, and returns
+// the channel to post to. Mirrors the mail live-test pattern: skipped locally,
+// exercised for real in CI when secrets are set.
 func (s *SlackTestSuite) requireSlack() string {
 	if facades.Config().GetString("slack.token") == "" {
 		s.T().Skip("skipping Slack test: set SLACK_BOT_TOKEN to run against a real Slack workspace")
 	}
-	channel := facades.Config().GetString("slack.channel")
-	if channel == "" {
-		s.T().Skip("skipping Slack test: set SLACK_CHANNEL to the target channel or user ID")
-	}
-	return channel
+	return "general"
 }
 
 func (s *SlackTestSuite) TestSlackChannelRegistered() {
