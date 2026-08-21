@@ -24,6 +24,7 @@ import (
 	"github.com/goravel/framework/support/file"
 	"github.com/goravel/framework/support/path"
 	"github.com/goravel/framework/support/str"
+	slackcontracts "github.com/goravel/slack/contracts"
 
 	"goravel/app/facades"
 	"goravel/app/models"
@@ -57,7 +58,7 @@ func (s *NotificationTestSuite) TestFacadeResolves() {
 	s.NotNil(facades.Notification())
 	s.NotNil(facades.Notification().Channel(notification.ChannelDatabase))
 	s.NotNil(facades.Notification().Channel(notification.ChannelMail))
-	s.Nil(facades.Notification().Channel("slack"))
+	s.NotNil(facades.Notification().Channel(slackcontracts.ChannelName))
 }
 
 func (s *NotificationTestSuite) TestSendDatabaseNotification() {
@@ -310,9 +311,9 @@ func (s *NotificationTestSuite) TestCustomChannel() {
 }
 
 func (s *NotificationTestSuite) TestSendToUnknownChannel() {
-	err := facades.Notification().Route("slack", "route").NotifyNow(&unknownChannelNotification{})
+	err := facades.Notification().Route("unknown-channel", "route").NotifyNow(&unknownChannelNotification{})
 	s.Error(err)
-	s.ErrorIs(err, frameworkerrors.NotificationChannelNotFound.Args("slack"))
+	s.ErrorIs(err, frameworkerrors.NotificationChannelNotFound.Args("unknown-channel"))
 }
 
 func (s *NotificationTestSuite) TestSendMailNotification() {
@@ -1016,7 +1017,7 @@ func (r *chainedViaNotification) ToDatabase(notifiable notification.Notifiable) 
 type unknownChannelNotification struct{}
 
 func (r *unknownChannelNotification) Via(notifiable notification.Notifiable) []string {
-	return []string{"slack"}
+	return []string{"unknown-channel"}
 }
 
 // mailRoutableNotifiable implements MailRoutable with a fixed recipient.

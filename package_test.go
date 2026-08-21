@@ -189,3 +189,15 @@ func TestInstallAndPublishAndUninstallLocalPackage(t *testing.T) {
 	assert.False(t, file.Contain(path.Bootstrap("providers.go"), "goravel/packages/sms"))
 	assert.False(t, file.Contain(path.Bootstrap("providers.go"), "&sms.ServiceProvider{}"))
 }
+
+func TestInstallAndUninstallSlack(t *testing.T) {
+	assert.NoError(t, facades.Artisan().Call("package:uninstall github.com/goravel/slack"))
+	assert.False(t, file.Contain(path.Bootstrap("providers.go"), "&slack.ServiceProvider{},"))
+	assert.False(t, file.Contain(path.Bootstrap("providers.go"), "github.com/goravel/slack"))
+	assert.False(t, file.Exists(path.Config("slack.go")))
+
+	assert.NoError(t, facades.Artisan().Call("package:install github.com/goravel/slack@master"))
+	assert.True(t, file.Contain(path.Bootstrap("providers.go"), "&slack.ServiceProvider{},"))
+	assert.True(t, file.Contain(path.Bootstrap("providers.go"), "github.com/goravel/slack"))
+	assert.True(t, file.Exists(path.Config("slack.go")))
+}
