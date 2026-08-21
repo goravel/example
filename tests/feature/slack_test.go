@@ -1,7 +1,6 @@
 package feature
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -29,7 +28,7 @@ func (s *SlackTestSuite) requireSlack() string {
 	if facades.Config().GetString("slack.token") == "" {
 		s.T().Skip("skipping Slack test: set SLACK_BOT_TOKEN to run against a real Slack workspace")
 	}
-	channel := os.Getenv("SLACK_CHANNEL")
+	channel := facades.Config().GetString("slack.channel")
 	if channel == "" {
 		s.T().Skip("skipping Slack test: set SLACK_CHANNEL to the target channel or user ID")
 	}
@@ -46,7 +45,7 @@ func (s *SlackTestSuite) TestSendSlackTextNotification() {
 	err := facades.Notification().
 		Route(slackcontracts.ChannelName, channel).
 		NotifyNow(&slackTextNotification{})
-	s.NoError(err)
+	s.NoErrorf(err, "sending to channel %q", channel)
 }
 
 func (s *SlackTestSuite) TestSendSlackRichNotification() {
@@ -68,7 +67,7 @@ func (s *SlackTestSuite) TestSendSlackRichNotification() {
 	err := facades.Notification().
 		Route(slackcontracts.ChannelName, channel).
 		NotifyNow(n)
-	s.NoError(err)
+	s.NoErrorf(err, "sending to channel %q", channel)
 }
 
 type slackTextNotification struct{}

@@ -11,6 +11,8 @@ env:
   MAIL_FROM_ADDRESS: ${{ secrets.MAIL_FROM_ADDRESS }}
   MAIL_FROM_NAME: ${{ secrets.MAIL_FROM_NAME }}
   MAIL_TO: ${{ secrets.MAIL_TO }}
+  SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+  SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
 jobs:
   ubuntu:
     strategy:
