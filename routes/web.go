@@ -9,6 +9,7 @@ import (
 
 	"goravel/app/facades"
 	"goravel/app/http/controllers"
+	appmiddleware "goravel/app/http/middleware"
 )
 
 func Web() {
@@ -93,4 +94,18 @@ func Web() {
 	facades.Route().Post("broadcasting/dispatch", broadcastController.Dispatch)
 	facades.Route().StaticFile("broadcast.html", "./resources/views/broadcast.html")
 	facades.Route().StaticFile("echo.html", "./resources/views/echo.html")
+
+	// Inertia (session-based web routes; StartSession is already global)
+	facades.Route().Middleware(
+		appmiddleware.Inertia(),
+	).Prefix("inertia").Group(func(router route.Router) {
+		inertiaController := controllers.NewInertiaController()
+		router.Get("home", inertiaController.Home)
+		router.Get("feed", inertiaController.Feed)
+		router.Get("contact", inertiaController.Contact)
+		router.Post("contact", inertiaController.StoreContact)
+		router.Get("redirect", inertiaController.RedirectTo)
+		router.Delete("redirect", inertiaController.RedirectTo)
+		router.Get("location", inertiaController.LocationTo)
+	})
 }

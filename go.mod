@@ -1,6 +1,6 @@
 module goravel
 
-go 1.25.0
+go 1.26.1
 
 require (
 	github.com/99designs/gqlgen v0.17.57
@@ -11,6 +11,7 @@ require (
 	github.com/goravel/framework v1.18.1-0.20260819065651-8776c54ddba2
 	github.com/goravel/gemini v1.18.0
 	github.com/goravel/gin v1.18.0
+	github.com/goravel/inertia v1.18.1-0.20260821083718-7f1e0d62e10d
 	github.com/goravel/minio v1.18.0
 	github.com/goravel/mysql v1.18.0
 	github.com/goravel/openai v1.18.0
@@ -170,6 +171,7 @@ require (
 	github.com/ncruces/julianday v1.0.0 // indirect
 	github.com/openai/openai-go/v3 v3.39.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.3.1 // indirect
+	github.com/petaki/inertia-go v1.15.0 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/pterm/pterm v0.12.83 // indirect
