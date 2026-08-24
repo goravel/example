@@ -304,8 +304,8 @@ github.com/goravel/gemini v1.18.0 h1:Tv6IJ3KvBvH5QD7kAM3XFQR0g8IUfkqMbRGi7dtlWUo
 github.com/goravel/gemini v1.18.0/go.mod h1:b4FueB0O0Qkz71eVWLiSaKghp+Eb/1hNNICkk7vMgrQ=
 github.com/goravel/gin v1.18.0 h1:4eIy9eAzH+0mz8SN03iwwocIGwc/2dpZkgz6Ol68KIE=
 github.com/goravel/gin v1.18.0/go.mod h1:QvS8KhRagh5DhbXvO4dTbjf1ZGdz2O56FiG+Z5nh21s=
-github.com/goravel/inertia v1.18.1-0.20260821083718-7f1e0d62e10d h1:n1X8JNZpuTjjS6o7MzNviIW1YlZ5ZsCn2pv3Ii0L0YU=
-github.com/goravel/inertia v1.18.1-0.20260821083718-7f1e0d62e10d/go.mod h1:JZ+9yNuVsLiNBdOeaby/hdaRd3svsZ9GeX3llrosNGI=
+github.com/goravel/inertia v1.18.1-0.20260824090129-ac3d472d028c h1:/tQABlAVdsM2q9Ts/B2lsfEzQ7YQvsMqDR+sDNi7OjU=
+github.com/goravel/inertia v1.18.1-0.20260824090129-ac3d472d028c/go.mod h1:JZ+9yNuVsLiNBdOeaby/hdaRd3svsZ9GeX3llrosNGI=
 github.com/goravel/minio v1.18.0 h1:+FSTAZWVFCngLKF+apo5Rglbo8Jt499LJmJiYC1QlFI=
 github.com/goravel/minio v1.18.0/go.mod h1:rOkeHL0fbL9jn9+Qy5OcX5y9VbQ+BykpfOsd5kJbOns=
 github.com/goravel/mysql v1.18.0 h1:258TNNloYhJo74wSv11n7o3xmBl+Z3NaUXIs4jPEaHs=

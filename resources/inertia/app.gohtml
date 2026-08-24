@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/public/favicon.png" />
     <title data-inertia>Goravel + Inertia</title>
     {{ if .ssr }}{{ raw .ssr.Head }}{{ end }}
+    {{ vite "resources/inertia/app.ts" }}
 </head>
 <body>
     {{ if .ssr }}{{ raw .ssr.Body }}{{ else }}<script data-page="app" type="application/json">{{ marshal .page }}</script><div id="app"></div>{{ end }}

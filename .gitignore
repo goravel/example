@@ -8,3 +8,6 @@ storage
 tmp
 tests/testdata/otel-tls/
 .opencode
+node_modules/
+public/build/
+public/hot

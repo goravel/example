@@ -14,16 +14,16 @@ func NewInertiaController() *InertiaController {
 
 func (r *InertiaController) Home(ctx http.Context) http.Response {
 	facades.Inertia().Defer(ctx, "stats", func() any { return map[string]any{"users": 1280} })
-	return facades.Inertia().Render(ctx, "Home", map[string]any{"message": "Goravel + Inertia"})
+	return facades.Inertia().Render(ctx, "Welcome", map[string]any{"message": "Goravel + Inertia"})
 }
 
 func (r *InertiaController) Feed(ctx http.Context) http.Response {
 	facades.Inertia().Merge(ctx, "items", func() any { return []map[string]any{{"id": 1, "title": "Item #1"}} })
-	return facades.Inertia().Render(ctx, "Feed", map[string]any{"page": 1})
+	return facades.Inertia().Render(ctx, "Timeline", map[string]any{"page": 1})
 }
 
 func (r *InertiaController) Contact(ctx http.Context) http.Response {
-	return facades.Inertia().Render(ctx, "Contact", map[string]any{})
+	return facades.Inertia().Render(ctx, "Message", map[string]any{})
 }
 
 func (r *InertiaController) StoreContact(ctx http.Context) http.Response {

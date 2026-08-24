@@ -22,10 +22,18 @@ type InertiaInstallTestSuite struct {
 	welcomePath      string
 	inertiaConfig    string
 	rootTemplate     string
+	packageJSONPath  string
+	viteConfigPath   string
+	tsconfigPath     string
+	faviconPath      string
 	webRoutes        []byte
 	welcomeTemplate  []byte
 	configSnapshot   []byte
 	templateSnapshot []byte
+	packageJSON      []byte
+	viteConfig       []byte
+	tsconfig         []byte
+	favicon          []byte
 }
 
 func TestInertiaInstallTestSuite(t *testing.T) {
@@ -51,6 +59,10 @@ func (s *InertiaInstallTestSuite) SetupTest() {
 	s.welcomePath = path.View("welcome.tmpl")
 	s.inertiaConfig = path.Config("inertia.go")
 	s.rootTemplate = path.Resource("inertia", "app.gohtml")
+	s.packageJSONPath = filepath.Join(s.appRoot, "package.json")
+	s.viteConfigPath = filepath.Join(s.appRoot, "vite.config.ts")
+	s.tsconfigPath = filepath.Join(s.appRoot, "tsconfig.json")
+	s.faviconPath = filepath.Join(s.appRoot, "public/favicon.png")
 
 	s.webRoutes, err = os.ReadFile(s.webRoutesPath)
 	s.Require().NoError(err)
@@ -59,6 +71,16 @@ func (s *InertiaInstallTestSuite) SetupTest() {
 	s.configSnapshot, err = os.ReadFile(s.inertiaConfig)
 	s.Require().NoError(err)
 	s.templateSnapshot, err = os.ReadFile(s.rootTemplate)
+	s.Require().NoError(err)
+	// The root toolchain and favicon are committed, so snapshot them too and
+	// restore (not delete) them in TearDownTest.
+	s.packageJSON, err = os.ReadFile(s.packageJSONPath)
+	s.Require().NoError(err)
+	s.viteConfig, err = os.ReadFile(s.viteConfigPath)
+	s.Require().NoError(err)
+	s.tsconfig, err = os.ReadFile(s.tsconfigPath)
+	s.Require().NoError(err)
+	s.favicon, err = os.ReadFile(s.faviconPath)
 	s.Require().NoError(err)
 
 	s.Require().NoError(os.Chdir(s.appRoot))
@@ -72,8 +94,9 @@ func (s *InertiaInstallTestSuite) TestInertiaInstallGeneratesFiles() {
 	s.True(file.Exists(s.inertiaConfig))
 	s.True(file.Contains(s.inertiaConfig, "github.com/goravel/framework/facades"))
 
-	// Root template regenerated with the vite stub marker, which the committed
-	// demo strips — proving --force overwrote the file.
+	// Root template regenerated with the installer's vite stub marker
+	// (`resources/js/app.ts`), which the committed template does NOT use (it
+	// points at `resources/inertia/app.ts`) — proving --force overwrote the file.
 	s.True(file.Contains(s.rootTemplate, `{{ vite "resources/js/app.ts" }}`))
 
 	// Generated demo controllers.
@@ -117,10 +140,6 @@ func (s *InertiaInstallTestSuite) TearDownTest() {
 		filepath.Join(s.appRoot, "app/http/controllers/about_controller.go"),
 		filepath.Join(s.appRoot, "app/http/middleware/handle_inertia_requests.go"),
 		filepath.Join(s.appRoot, "resources/js"),
-		filepath.Join(s.appRoot, "package.json"),
-		filepath.Join(s.appRoot, "vite.config.ts"),
-		filepath.Join(s.appRoot, "tsconfig.json"),
-		filepath.Join(s.appRoot, "public/favicon.png"),
 		filepath.Join(s.appRoot, "routes/web.go.bak"),
 		filepath.Join(s.appRoot, "routes/web.inertia.go.txt"),
 	} {
@@ -133,6 +152,12 @@ func (s *InertiaInstallTestSuite) TearDownTest() {
 	s.Require().NoError(os.WriteFile(s.welcomePath, s.welcomeTemplate, 0o644))
 	s.Require().NoError(os.WriteFile(s.inertiaConfig, s.configSnapshot, 0o644))
 	s.Require().NoError(os.WriteFile(s.rootTemplate, s.templateSnapshot, 0o644))
+	// The root toolchain + favicon are committed (the installer overwrites them);
+	// restore the committed versions rather than deleting them.
+	s.Require().NoError(os.WriteFile(s.packageJSONPath, s.packageJSON, 0o644))
+	s.Require().NoError(os.WriteFile(s.viteConfigPath, s.viteConfig, 0o644))
+	s.Require().NoError(os.WriteFile(s.tsconfigPath, s.tsconfig, 0o644))
+	s.Require().NoError(os.WriteFile(s.faviconPath, s.favicon, 0o644))
 
 	// Verify the committed state actually came back, not the install stub.
 	s.True(file.Contains(s.webRoutesPath, "appmiddleware.Inertia"))

@@ -11,7 +11,7 @@ require (
 	github.com/goravel/framework v1.18.1-0.20260819065651-8776c54ddba2
 	github.com/goravel/gemini v1.18.0
 	github.com/goravel/gin v1.18.0
-	github.com/goravel/inertia v1.18.1-0.20260821083718-7f1e0d62e10d
+	github.com/goravel/inertia v1.18.1-0.20260824090129-ac3d472d028c
 	github.com/goravel/minio v1.18.0
 	github.com/goravel/mysql v1.18.0
 	github.com/goravel/openai v1.18.0

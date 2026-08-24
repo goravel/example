@@ -87,7 +87,7 @@ func Providers() []foundation.ServiceProvider {
 		&gemini.ServiceProvider{},
 		&viewtest.ServiceProvider{},
 		&RouteProvider{},
-		&goravelinertia.ServiceProvider{},
+		&inertia.ServiceProvider{},
 		&slack.ServiceProvider{},
 	}
 }

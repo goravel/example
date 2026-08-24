@@ -83,7 +83,7 @@ func (s *InertiaTestSuite) TestRenderFullPage() {
 	resp.AssertSuccessful()
 
 	page := s.pageJSON(resp)
-	s.Equal("Home", page["component"])
+	s.Equal("Welcome", page["component"])
 
 	props := s.props(page)
 	s.Equal("Goravel + Inertia", props["message"])
@@ -110,7 +110,7 @@ func (s *InertiaTestSuite) TestRenderInertiaJSON() {
 
 	page, err := resp.Json()
 	s.Require().NoError(err)
-	s.Equal("Home", page["component"])
+	s.Equal("Welcome", page["component"])
 }
 
 func (s *InertiaTestSuite) TestVersionMismatchConflict() {

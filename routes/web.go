@@ -30,6 +30,11 @@ func Web() {
 	facades.Route().StaticFile("index.html", "./resources/views/index.html")
 	facades.Route().Static("css", "./resources/views/css")
 
+	// Inertia static assets: the committed root template links /public/favicon.png
+	// and the vite helper emits /build/... URLs from the production manifest.
+	facades.Route().Static("public", "./public")
+	facades.Route().Static("build", "./public/build")
+
 	// View Nesting
 	// Check the views in `resources/views/admin/*`
 	facades.Route().Middleware(middleware.VerifyCsrfToken()).Get("view", func(ctx http.Context) http.Response {
