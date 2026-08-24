@@ -18,6 +18,7 @@ require (
 	github.com/goravel/postgres v1.18.0
 	github.com/goravel/redis v1.18.1-0.20260804080002-ea3e2dcfbdf6
 	github.com/goravel/s3 v1.18.0
+	github.com/goravel/slack v0.0.0-20260819081718-3f42493b34e4
 	github.com/goravel/sqlite v1.18.0
 	github.com/goravel/sqlserver v1.18.0
 	github.com/gorilla/websocket v1.5.3
@@ -184,6 +185,7 @@ require (
 	github.com/samber/lo v1.53.0 // indirect
 	github.com/samber/slog-common v0.21.0 // indirect
 	github.com/samber/slog-multi v1.8.0 // indirect
+	github.com/slack-go/slack v0.17.3 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
 	github.com/spf13/afero v1.15.0 // indirect

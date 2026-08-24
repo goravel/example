@@ -236,6 +236,8 @@ github.com/go-playground/validator/v10 v10.30.1/go.mod h1:oSuBIQzuJxL//3MelwSLD5
 github.com/go-sql-driver/mysql v1.8.1/go.mod h1:wEBSXgmK//2ZFJyE+qWnIsVGmvmEKlqwuVSjsCm7DZg=
 github.com/go-sql-driver/mysql v1.9.1 h1:FrjNGn/BsJQjVRuSa8CBrM5BWA9BWoXXat3KrtSb/iI=
 github.com/go-sql-driver/mysql v1.9.1/go.mod h1:qn46aNg1333BRMNU69Lq93t8du/dwxI64Gl8i5p1WMU=
+github.com/go-test/deep v1.1.1 h1:0r/53hagsehfO4bzD2Pgr/+RgHqhmf+k1Bpse2cTu1U=
+github.com/go-test/deep v1.1.1/go.mod h1:5C2ZWiW0ErCdrYzpqxLbTX7MG14M9iiw8DgHncVwcsE=
 github.com/go-viper/mapstructure/v2 v2.5.0 h1:vM5IJoUAy3d7zRSVtIwQgBj7BiWtMPfmPEgAXnvj1Ro=
 github.com/go-viper/mapstructure/v2 v2.5.0/go.mod h1:oJDH3BJKyqBA2TXFhDsKDGDTlndYOZ6rGS0BRZIxGhM=
 github.com/goccy/go-json v0.10.5 h1:Fq85nIqj+gXn/S5ahsiTlK3TmC85qgirsdTP/+DeaC4=
@@ -316,6 +318,8 @@ github.com/goravel/redis v1.18.1-0.20260804080002-ea3e2dcfbdf6 h1:XGd6HrfS9gyi1i
 github.com/goravel/redis v1.18.1-0.20260804080002-ea3e2dcfbdf6/go.mod h1:2Y6o5g5Pl1tXx6qPf0YAg6r5pXmSSPqvAlJ51GrdZCQ=
 github.com/goravel/s3 v1.18.0 h1:kdq9jhy0MeWEdpYMk2cGDBjGOr6z/yW3/r8RrdWMagg=
 github.com/goravel/s3 v1.18.0/go.mod h1:2qntIhQQA1/9678PTlb8rWOoGcLTjXG6/hQ8fCayqi4=
+github.com/goravel/slack v0.0.0-20260819081718-3f42493b34e4 h1:IRqDXV89klaNQWSEDWngN70Icoh/uEF4MnYYItgNbaA=
+github.com/goravel/slack v0.0.0-20260819081718-3f42493b34e4/go.mod h1:sKIbrIzt8FRPLUgDIXgdzi4Q4K34XP4czWjiw8WETb8=
 github.com/goravel/sqlite v1.18.0 h1:d9iZHQ9siZXwgOV9Q8tyGr4fbT0Q6LljX/7XcX7fibY=
 github.com/goravel/sqlite v1.18.0/go.mod h1:uciL6tYnM7FDJagBWQlFzkSPtcaWewxpQvJCmBZmKVg=
 github.com/goravel/sqlserver v1.18.0 h1:9ZoSZbZUIzpTuvlarWk54d0IjMneugsHNxxYxvtnf4Y=
@@ -498,6 +502,8 @@ github.com/sergi/go-diff v1.3.1 h1:xkr+Oxo4BOQKmkn/B9eMK0g5Kg/983T9DqqPHwYqD+8=
 github.com/sergi/go-diff v1.3.1/go.mod h1:aMJSSKb2lpPvRNec0+w3fl7LP9IOFzdc9Pa4NFbPK1I=
 github.com/shamaton/msgpack/v3 v3.1.2 h1:d5gWAIyMU4M0WgDjz6IFSCuXJUA2dFwRHBpDclE8CLw=
 github.com/shamaton/msgpack/v3 v3.1.2/go.mod h1:DcQG8jrdrQCIxr3HlMYkiXdMhK+KfN2CitkyzsQV4uc=
+github.com/slack-go/slack v0.17.3 h1:zV5qO3Q+WJAQ/XwbGfNFrRMaJ5T/naqaonyPV/1TP4g=
+github.com/slack-go/slack v0.17.3/go.mod h1:X+UqOufi3LYQHDnMG1vxf0J8asC6+WllXrVrhl8/Prk=
 github.com/sosodev/duration v1.3.1 h1:qtHBDMQ6lvMQsL15g4aopM4HEfOaYuhWBw3NPTtlqq4=
 github.com/sosodev/duration v1.3.1/go.mod h1:RQIBBX0+fMLc/D9+Jb/fwvVmo0eZvDDEERAikUR6SDg=
 github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 h1:+jumHNA0Wrelhe64i8F6HNlS8pkoyMv5sreGx2Ry5Rw=
