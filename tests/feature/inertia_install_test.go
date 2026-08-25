@@ -25,7 +25,6 @@ type InertiaInstallTestSuite struct {
 	packageJSONPath  string
 	viteConfigPath   string
 	tsconfigPath     string
-	faviconPath      string
 	webRoutes        []byte
 	welcomeTemplate  []byte
 	configSnapshot   []byte
@@ -33,7 +32,6 @@ type InertiaInstallTestSuite struct {
 	packageJSON      []byte
 	viteConfig       []byte
 	tsconfig         []byte
-	favicon          []byte
 }
 
 func TestInertiaInstallTestSuite(t *testing.T) {
@@ -62,7 +60,6 @@ func (s *InertiaInstallTestSuite) SetupTest() {
 	s.packageJSONPath = filepath.Join(s.appRoot, "package.json")
 	s.viteConfigPath = filepath.Join(s.appRoot, "vite.config.ts")
 	s.tsconfigPath = filepath.Join(s.appRoot, "tsconfig.json")
-	s.faviconPath = filepath.Join(s.appRoot, "public/favicon.png")
 
 	s.webRoutes, err = os.ReadFile(s.webRoutesPath)
 	s.Require().NoError(err)
@@ -72,15 +69,15 @@ func (s *InertiaInstallTestSuite) SetupTest() {
 	s.Require().NoError(err)
 	s.templateSnapshot, err = os.ReadFile(s.rootTemplate)
 	s.Require().NoError(err)
-	// The root toolchain and favicon are committed, so snapshot them too and
-	// restore (not delete) them in TearDownTest.
+	// The root toolchain is committed, so snapshot it and restore (not delete)
+	// it in TearDownTest. The favicon is committed as public/favicon.ico, which
+	// the installer leaves untouched; it also generates public/favicon.png, which
+	// TearDownTest removes.
 	s.packageJSON, err = os.ReadFile(s.packageJSONPath)
 	s.Require().NoError(err)
 	s.viteConfig, err = os.ReadFile(s.viteConfigPath)
 	s.Require().NoError(err)
 	s.tsconfig, err = os.ReadFile(s.tsconfigPath)
-	s.Require().NoError(err)
-	s.favicon, err = os.ReadFile(s.faviconPath)
 	s.Require().NoError(err)
 
 	s.Require().NoError(os.Chdir(s.appRoot))
@@ -142,6 +139,7 @@ func (s *InertiaInstallTestSuite) TearDownTest() {
 		filepath.Join(s.appRoot, "resources/js"),
 		filepath.Join(s.appRoot, "routes/web.go.bak"),
 		filepath.Join(s.appRoot, "routes/web.inertia.go.txt"),
+		filepath.Join(s.appRoot, "public/favicon.png"),
 	} {
 		s.NoError(file.Remove(p))
 	}
@@ -152,12 +150,12 @@ func (s *InertiaInstallTestSuite) TearDownTest() {
 	s.Require().NoError(os.WriteFile(s.welcomePath, s.welcomeTemplate, 0o644))
 	s.Require().NoError(os.WriteFile(s.inertiaConfig, s.configSnapshot, 0o644))
 	s.Require().NoError(os.WriteFile(s.rootTemplate, s.templateSnapshot, 0o644))
-	// The root toolchain + favicon are committed (the installer overwrites them);
-	// restore the committed versions rather than deleting them.
+	// The root toolchain is committed (the installer overwrites it); restore the
+	// committed version rather than deleting it. public/favicon.png is generated
+	// by the installer and was removed above.
 	s.Require().NoError(os.WriteFile(s.packageJSONPath, s.packageJSON, 0o644))
 	s.Require().NoError(os.WriteFile(s.viteConfigPath, s.viteConfig, 0o644))
 	s.Require().NoError(os.WriteFile(s.tsconfigPath, s.tsconfig, 0o644))
-	s.Require().NoError(os.WriteFile(s.faviconPath, s.favicon, 0o644))
 
 	// Verify the committed state actually came back, not the install stub.
 	s.True(file.Contains(s.webRoutesPath, "appmiddleware.Inertia"))
