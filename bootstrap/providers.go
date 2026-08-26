@@ -31,6 +31,7 @@ import (
 	"github.com/goravel/framework/view"
 	"github.com/goravel/gemini"
 	"github.com/goravel/gin"
+	"github.com/goravel/inertia"
 	"github.com/goravel/minio"
 	"github.com/goravel/mysql"
 	"github.com/goravel/openai"
@@ -86,6 +87,7 @@ func Providers() []foundation.ServiceProvider {
 		&gemini.ServiceProvider{},
 		&viewtest.ServiceProvider{},
 		&RouteProvider{},
+		&inertia.ServiceProvider{},
 		&slack.ServiceProvider{},
 	}
 }
