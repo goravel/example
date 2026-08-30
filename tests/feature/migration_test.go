@@ -2,6 +2,7 @@ package feature
 
 import (
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -9,10 +10,15 @@ import (
 
 	"github.com/spf13/cast"
 
+	contractsdriver "github.com/goravel/framework/contracts/database/driver"
+	contractsschema "github.com/goravel/framework/contracts/database/schema"
+	"github.com/goravel/framework/database/migration"
+	databaseschema "github.com/goravel/framework/database/schema"
 	"github.com/goravel/framework/support/file"
 	"github.com/goravel/framework/support/path"
 	"github.com/goravel/mysql"
 	"github.com/goravel/sqlite"
+	sqlitefacades "github.com/goravel/sqlite/facades"
 	"github.com/goravel/sqlserver"
 	"github.com/stretchr/testify/suite"
 
@@ -76,6 +82,61 @@ func (s *MigrationTestSuite) TestFirst_After() {
 
 func (s *MigrationTestSuite) TestMigrate() {
 	s.True(facades.Schema().HasTable("users"))
+}
+
+func (s *MigrationTestSuite) TestMigrator_NonDefaultConnectionLedgerRows() {
+	const (
+		defaultName   = "migration_e2e_default"
+		reportingName = "migration_e2e_reporting"
+	)
+
+	dir := s.T().TempDir()
+
+	scope, err := tests.OverrideConfig(map[string]any{
+		"database.default":                      defaultName,
+		"database.connections." + defaultName:   sqliteConnectionConfig(defaultName, filepath.Join(dir, defaultName+".db")),
+		"database.connections." + reportingName: sqliteConnectionConfig(reportingName, filepath.Join(dir, reportingName+".db")),
+	})
+	s.Require().NoError(err)
+	defer func() { s.Require().NoError(scope.Restore()) }()
+
+	// Build a constrained schema holding only the runtime migrations, so the
+	// migrator doesn't re-run the app's full bootstrap migration set on the
+	// throwaway default DB.
+	v := facades.Config().Get("database.connections." + defaultName + ".via")
+	via, ok := v.(func() (contractsdriver.Driver, error))
+	s.Require().Truef(ok, "via closure for %s has unexpected type %T", defaultName, v)
+	defaultDriver, err := via()
+	s.Require().NoError(err)
+
+	schema, err := databaseschema.NewSchema(facades.Config(), facades.Log(), facades.Orm(), defaultDriver, nil)
+	s.Require().NoError(err)
+
+	schema.Register([]contractsschema.Migration{
+		newRuntimeConnectionMigration(schema, reportingName, "20260826160940_create_migration_e2e_users", "migration_e2e_users"),
+		newRuntimeConnectionMigration(schema, reportingName, "20260826161140_create_migration_e2e_user_tokens", "migration_e2e_user_tokens"),
+	})
+
+	migrationTable := facades.Config().GetString("database.migrations.table")
+	migrator := migration.NewMigrator(nil, schema, migrationTable)
+	s.Require().NoError(migrator.Run())
+
+	// Both tables created on the non-default (reporting) connection.
+	s.True(schema.Connection(reportingName).HasTable("migration_e2e_users"))
+	s.True(schema.Connection(reportingName).HasTable("migration_e2e_user_tokens"))
+
+	// The non-default connection never received the migrations ledger.
+	s.False(schema.Connection(reportingName).HasTable(migrationTable))
+
+	// Both ledger rows were written to the default connection.
+	for _, signature := range []string{
+		"20260826160940_create_migration_e2e_users",
+		"20260826161140_create_migration_e2e_user_tokens",
+	} {
+		count, err := facades.DB().Table(migrationTable).Where("migration", signature).Count()
+		s.Require().NoError(err)
+		s.Equal(int64(1), count)
+	}
 }
 
 func (s *MigrationTestSuite) TestCommandMigrate() {
@@ -318,4 +379,46 @@ func (s *MigrationTestSuite) listMigrationFiles() map[string]struct{} {
 	}
 
 	return files
+}
+
+// sqliteConnectionConfig returns the config for a non-default sqlite connection
+// backed by the given database file. The connection is resolved lazily via the
+// sqlite facade's via closure, mirroring the framework's
+// database.connections.<name> config shape.
+func sqliteConnectionConfig(name, database string) map[string]any {
+	return map[string]any{
+		"database": database,
+		"prefix":   "",
+		"singular": false,
+		"via": func() (contractsdriver.Driver, error) {
+			return sqlitefacades.Sqlite(name)
+		},
+	}
+}
+
+// runtimeConnectionMigration is a schema.Migration whose Up/Down run on a
+// non-default connection via the migrator's SetConnection flow.
+type runtimeConnectionMigration struct {
+	schema     contractsschema.Schema
+	connection string
+	signature  string
+	table      string
+}
+
+func newRuntimeConnectionMigration(schema contractsschema.Schema, connection, signature, table string) *runtimeConnectionMigration {
+	return &runtimeConnectionMigration{schema: schema, connection: connection, signature: signature, table: table}
+}
+
+func (r *runtimeConnectionMigration) Signature() string { return r.signature }
+
+func (r *runtimeConnectionMigration) Connection() string { return r.connection }
+
+func (r *runtimeConnectionMigration) Up() error {
+	return r.schema.Create(r.table, func(table contractsschema.Blueprint) {
+		table.String("name")
+	})
+}
+
+func (r *runtimeConnectionMigration) Down() error {
+	return r.schema.DropIfExists(r.table)
 }
