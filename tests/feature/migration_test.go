@@ -85,6 +85,7 @@ func (s *MigrationTestSuite) TestMigrate() {
 }
 
 func (s *MigrationTestSuite) TestMigrator_NonDefaultConnectionLedgerRows() {
+	requireSQLiteDriver(s.T(), "migration test")
 	const (
 		defaultName   = "migration_e2e_default"
 		reportingName = "migration_e2e_reporting"

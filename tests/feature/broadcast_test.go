@@ -46,6 +46,17 @@ func (s *BroadcastTestSuite) SetupSuite() {
 	if err := exec.Command("docker", "compose", "up", "soketi", "-d", "--wait").Run(); err != nil {
 		s.T().Fatalf("failed to start soketi: %v", err)
 	}
+
+	// Most dispatch tests need the database queue. Override it once for the
+	// whole suite instead of once per test (each OverrideConfig costs a full
+	// app.Restart()). TestDispatch_WithConnections opts back into "sync".
+	scope, err := tests.OverrideConfig(map[string]any{
+		"queue.default": "database",
+	})
+	if err != nil {
+		s.T().Fatalf("failed to set queue.default=database: %v", err)
+	}
+	s.T().Cleanup(func() { s.NoError(scope.Restore()) })
 }
 
 func (s *BroadcastTestSuite) SetupTest() {
@@ -92,12 +103,6 @@ func (s *BroadcastTestSuite) TestDispatchWithPusher() {
 }
 
 func (s *BroadcastTestSuite) TestDispatch_BroadcastWhenFalse_SkipsDispatch() {
-	scope, err := tests.OverrideConfig(map[string]any{
-		"queue.default": "database",
-	})
-	s.Require().NoError(err)
-	defer func() { s.NoError(scope.Restore()) }()
-
 	jwtToken := s.jwtLogin("broadcast-skip-when")
 
 	ws, err := newWSClient(soketiHost, soketiAppKey)
@@ -131,12 +136,6 @@ func (s *BroadcastTestSuite) TestDispatch_BroadcastWhenFalse_SkipsDispatch() {
 }
 
 func (s *BroadcastTestSuite) TestDispatch_NoChannels_SkipsDispatch() {
-	scope, err := tests.OverrideConfig(map[string]any{
-		"queue.default": "database",
-	})
-	s.Require().NoError(err)
-	defer func() { s.NoError(scope.Restore()) }()
-
 	s.NoError(facades.Broadcast().Dispatch(context.Background(), &events.EmptyBroadcastEvent{}))
 	time.Sleep(500 * time.Millisecond)
 
@@ -633,6 +632,13 @@ func (s *BroadcastTestSuite) TestPublicChannelFullFlow_CustomChannelName() {
 }
 
 func (s *BroadcastTestSuite) TestPrivateChannelFullFlow() {
+	// Opt back into the synchronous queue: this full-flow test dispatches
+	// without ShouldBroadcastNow and expects inline delivery, so it must not
+	// depend on the suite-wide database queue worker's variable pop delay.
+	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "sync"})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
 	jwtToken := s.jwtLogin("broadcast-private-test")
 
 	ws, err := newWSClient(soketiHost, soketiAppKey)
@@ -667,6 +673,13 @@ func (s *BroadcastTestSuite) TestPrivateChannelFullFlow() {
 }
 
 func (s *BroadcastTestSuite) TestPresenceChannelFullFlow() {
+	// Opt back into the synchronous queue: this full-flow test dispatches
+	// without ShouldBroadcastNow and expects inline delivery, so it must not
+	// depend on the suite-wide database queue worker's variable pop delay.
+	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "sync"})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
 	jwtTokenA := s.jwtLogin("broadcast-presence-a")
 	jwtTokenB := s.jwtLogin("broadcast-presence-b")
 
@@ -730,12 +743,6 @@ func (s *BroadcastTestSuite) TestPresenceChannelFullFlow() {
 }
 
 func (s *BroadcastTestSuite) TestDispatch_WithQueue() {
-	scope, err := tests.OverrideConfig(map[string]any{
-		"queue.default": "database",
-	})
-	s.Require().NoError(err)
-	defer func() { s.NoError(scope.Restore()) }()
-
 	jwtToken := s.jwtLogin("broadcast-queue-test")
 
 	ws, err := newWSClient(soketiHost, soketiAppKey)
@@ -773,13 +780,18 @@ func (s *BroadcastTestSuite) TestDispatch_WithQueue() {
 		Tries:      1,
 	})
 	go func() { _ = worker.Run() }()
+	// Ensure the worker is stopped even if the poll below fails and the test
+	// aborts, so its goroutine can't leak into later tests.
+	defer func() { _ = worker.Shutdown() }()
 
-	time.Sleep(2 * time.Second)
-	_ = worker.Shutdown()
-
-	count, err := facades.DB().Table("jobs").Where("queue", "custom-broadcast-queue").Count()
-	s.NoError(err)
-	s.Equal(int64(0), count, "queued broadcast job should be consumed")
+	// Poll instead of sleeping a fixed duration: the suite-wide database queue
+	// worker polls the "default" queue and never touches this one, so it's this
+	// test's own worker that pops custom-broadcast-queue — and its pop delay can
+	// grow after transient Pop errors, so a fixed sleep can flake.
+	s.Require().Eventually(func() bool {
+		count, err := facades.DB().Table("jobs").Where("queue", "custom-broadcast-queue").Count()
+		return err == nil && count == 0
+	}, 5*time.Second, 50*time.Millisecond)
 
 	found := false
 	for _, e := range ws.events() {
@@ -827,13 +839,17 @@ func (s *BroadcastTestSuite) TestDispatch_WithQueueConnection() {
 		Tries:      1,
 	})
 	go func() { _ = worker.Run() }()
+	// Ensure the worker is stopped even if the poll below fails and the test
+	// aborts, so its goroutine can't leak into later tests.
+	defer func() { _ = worker.Shutdown() }()
 
-	time.Sleep(2 * time.Second)
-	_ = worker.Shutdown()
-
-	count, err := facades.DB().Table("jobs").Count()
-	s.NoError(err)
-	s.Equal(int64(0), count, "queued broadcast job should be consumed")
+	// Poll instead of sleeping a fixed duration: the suite-wide database queue
+	// worker only pops on a delay that can grow after transient Pop errors, so
+	// a fixed sleep can flake.
+	s.Require().Eventually(func() bool {
+		count, err := facades.DB().Table("jobs").Count()
+		return err == nil && count == 0
+	}, 5*time.Second, 50*time.Millisecond)
 
 	found := false
 	for _, e := range ws.events() {
@@ -845,12 +861,6 @@ func (s *BroadcastTestSuite) TestDispatch_WithQueueConnection() {
 }
 
 func (s *BroadcastTestSuite) TestDispatch_WithDelay() {
-	scope, err := tests.OverrideConfig(map[string]any{
-		"queue.default": "database",
-	})
-	s.Require().NoError(err)
-	defer func() { s.NoError(scope.Restore()) }()
-
 	jwtToken := s.jwtLogin("broadcast-delay-test")
 
 	ws, err := newWSClient(soketiHost, soketiAppKey)
@@ -893,6 +903,9 @@ func (s *BroadcastTestSuite) TestDispatch_WithDelay() {
 		Tries:      1,
 	})
 	go func() { _ = worker.Run() }()
+	// Ensure the worker is stopped even if a poll below fails and the test
+	// aborts, so its goroutine can't leak into later tests.
+	defer func() { _ = worker.Shutdown() }()
 
 	// Before the delay elapses, the worker must not consume the job nor fire the broadcast.
 	time.Sleep(1 * time.Second)
@@ -909,13 +922,13 @@ func (s *BroadcastTestSuite) TestDispatch_WithDelay() {
 	}
 	s.False(foundEarly, "delayed broadcast should not fire before delay expires")
 
-	// After the delay elapses, the worker consumes the job and the broadcast is delivered.
-	time.Sleep(5 * time.Second)
-	_ = worker.Shutdown()
-
-	count, err = facades.DB().Table("jobs").Where("queue", "custom-delay-queue").Count()
-	s.NoError(err)
-	s.Equal(int64(0), count, "delayed job should be consumed after delay expires")
+	// After the delay elapses, the worker consumes the job and the broadcast
+	// is delivered. Poll for the consumption instead of sleeping a fixed
+	// duration: the worker's pop delay can grow after transient Pop errors.
+	s.Require().Eventually(func() bool {
+		count, err := facades.DB().Table("jobs").Where("queue", "custom-delay-queue").Count()
+		return err == nil && count == 0
+	}, 5*time.Second, 50*time.Millisecond)
 
 	found := false
 	for _, e := range ws.events() {
@@ -927,6 +940,13 @@ func (s *BroadcastTestSuite) TestDispatch_WithDelay() {
 }
 
 func (s *BroadcastTestSuite) TestDispatch_WithConnections() {
+	// Opt back into the synchronous queue: this test relies on the broadcast
+	// being delivered inline to all conns (pusher, null, log) so the log
+	// driver writes its "Broadcasting event" line before the assertion.
+	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "sync"})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
 	jwtToken := s.jwtLogin("broadcast-connections-test")
 
 	ws, err := newWSClient(soketiHost, soketiAppKey)
@@ -978,10 +998,6 @@ func (s *BroadcastTestSuite) TestDispatch_WithConnections() {
 }
 
 func (s *BroadcastTestSuite) TestDispatch_WithTriesAndBackoff() {
-	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "database"})
-	s.Require().NoError(err)
-	defer func() { s.NoError(scope.Restore()) }()
-
 	s.NoError(facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		ChannelType: "public",
 		ChannelName: "retry-orders",
@@ -1055,9 +1071,9 @@ func (s *BroadcastTestSuite) TestDispatch_WithTriesAndBackoff() {
 
 func (s *BroadcastTestSuite) TestDispatch_WithoutTries_FallsBackToWorkerTries() {
 	scope, err := tests.OverrideConfig(map[string]any{
-		"queue.default": "database",
 		// Disable the framework's boot-time queue runner (Tries=1) so it can't
-		// steal the re-released job between attempts.
+		// steal the re-released job between attempts. queue.default is already
+		// "database" from SetupSuite.
 		"app.disabled_runners": []string{"goravel:queue", "app:queue:database", "app:queue:test"},
 	})
 	s.Require().NoError(err)
@@ -1106,10 +1122,6 @@ func (s *BroadcastTestSuite) TestDispatch_WithoutTries_FallsBackToWorkerTries() 
 }
 
 func (s *BroadcastTestSuite) TestDispatch_BackoffWithoutTries_Serialized() {
-	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "database"})
-	s.Require().NoError(err)
-	defer func() { s.NoError(scope.Restore()) }()
-
 	s.NoError(facades.Broadcast().Dispatch(context.Background(), &events.OrderShippedBroadcast{
 		ChannelType: "public",
 		ChannelName: "backoff-only-orders",
@@ -1140,9 +1152,9 @@ func (s *BroadcastTestSuite) TestDispatch_BackoffWithoutTries_Serialized() {
 
 func (s *BroadcastTestSuite) TestDispatch_BackoffWithoutTries_FallsBackToWorkerTries() {
 	scope, err := tests.OverrideConfig(map[string]any{
-		"queue.default": "database",
 		// Disable the framework's boot-time queue runner (Tries=1) so it can't
-		// steal the job during the backoff release window.
+		// steal the job during the backoff release window. queue.default is
+		// already "database" from SetupSuite.
 		"app.disabled_runners": []string{"goravel:queue", "app:queue:database", "app:queue:test"},
 	})
 	s.Require().NoError(err)
@@ -1189,10 +1201,6 @@ func (s *BroadcastTestSuite) TestDispatch_BackoffWithoutTries_FallsBackToWorkerT
 }
 
 func (s *BroadcastTestSuite) TestDispatchViaHTTP_Public_WithQueueOptions() {
-	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "database"})
-	s.Require().NoError(err)
-	defer func() { s.NoError(scope.Restore()) }()
-
 	body, err := supporthttp.NewBody().
 		SetField("channel_type", "public").
 		SetField("channel", "public-http-orders").
@@ -1237,10 +1245,6 @@ func (s *BroadcastTestSuite) TestDispatchViaHTTP_Public_WithQueueOptions() {
 }
 
 func (s *BroadcastTestSuite) TestDispatchViaHTTP_Public_ShouldFireFalse_SkipsDispatch() {
-	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "database"})
-	s.Require().NoError(err)
-	defer func() { s.NoError(scope.Restore()) }()
-
 	body, err := supporthttp.NewBody().
 		SetField("channel_type", "public").
 		SetField("channel", "public-http-skip").
@@ -1265,10 +1269,6 @@ func (s *BroadcastTestSuite) TestDispatchViaHTTP_Public_ShouldFireFalse_SkipsDis
 }
 
 func (s *BroadcastTestSuite) TestDispatchViaHTTP_Presence_WithQueueOptions() {
-	scope, err := tests.OverrideConfig(map[string]any{"queue.default": "database"})
-	s.Require().NoError(err)
-	defer func() { s.NoError(scope.Restore()) }()
-
 	body, err := supporthttp.NewBody().
 		SetField("channel_type", "presence").
 		SetField("channel", "presence-team.http").

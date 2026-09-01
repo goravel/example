@@ -66,6 +66,7 @@ func (s *OrmTestSuite) TestRestore() {
 }
 
 func (s *OrmTestSuite) TestConnection_ReflectsRequestedConnection() {
+	requireSQLiteDriver(s.T(), "connection test")
 	const name = "orm_connection_reflect"
 	database, cleanup := s.registerConnection(name)
 	defer cleanup()
@@ -78,6 +79,7 @@ func (s *OrmTestSuite) TestConnection_ReflectsRequestedConnection() {
 }
 
 func (s *OrmTestSuite) TestConnection_ConcurrentSafe() {
+	requireSQLiteDriver(s.T(), "connection test")
 	const name = "orm_connection_concurrent"
 	database, cleanup := s.registerConnection(name)
 	defer cleanup()
@@ -134,4 +136,14 @@ func (s *OrmTestSuite) assertConnection(orm contractsorm.Orm, name, database str
 	s.Equal(database, orm.DatabaseName())
 	s.Equal(name, orm.Config().Connection)
 	s.Equal(database, orm.Config().Database)
+}
+
+// requireSQLiteDriver skips driver-agnostic tests when the suite is re-run
+// against postgres/mysql/sqlserver by TestDBDrivers. These tests always build
+// a temp sqlite connection (see sqliteConnectionConfig), so re-running them
+// per driver only wastes runtime.
+func requireSQLiteDriver(t *testing.T, reason string) {
+	if facades.Config().GetString("database.default") != "sqlite" {
+		t.Skip("sqlite-only driver-agnostic " + reason)
+	}
 }
