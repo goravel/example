@@ -79,13 +79,13 @@ func (s *DisabledRunnersTestSuite) withRunners(runners []contractsfoundation.Run
 func (s *DisabledRunnersTestSuite) waitForStart(runner *trackerRunner) {
 	s.Require().Eventually(func() bool {
 		return runner.Started()
-	}, 3*time.Second, 50*time.Millisecond)
+	}, 1*time.Second, 25*time.Millisecond) // was 3s
 }
 
 func (s *DisabledRunnersTestSuite) waitForNotStarted(runner *trackerRunner) {
 	s.Require().Never(func() bool {
 		return runner.Started()
-	}, 2*time.Second, 50*time.Millisecond)
+	}, 1*time.Second, 25*time.Millisecond)
 }
 
 func (s *DisabledRunnersTestSuite) TestDisabledRunners_RunnerStartsWhenNotDisabled() {
