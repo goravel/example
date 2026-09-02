@@ -3,7 +3,6 @@ package feature
 import (
 	"errors"
 	"fmt"
-	"maps"
 	"os"
 	"sync"
 	"sync/atomic"
@@ -26,7 +25,6 @@ import (
 type EventTestSuite struct {
 	suite.Suite
 	tests.TestCase
-	counter uint64
 }
 
 func TestEventTestSuite(t *testing.T) {
@@ -36,17 +34,9 @@ func TestEventTestSuite(t *testing.T) {
 func (s *EventTestSuite) SetupTest() {
 	listeners.TestResultOfSendShipmentNotification = nil
 
-	// Snapshot the event registry so any events registered during this test
-	// can be removed in cleanup, preventing cross-test pollution.
-	snapshot := maps.Clone(facades.Event().GetEvents())
-	s.T().Cleanup(func() {
-		registry := facades.Event().GetEvents()
-		for k := range registry {
-			if _, ok := snapshot[k]; !ok {
-				delete(registry, k)
-			}
-		}
-	})
+	// GetEvents returns a copy, so it can no longer be used to unregister. Events
+	// are resolved by name now, so each scenario below declares its own event type
+	// and Register overwrites only the listeners it registered for that name.
 }
 
 func (s *EventTestSuite) TestDispatchBootstrappedEvents() {
@@ -82,11 +72,7 @@ func (s *EventTestSuite) TestDispatchUnregisteredEvent() {
 
 func (s *EventTestSuite) TestDispatchReturnsEventHandleError() {
 	expectedErr := errors.New("event handle error")
-	eventInstance := &integrationEvent{
-		handle: func(args []event.Arg) ([]event.Arg, error) {
-			return nil, expectedErr
-		},
-	}
+	eventInstance := &handleErrorEvent{err: expectedErr}
 	capture := &listenerCapture{}
 	listenerInstance := &integrationListener{
 		signature:   s.uniqueName("event_handle_error_listener"),
@@ -108,14 +94,7 @@ func (s *EventTestSuite) TestDispatchReturnsEventHandleError() {
 }
 
 func (s *EventTestSuite) TestDispatchSyncListenerWithTransformedArgs() {
-	eventInstance := &integrationEvent{
-		handle: func(args []event.Arg) ([]event.Arg, error) {
-			return []event.Arg{
-				{Type: "string", Value: castString(args[0].Value) + "_transformed"},
-				{Type: "int", Value: 2},
-			}, nil
-		},
-	}
+	eventInstance := &transformingEvent{}
 	capture := &listenerCapture{}
 	listenerInstance := &integrationListener{
 		signature:   s.uniqueName("sync_listener"),
@@ -141,11 +120,7 @@ func (s *EventTestSuite) TestDispatchSyncListenerWithTransformedArgs() {
 
 func (s *EventTestSuite) TestDispatchStopsAfterListenerError() {
 	expectedErr := errors.New("listener handle error")
-	eventInstance := &integrationEvent{
-		handle: func(args []event.Arg) ([]event.Arg, error) {
-			return args, nil
-		},
-	}
+	eventInstance := &stopOnErrorEvent{}
 	failedCapture := &listenerCapture{}
 	skippedCapture := &listenerCapture{}
 	failedListener := &integrationListener{
@@ -176,11 +151,7 @@ func (s *EventTestSuite) TestDispatchStopsAfterListenerError() {
 }
 
 func (s *EventTestSuite) TestDispatchQueuedListenerEventually() {
-	eventInstance := &integrationEvent{
-		handle: func(args []event.Arg) ([]event.Arg, error) {
-			return args, nil
-		},
-	}
+	eventInstance := &queuedEvent{}
 	capture := &listenerCapture{}
 	listenerInstance := &integrationListener{
 		signature: s.uniqueName("queued_listener"),
@@ -309,6 +280,7 @@ func (s *EventTestSuite) TestCommandMakeListener() {
 	s.True(file.Exists(listenerPath))
 	s.True(file.Contains(listenerPath, "type "+listenerName+" struct {"))
 	s.True(file.Contains(listenerPath, "func (receiver *"+listenerName+") Signature() string {"))
+	s.True(file.Contains(listenerPath, "func (receiver *"+listenerName+") Handle(eventName string, args ...any) error {"))
 	s.True(file.Contains(listenerPath, `return "`+str.Of(listenerName).Snake().String()+`"`))
 
 	originalContent, err := os.ReadFile(listenerPath)
@@ -329,8 +301,343 @@ func (s *EventTestSuite) TestCommandMakeListener() {
 	s.True(file.Contains(nestedPath, `return "`+str.Of(nestedListenerName).Snake().String()+`"`))
 }
 
+func (s *EventTestSuite) TestListenStringEventAndDispatch() {
+	eventName := s.uniqueName("user.created.")
+	capture := &listenerCapture{}
+	s.NoError(facades.Event().Listen(eventName, &integrationListener{
+		signature: s.uniqueName("listen_string_listener"),
+		capture:   capture,
+	}))
+
+	result := facades.Event().Dispatch(eventName, []event.Arg{
+		{Type: "string", Value: "goravel"},
+	})
+
+	s.False(result.Failed())
+	s.NoError(result.Error())
+	s.Equal([]string{eventName}, capture.Names())
+	s.Equal([][]any{{"goravel"}}, capture.Handled())
+}
+
+func (s *EventTestSuite) TestListenMultipleEventsAndListeners() {
+	placed := s.uniqueName("order.placed.")
+	paid := s.uniqueName("order.paid.")
+	first := &listenerCapture{}
+	second := &listenerCapture{}
+	s.NoError(facades.Event().Listen([]string{placed, paid},
+		&integrationListener{signature: s.uniqueName("listen_multi_first"), capture: first},
+		&integrationListener{signature: s.uniqueName("listen_multi_second"), capture: second},
+	))
+
+	s.False(facades.Event().Dispatch(placed).Failed())
+	s.False(facades.Event().Dispatch(paid).Failed())
+
+	s.Equal([]string{placed, paid}, first.Names())
+	s.Equal([]string{placed, paid}, second.Names())
+}
+
+func (s *EventTestSuite) TestListenEventValuesAndListener() {
+	capture := &listenerCapture{}
+	s.NoError(facades.Event().Listen([]event.Event{&listenEvent{}, &otherListenEvent{}},
+		&integrationListener{signature: s.uniqueName("listen_event_values"), capture: capture},
+	))
+
+	s.False(facades.Event().Dispatch(&listenEvent{}).Failed())
+	s.False(facades.Event().Dispatch(&otherListenEvent{}).Failed())
+
+	// An object event is named by its import path and type, which is also what
+	// travels as the first argument of a queued job.
+	s.Equal([]string{
+		"goravel/tests/feature.listenEvent",
+		"goravel/tests/feature.otherListenEvent",
+	}, capture.Names())
+}
+
+func (s *EventTestSuite) TestListenWildcardReceivesTheMatchedName() {
+	prefix := s.uniqueName("invoice")
+	capture := &listenerCapture{}
+	s.NoError(facades.Event().Listen(prefix+".*", &integrationListener{
+		signature: s.uniqueName("listen_wildcard_listener"),
+		capture:   capture,
+	}))
+
+	s.False(facades.Event().Dispatch(prefix + ".issued").Failed())
+	s.False(facades.Event().Dispatch(prefix + ".paid").Failed())
+	s.False(facades.Event().Dispatch("shipment.sent").Failed())
+
+	// The pattern is what it registered on, the matched name is what it receives.
+	s.Equal([]string{prefix + ".issued", prefix + ".paid"}, capture.Names())
+}
+
+func (s *EventTestSuite) TestListenClosures() {
+	var (
+		mu       sync.Mutex
+		untyped  []any
+		typedFor *listenEvent
+	)
+	eventName := s.uniqueName("report.generated.")
+
+	s.NoError(facades.Event().Listen(eventName, func(evt any, args ...any) error {
+		mu.Lock()
+		defer mu.Unlock()
+		untyped = append(untyped, evt)
+
+		return nil
+	}))
+
+	// No listener argument: the event comes from the closure's parameter type.
+	s.NoError(facades.Event().Listen(func(evt *listenEvent) error {
+		mu.Lock()
+		defer mu.Unlock()
+		typedFor = evt
+
+		return nil
+	}))
+
+	s.False(facades.Event().Dispatch(eventName).Failed())
+	dispatched := &listenEvent{Name: "typed"}
+	s.False(facades.Event().Dispatch(dispatched).Failed())
+
+	mu.Lock()
+	defer mu.Unlock()
+	s.Equal([]any{eventName}, untyped)
+	s.Same(dispatched, typedFor)
+}
+
+func (s *EventTestSuite) TestDispatchCollectsEveryListenerError() {
+	eventName := s.uniqueName("payment.failed.")
+	first := errors.New("first listener failed")
+	second := errors.New("second listener failed")
+	survived := &listenerCapture{}
+
+	s.NoError(facades.Event().Listen(eventName,
+		&integrationListener{signature: s.uniqueName("collect_first"), handleErr: first},
+		&integrationListener{signature: s.uniqueName("collect_survivor"), capture: survived},
+		&integrationListener{signature: s.uniqueName("collect_second"), handleErr: second},
+	))
+
+	result := facades.Event().Dispatch(eventName)
+
+	// Unlike the deprecated Job flow, Dispatch runs every listener.
+	s.True(result.Failed())
+	s.Len(result.Errors(), 2)
+	s.ErrorContains(result.Error(), first.Error())
+	s.ErrorContains(result.Error(), second.Error())
+	s.Len(survived.Handled(), 1)
+}
+
+func (s *EventTestSuite) TestDispatchRecoversFromAPanickingListener() {
+	eventName := s.uniqueName("panic.raised.")
+	survived := &listenerCapture{}
+
+	s.NoError(facades.Event().Listen(eventName,
+		&integrationListener{signature: s.uniqueName("panicking_listener"), panics: true},
+		&integrationListener{signature: s.uniqueName("panic_survivor"), capture: survived},
+	))
+
+	result := facades.Event().Dispatch(eventName)
+
+	// The panic becomes an error on the result, the listener behind it still runs.
+	s.True(result.Failed())
+	s.Len(result.Errors(), 1)
+	s.ErrorContains(result.Error(), "panicked")
+	s.Len(survived.Handled(), 1)
+}
+
+func (s *EventTestSuite) TestDispatchQueuedListenerRegisteredThroughListen() {
+	eventName := s.uniqueName("newsletter.sent.")
+	signature := s.uniqueName("listen_queued_listener")
+	capture := &listenerCapture{}
+	s.NoError(facades.Event().Listen(eventName, &integrationListener{
+		signature:   signature,
+		queueConfig: event.Queue{Enable: true},
+		capture:     capture,
+	}))
+
+	// Listen registers the job with the queue, so a worker can resolve it from
+	// the signature alone.
+	job, err := facades.Queue().GetJob(signature)
+	s.NoError(err)
+	s.Equal(signature, job.Signature())
+
+	result := facades.Event().Dispatch(eventName, []event.Arg{
+		{Type: "string", Value: "queued through listen"},
+	})
+
+	s.False(result.Failed())
+	s.True(waitUntil(5*time.Second, 20*time.Millisecond, func() bool {
+		return len(capture.Handled()) == 1
+	}))
+	// The event name leads the queued payload and is handed back to the listener
+	// as its first parameter, not as part of the payload.
+	s.Equal([]string{eventName}, capture.Names())
+	s.Equal([][]any{{"queued through listen"}}, capture.Handled())
+}
+
+func (s *EventTestSuite) TestDispatchQueuedWildcardListenerCarriesTheMatchedName() {
+	prefix := s.uniqueName("audit")
+	capture := &listenerCapture{}
+	s.NoError(facades.Event().Listen(prefix+".*", &integrationListener{
+		signature:   s.uniqueName("listen_queued_wildcard"),
+		queueConfig: event.Queue{Enable: true},
+		capture:     capture,
+	}))
+
+	s.False(facades.Event().Dispatch(prefix + ".login").Failed())
+
+	s.True(waitUntil(5*time.Second, 20*time.Millisecond, func() bool {
+		return len(capture.Handled()) == 1
+	}))
+	s.Equal([]string{prefix + ".login"}, capture.Names())
+}
+
+func (s *EventTestSuite) TestDispatchBootstrappedEventThroughDispatch() {
+	// The path a real application takes: an event registered at boot, fired with
+	// the new Dispatch instead of the deprecated Job.
+	result := facades.Event().Dispatch(&events.OrderShipped{}, []event.Arg{
+		{Type: "string", Value: "dispatched not jobbed"},
+	})
+
+	s.False(result.Failed())
+	s.True(waitUntil(3*time.Second, 20*time.Millisecond, func() bool {
+		return len(listeners.TestResultOfSendShipmentNotification) == 1
+	}))
+	s.Equal([]string{"dispatched not jobbed"}, listeners.TestResultOfSendShipmentNotification)
+}
+
+func (s *EventTestSuite) TestJobReachesListenersRegisteredThroughListen() {
+	capture := &listenerCapture{}
+	s.NoError(facades.Event().Listen(&jobSeesListenEvent{}, &integrationListener{
+		signature: s.uniqueName("job_sees_listen"),
+		capture:   capture,
+	}))
+
+	// The deprecated Job now resolves listeners by event name, so it reaches the
+	// ones registered through Listen too.
+	s.NoError(facades.Event().Job(&jobSeesListenEvent{}, []event.Arg{
+		{Type: "string", Value: "seen by job"},
+	}).Dispatch())
+
+	s.Equal([]string{"goravel/tests/feature.jobSeesListenEvent"}, capture.Names())
+	s.Equal([][]any{{"seen by job"}}, capture.Handled())
+}
+
+func (s *EventTestSuite) TestListenRejectsInvalidRegistrations() {
+	eventName := s.uniqueName("rejected.")
+
+	tests := []struct {
+		name        string
+		listen      func() error
+		expectedErr error
+	}{
+		{
+			name:        "NotAListener",
+			listen:      func() error { return facades.Event().Listen(eventName, "not a listener") },
+			expectedErr: frameworkerrors.EventInvalidListener.Args("string"),
+		},
+		{
+			name:        "NilPointerListener",
+			listen:      func() error { return facades.Event().Listen(eventName, (*integrationListener)(nil)) },
+			expectedErr: frameworkerrors.EventListenerNotPointer.Args("goravel/tests/feature.integrationListener"),
+		},
+		{
+			name:        "EmptySignature",
+			listen:      func() error { return facades.Event().Listen(eventName, &integrationListener{}) },
+			expectedErr: frameworkerrors.EventListenerEmptySignature.Args("goravel/tests/feature.integrationListener"),
+		},
+		{
+			name:        "TypedClosureOnAnotherEvent",
+			listen:      func() error { return facades.Event().Listen(eventName, func(evt *listenEvent) error { return nil }) },
+			expectedErr: frameworkerrors.EventListenerEventMismatch.Args("goravel/tests/feature.listenEvent", eventName),
+		},
+		{
+			name:        "EmptyEventName",
+			listen:      func() error { return facades.Event().Listen("", &integrationListener{signature: "unused"}) },
+			expectedErr: frameworkerrors.EventInvalidEvent.Args(""),
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			s.Equal(test.expectedErr, test.listen())
+		})
+	}
+}
+
+func (s *EventTestSuite) TestDispatchRejectsMoreThanOnePayload() {
+	eventName := s.uniqueName("too.many.payloads.")
+
+	result := facades.Event().Dispatch(eventName,
+		[]event.Arg{{Type: "string", Value: "first"}},
+		[]event.Arg{{Type: "string", Value: "second"}},
+	)
+
+	s.True(result.Failed())
+	s.Equal(frameworkerrors.EventTooManyPayloads.Args(eventName, 2), result.Error())
+}
+
+// uniqueName is process wide on purpose. Nothing ever unregisters an event or a
+// queue signature, so a counter that restarted with the suite would collide with
+// its own previous run under -count=2.
 func (s *EventTestSuite) uniqueName(prefix string) string {
-	return fmt.Sprintf("%s%d", prefix, atomic.AddUint64(&s.counter, 1))
+	return fmt.Sprintf("%s%d", prefix, atomic.AddUint64(&eventTestCounter, 1))
+}
+
+var eventTestCounter uint64
+
+// listenEvent, otherListenEvent and jobSeesListenEvent belong to the Listen
+// based tests. jobSeesListenEvent exists so the Job test does not also fire the
+// listener bootstrapped on events.OrderShipped.
+type listenEvent struct {
+	Name string
+}
+
+func (receiver *listenEvent) Handle(args []event.Arg) ([]event.Arg, error) {
+	return args, nil
+}
+
+type otherListenEvent struct{}
+
+func (receiver *otherListenEvent) Handle(args []event.Arg) ([]event.Arg, error) {
+	return args, nil
+}
+
+type jobSeesListenEvent struct{}
+
+func (receiver *jobSeesListenEvent) Handle(args []event.Arg) ([]event.Arg, error) {
+	return args, nil
+}
+
+// Each scenario uses its own event type: listeners are resolved by event name,
+// which is derived from the type, so scenarios sharing a type would share
+// listeners.
+type handleErrorEvent struct {
+	err error
+}
+
+func (receiver *handleErrorEvent) Handle(args []event.Arg) ([]event.Arg, error) {
+	return nil, receiver.err
+}
+
+type transformingEvent struct{}
+
+func (receiver *transformingEvent) Handle(args []event.Arg) ([]event.Arg, error) {
+	return []event.Arg{
+		{Type: "string", Value: castString(args[0].Value) + "_transformed"},
+		{Type: "int", Value: 2},
+	}, nil
+}
+
+type stopOnErrorEvent struct{}
+
+func (receiver *stopOnErrorEvent) Handle(args []event.Arg) ([]event.Arg, error) {
+	return args, nil
+}
+
+type queuedEvent struct{}
+
+func (receiver *queuedEvent) Handle(args []event.Arg) ([]event.Arg, error) {
+	return args, nil
 }
 
 type integrationEvent struct {
@@ -349,6 +656,7 @@ type integrationListener struct {
 	signature   string
 	queueConfig event.Queue
 	handleErr   error
+	panics      bool
 	capture     *listenerCapture
 }
 
@@ -364,9 +672,13 @@ func (receiver *integrationListener) Queue(args ...any) event.Queue {
 	return receiver.queueConfig
 }
 
-func (receiver *integrationListener) Handle(args ...any) error {
+func (receiver *integrationListener) Handle(eventName string, args ...any) error {
+	if receiver.panics {
+		panic("listener panicked")
+	}
+
 	if receiver.capture != nil {
-		receiver.capture.AddHandled(args)
+		receiver.capture.AddHandled(eventName, args)
 	}
 
 	return receiver.handleErr
@@ -374,14 +686,16 @@ func (receiver *integrationListener) Handle(args ...any) error {
 
 type listenerCapture struct {
 	mu        sync.Mutex
+	names     []string
 	handled   [][]any
 	queueArgs [][]any
 }
 
-func (receiver *listenerCapture) AddHandled(args []any) {
+func (receiver *listenerCapture) AddHandled(eventName string, args []any) {
 	receiver.mu.Lock()
 	defer receiver.mu.Unlock()
 
+	receiver.names = append(receiver.names, eventName)
 	receiver.handled = append(receiver.handled, copyAnySlice(args))
 }
 
@@ -402,6 +716,14 @@ func (receiver *listenerCapture) Handled() [][]any {
 	}
 
 	return result
+}
+
+// Names returns the event name each Handle call received.
+func (receiver *listenerCapture) Names() []string {
+	receiver.mu.Lock()
+	defer receiver.mu.Unlock()
+
+	return append([]string(nil), receiver.names...)
 }
 
 func (receiver *listenerCapture) QueueCallCount() int {
