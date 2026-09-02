@@ -26,7 +26,7 @@ func (receiver *SendShipmentNotification) Queue(args ...any) event.Queue {
 	}
 }
 
-func (receiver *SendShipmentNotification) Handle(args ...any) error {
+func (receiver *SendShipmentNotification) Handle(eventName string, args ...any) error {
 	if len(args) > 0 {
 		TestResultOfSendShipmentNotification = append(TestResultOfSendShipmentNotification, cast.ToString(args[0]))
 	}
