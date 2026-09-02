@@ -49,13 +49,9 @@ func (s *ViewTestSuite) TestRender_PackageOnly() {
 }
 
 // TestRender_SharedViewOverride verifies that resources/views/shared.tmpl
-// overrides packages/viewtest/views/shared.tmpl. The gin driver currently
-// handles this correctly for named templates ({{define}}) but does not
-// deduplicate unnamed templates by filename, so the last-registered template
-// (package) wins instead of the app template.
-//
-// TODO: when the gin driver is fixed to deduplicate unnamed templates,
-// flip the assertion from package-shared to app-shared.
+// overrides packages/viewtest/views/shared.tmpl. Both shared.tmpl files are
+// now named ({{ define "shared.tmpl" }}), so both drivers skip the package
+// template when the app already defines the name: the app view wins.
 func (s *ViewTestSuite) TestRender_SharedViewOverride() {
 	resp, err := s.Http(s.T()).Get("/shared")
 	s.Require().NoError(err)
@@ -63,5 +59,5 @@ func (s *ViewTestSuite) TestRender_SharedViewOverride() {
 
 	content, err := resp.Content()
 	s.Require().NoError(err)
-	s.Contains(content, "<p>package-shared: Goravel</p>")
+	s.Contains(content, "<p>app-shared: Goravel</p>")
 }

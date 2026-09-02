@@ -15,6 +15,7 @@ func TestFiberDriver(t *testing.T) {
 	}
 
 	suite.Run(t, new(HttpTestSuite))
+	suite.Run(t, new(ViewTestSuite))
 
 	facades.Config().Add("http.default", "gin")
 	if err := facades.App().Restart(); err != nil {
