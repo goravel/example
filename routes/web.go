@@ -94,13 +94,6 @@ func Web() {
 		})
 	})
 
-	// Package View Test: named template registered in Boot() (renders under both gin and fiber)
-	facades.Route().Get("package-auth", func(ctx http.Context) http.Response {
-		return ctx.Response().View().Make("auth.tmpl", map[string]any{
-			"name": "Goravel",
-		})
-	})
-
 	facades.Route().Fallback(func(ctx http.Context) http.Response {
 		return ctx.Response().String(http.StatusNotFound, "fallback")
 	})

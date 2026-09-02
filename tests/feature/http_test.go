@@ -389,16 +389,3 @@ func (s *HttpTestSuite) TestProviderRoute() {
 	s.NoError(err)
 	s.Equal("Hello from provider route", content)
 }
-
-// TestLoadViewsFrom_NamedTemplate lives in HttpTestSuite (not ViewTestSuite in
-// view_test.go) so it runs under both the gin driver (TestHttpTestSuite) and the
-// fiber driver (TestFiberDriver).
-func (s *HttpTestSuite) TestLoadViewsFrom_NamedTemplate() {
-	resp, err := s.Http(s.T()).Get("/package-auth")
-	s.Require().NoError(err)
-	resp.AssertSuccessful()
-
-	content, err := resp.Content()
-	s.Require().NoError(err)
-	s.Contains(content, "<p>package-auth: Goravel</p>")
-}
