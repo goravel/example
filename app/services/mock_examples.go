@@ -51,10 +51,10 @@ func Crypt(str string) (string, error) {
 }
 
 func Event() error {
-	return facades.Event().Job(&events.OrderShipped{}, []contractevent.Arg{
+	return facades.Event().Dispatch(&events.OrderShipped{}, []contractevent.Arg{
 		{Type: "string", Value: "test"},
 		{Type: "int", Value: 1234},
-	}).Dispatch()
+	}).Error()
 }
 
 func Gate() bool {

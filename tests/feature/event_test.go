@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/goravel/framework/contracts/event"
-	frameworkerrors "github.com/goravel/framework/errors"
 	"github.com/goravel/framework/support/file"
 	"github.com/goravel/framework/support/path"
 	"github.com/goravel/framework/support/str"
@@ -37,13 +36,13 @@ func (s *EventTestSuite) SetupTest() {
 }
 
 func (s *EventTestSuite) TestDispatchBootstrappedEvents() {
-	s.NoError(facades.Event().Job(&events.OrderShipped{}, []event.Arg{
+	s.NoError(facades.Event().Dispatch(&events.OrderShipped{}, []event.Arg{
 		{Type: "string", Value: "I'm OrderShipped"},
-	}).Dispatch())
+	}).Error())
 
-	s.NoError(facades.Event().Job(&events.OrderCanceled{}, []event.Arg{
+	s.NoError(facades.Event().Dispatch(&events.OrderCanceled{}, []event.Arg{
 		{Type: "string", Value: "I'm OrderCanceled"},
-	}).Dispatch())
+	}).Error())
 
 	s.True(waitUntil(3*time.Second, 20*time.Millisecond, func() bool {
 		return len(listeners.TestResultOfSendShipmentNotification) == 2
@@ -58,16 +57,21 @@ func (s *EventTestSuite) TestDispatchBootstrappedEvents() {
 func (s *EventTestSuite) TestDispatchUnregisteredEvent() {
 	eventInstance := &unregisteredIntegrationEvent{}
 
-	err := facades.Event().Job(eventInstance, nil).Dispatch()
+	// Dispatching an event nobody listens to is a silent success: the
+	// deprecated Task's EventListenerNotBind error does not exist for Dispatch.
+	result := facades.Event().Dispatch(eventInstance)
 
-	s.Equal(frameworkerrors.EventListenerNotBind.Args(eventInstance), err)
+	s.False(result.Failed())
+	s.NoError(result.Error())
 }
 
 func (s *EventTestSuite) TestDispatchReturnsEventHandleError() {
 	expectedErr := errors.New("event handle error")
-	eventInstance := &integrationEvent{
-		handle: func(args []event.Arg) ([]event.Arg, error) {
-			return nil, expectedErr
+	eventInstance := &dispatchHandleErrorEvent{
+		integrationEvent: integrationEvent{
+			handle: func(args []event.Arg) ([]event.Arg, error) {
+				return nil, expectedErr
+			},
 		},
 	}
 	capture := &listenerCapture{}
@@ -76,27 +80,28 @@ func (s *EventTestSuite) TestDispatchReturnsEventHandleError() {
 		queueConfig: event.Queue{Enable: false},
 		capture:     capture,
 	}
-	facades.Event().Register(map[event.Event][]event.Listener{
-		eventInstance: {
-			listenerInstance,
-		},
+	s.NoError(facades.Event().Listen(eventInstance, listenerInstance))
+
+	result := facades.Event().Dispatch(eventInstance, []event.Arg{
+		{Type: "string", Value: "test"},
 	})
 
-	err := facades.Event().Job(eventInstance, []event.Arg{
-		{Type: "string", Value: "test"},
-	}).Dispatch()
-
-	s.Equal(expectedErr, err)
+	// The event's Handle error still short-circuits the dispatch, so the
+	// registered listener must not run.
+	s.True(result.Failed())
+	s.ErrorIs(result.Error(), expectedErr)
 	s.Empty(capture.Handled())
 }
 
 func (s *EventTestSuite) TestDispatchSyncListenerWithTransformedArgs() {
-	eventInstance := &integrationEvent{
-		handle: func(args []event.Arg) ([]event.Arg, error) {
-			return []event.Arg{
-				{Type: "string", Value: castString(args[0].Value) + "_transformed"},
-				{Type: "int", Value: 2},
-			}, nil
+	eventInstance := &dispatchTransformedArgsEvent{
+		integrationEvent: integrationEvent{
+			handle: func(args []event.Arg) ([]event.Arg, error) {
+				return []event.Arg{
+					{Type: "string", Value: castString(args[0].Value) + "_transformed"},
+					{Type: "int", Value: 2},
+				}, nil
+			},
 		},
 	}
 	capture := &listenerCapture{}
@@ -105,65 +110,52 @@ func (s *EventTestSuite) TestDispatchSyncListenerWithTransformedArgs() {
 		queueConfig: event.Queue{Enable: false},
 		capture:     capture,
 	}
-	facades.Event().Register(map[event.Event][]event.Listener{
-		eventInstance: {
-			listenerInstance,
-		},
+	s.NoError(facades.Event().Listen(eventInstance, listenerInstance))
+
+	result := facades.Event().Dispatch(eventInstance, []event.Arg{
+		{Type: "string", Value: "goravel"},
 	})
 
-	err := facades.Event().Job(eventInstance, []event.Arg{
-		{Type: "string", Value: "goravel"},
-	}).Dispatch()
-
-	s.NoError(err)
+	s.False(result.Failed())
+	s.NoError(result.Error())
 	s.Equal([][]any{
 		{"goravel_transformed", 2},
 	}, capture.Handled())
 	s.Equal(1, capture.QueueCallCount())
 }
 
-func (s *EventTestSuite) TestDispatchStopsAfterListenerError() {
+func (s *EventTestSuite) TestDispatchRunsAllListenersAndCollectsErrors() {
 	expectedErr := errors.New("listener handle error")
-	eventInstance := &integrationEvent{
-		handle: func(args []event.Arg) ([]event.Arg, error) {
-			return args, nil
-		},
-	}
+	eventInstance := &dispatchMultipleListenersEvent{}
 	failedCapture := &listenerCapture{}
-	skippedCapture := &listenerCapture{}
+	otherCapture := &listenerCapture{}
 	failedListener := &integrationListener{
 		signature:   s.uniqueName("failed_listener"),
 		queueConfig: event.Queue{Enable: false},
 		handleErr:   expectedErr,
 		capture:     failedCapture,
 	}
-	skippedListener := &integrationListener{
-		signature:   s.uniqueName("skipped_listener"),
+	otherListener := &integrationListener{
+		signature:   s.uniqueName("other_listener"),
 		queueConfig: event.Queue{Enable: false},
-		capture:     skippedCapture,
+		capture:     otherCapture,
 	}
-	facades.Event().Register(map[event.Event][]event.Listener{
-		eventInstance: {
-			failedListener,
-			skippedListener,
-		},
+	s.NoError(facades.Event().Listen(eventInstance, failedListener, otherListener))
+
+	// Dispatch runs every listener and aggregates the errors instead of
+	// stopping after the first failure, so both listeners handle the payload.
+	result := facades.Event().Dispatch(eventInstance, []event.Arg{
+		{Type: "string", Value: "should not stop"},
 	})
 
-	err := facades.Event().Job(eventInstance, []event.Arg{
-		{Type: "string", Value: "should stop"},
-	}).Dispatch()
-
-	s.Equal(expectedErr, err)
+	s.True(result.Failed())
+	s.ErrorIs(result.Error(), expectedErr)
 	s.Len(failedCapture.Handled(), 1)
-	s.Empty(skippedCapture.Handled())
+	s.Len(otherCapture.Handled(), 1)
 }
 
 func (s *EventTestSuite) TestDispatchQueuedListenerEventually() {
-	eventInstance := &integrationEvent{
-		handle: func(args []event.Arg) ([]event.Arg, error) {
-			return args, nil
-		},
-	}
+	eventInstance := &dispatchQueuedListenerEvent{}
 	capture := &listenerCapture{}
 	listenerInstance := &integrationListener{
 		signature: s.uniqueName("queued_listener"),
@@ -172,17 +164,14 @@ func (s *EventTestSuite) TestDispatchQueuedListenerEventually() {
 		},
 		capture: capture,
 	}
-	facades.Event().Register(map[event.Event][]event.Listener{
-		eventInstance: {
-			listenerInstance,
-		},
+	s.NoError(facades.Event().Listen(eventInstance, listenerInstance))
+
+	result := facades.Event().Dispatch(eventInstance, []event.Arg{
+		{Type: "string", Value: "queued"},
 	})
 
-	err := facades.Event().Job(eventInstance, []event.Arg{
-		{Type: "string", Value: "queued"},
-	}).Dispatch()
-
-	s.NoError(err)
+	s.False(result.Failed())
+	s.NoError(result.Error())
 	s.True(waitUntil(5*time.Second, 20*time.Millisecond, func() bool {
 		return len(capture.Handled()) == 1
 	}))
@@ -329,12 +318,31 @@ func (receiver *integrationEvent) Handle(args []event.Arg) ([]event.Arg, error) 
 }
 
 // unregisteredIntegrationEvent is the payload of TestDispatchUnregisteredEvent.
-// It must not be integrationEvent itself: since the framework resolves listeners
-// by the event's type name rather than by instance identity, a fresh
-// integrationEvent would still match the listeners earlier subtests registered
-// for that type. Embedding gives this type the same Handle behaviour under its
-// own name, which no test ever registers.
+// It must not be integrationEvent itself: Listen appends registrations by the
+// event's type name, so giving this payload its own never-registered type name
+// guarantees the dispatch can't hit a foreign registration. Embedding gives
+// this type the same Handle behaviour under its own name.
 type unregisteredIntegrationEvent struct {
+	integrationEvent
+}
+
+// The event types below give each dispatch test its own event name. Listen
+// appends registrations instead of overwriting them, so two tests sharing the
+// plain integrationEvent name would accumulate each other's listeners and make
+// every dispatch run foreign captures.
+type dispatchHandleErrorEvent struct {
+	integrationEvent
+}
+
+type dispatchTransformedArgsEvent struct {
+	integrationEvent
+}
+
+type dispatchMultipleListenersEvent struct {
+	integrationEvent
+}
+
+type dispatchQueuedListenerEvent struct {
 	integrationEvent
 }
 
