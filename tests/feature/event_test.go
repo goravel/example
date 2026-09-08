@@ -3,7 +3,6 @@ package feature
 import (
 	"errors"
 	"fmt"
-	"maps"
 	"os"
 	"sync"
 	"sync/atomic"
@@ -35,18 +34,6 @@ func TestEventTestSuite(t *testing.T) {
 
 func (s *EventTestSuite) SetupTest() {
 	listeners.TestResultOfSendShipmentNotification = nil
-
-	// Snapshot the event registry so any events registered during this test
-	// can be removed in cleanup, preventing cross-test pollution.
-	snapshot := maps.Clone(facades.Event().GetEvents())
-	s.T().Cleanup(func() {
-		registry := facades.Event().GetEvents()
-		for k := range registry {
-			if _, ok := snapshot[k]; !ok {
-				delete(registry, k)
-			}
-		}
-	})
 }
 
 func (s *EventTestSuite) TestDispatchBootstrappedEvents() {
@@ -69,11 +56,7 @@ func (s *EventTestSuite) TestDispatchBootstrappedEvents() {
 }
 
 func (s *EventTestSuite) TestDispatchUnregisteredEvent() {
-	eventInstance := &integrationEvent{
-		handle: func(args []event.Arg) ([]event.Arg, error) {
-			return args, nil
-		},
-	}
+	eventInstance := &unregisteredIntegrationEvent{}
 
 	err := facades.Event().Job(eventInstance, nil).Dispatch()
 
@@ -345,6 +328,16 @@ func (receiver *integrationEvent) Handle(args []event.Arg) ([]event.Arg, error) 
 	return receiver.handle(args)
 }
 
+// unregisteredIntegrationEvent is the payload of TestDispatchUnregisteredEvent.
+// It must not be integrationEvent itself: since the framework resolves listeners
+// by the event's type name rather than by instance identity, a fresh
+// integrationEvent would still match the listeners earlier subtests registered
+// for that type. Embedding gives this type the same Handle behaviour under its
+// own name, which no test ever registers.
+type unregisteredIntegrationEvent struct {
+	integrationEvent
+}
+
 type integrationListener struct {
 	signature   string
 	queueConfig event.Queue
@@ -364,7 +357,7 @@ func (receiver *integrationListener) Queue(args ...any) event.Queue {
 	return receiver.queueConfig
 }
 
-func (receiver *integrationListener) Handle(args ...any) error {
+func (receiver *integrationListener) Handle(eventName string, args ...any) error {
 	if receiver.capture != nil {
 		receiver.capture.AddHandled(args)
 	}
