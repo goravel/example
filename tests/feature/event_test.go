@@ -3,7 +3,6 @@ package feature
 import (
 	"errors"
 	"fmt"
-	"maps"
 	"os"
 	"sync"
 	"sync/atomic"
@@ -35,28 +34,16 @@ func TestEventTestSuite(t *testing.T) {
 
 func (s *EventTestSuite) SetupTest() {
 	listeners.TestResultOfSendShipmentNotification = nil
-
-	// Snapshot the event registry so any events registered during this test
-	// can be removed in cleanup, preventing cross-test pollution.
-	snapshot := maps.Clone(facades.Event().GetEvents())
-	s.T().Cleanup(func() {
-		registry := facades.Event().GetEvents()
-		for k := range registry {
-			if _, ok := snapshot[k]; !ok {
-				delete(registry, k)
-			}
-		}
-	})
 }
 
 func (s *EventTestSuite) TestDispatchBootstrappedEvents() {
-	s.NoError(facades.Event().Job(&events.OrderShipped{}, []event.Arg{
+	s.NoError(facades.Event().Dispatch(&events.OrderShipped{}, []event.Arg{
 		{Type: "string", Value: "I'm OrderShipped"},
-	}).Dispatch())
+	}).Error())
 
-	s.NoError(facades.Event().Job(&events.OrderCanceled{}, []event.Arg{
+	s.NoError(facades.Event().Dispatch(&events.OrderCanceled{}, []event.Arg{
 		{Type: "string", Value: "I'm OrderCanceled"},
-	}).Dispatch())
+	}).Error())
 
 	s.True(waitUntil(3*time.Second, 20*time.Millisecond, func() bool {
 		return len(listeners.TestResultOfSendShipmentNotification) == 2
@@ -69,18 +56,173 @@ func (s *EventTestSuite) TestDispatchBootstrappedEvents() {
 }
 
 func (s *EventTestSuite) TestDispatchUnregisteredEvent() {
-	eventInstance := &integrationEvent{
-		handle: func(args []event.Arg) ([]event.Arg, error) {
-			return args, nil
+	eventInstance := &unregisteredIntegrationEvent{}
+
+	// Dispatching an event nobody listens to is a silent success: the
+	// deprecated Task's EventListenerNotBind error does not exist for Dispatch.
+	result := facades.Event().Dispatch(eventInstance)
+
+	s.False(result.Failed())
+	s.NoError(result.Error())
+}
+
+func (s *EventTestSuite) TestDispatchReturnsEventHandleError() {
+	expectedErr := errors.New("event handle error")
+	eventInstance := &dispatchHandleErrorEvent{
+		integrationEvent: integrationEvent{
+			handle: func(args []event.Arg) ([]event.Arg, error) {
+				return nil, expectedErr
+			},
 		},
 	}
+	capture := &listenerCapture{}
+	listenerInstance := &integrationListener{
+		signature:   s.uniqueName("event_handle_error_listener"),
+		queueConfig: event.Queue{Enable: false},
+		capture:     capture,
+	}
+	s.NoError(facades.Event().Listen(eventInstance, listenerInstance))
 
+	result := facades.Event().Dispatch(eventInstance, []event.Arg{
+		{Type: "string", Value: "test"},
+	})
+
+	// The event's Handle error still short-circuits the dispatch, so the
+	// registered listener must not run.
+	s.True(result.Failed())
+	s.ErrorIs(result.Error(), expectedErr)
+	s.Empty(capture.Handled())
+}
+
+func (s *EventTestSuite) TestDispatchSyncListenerWithTransformedArgs() {
+	eventInstance := &dispatchTransformedArgsEvent{
+		integrationEvent: integrationEvent{
+			handle: func(args []event.Arg) ([]event.Arg, error) {
+				return []event.Arg{
+					{Type: "string", Value: castString(args[0].Value) + "_transformed"},
+					{Type: "int", Value: 2},
+				}, nil
+			},
+		},
+	}
+	capture := &listenerCapture{}
+	listenerInstance := &integrationListener{
+		signature:   s.uniqueName("sync_listener"),
+		queueConfig: event.Queue{Enable: false},
+		capture:     capture,
+	}
+	s.NoError(facades.Event().Listen(eventInstance, listenerInstance))
+
+	result := facades.Event().Dispatch(eventInstance, []event.Arg{
+		{Type: "string", Value: "goravel"},
+	})
+
+	s.False(result.Failed())
+	s.NoError(result.Error())
+	s.Equal([][]any{
+		{"goravel_transformed", 2},
+	}, capture.Handled())
+	s.Equal(1, capture.QueueCallCount())
+}
+
+func (s *EventTestSuite) TestDispatchRunsAllListenersAndCollectsErrors() {
+	expectedErr := errors.New("listener handle error")
+	eventInstance := &dispatchMultipleListenersEvent{}
+	failedCapture := &listenerCapture{}
+	otherCapture := &listenerCapture{}
+	failedListener := &integrationListener{
+		signature:   s.uniqueName("failed_listener"),
+		queueConfig: event.Queue{Enable: false},
+		handleErr:   expectedErr,
+		capture:     failedCapture,
+	}
+	otherListener := &integrationListener{
+		signature:   s.uniqueName("other_listener"),
+		queueConfig: event.Queue{Enable: false},
+		capture:     otherCapture,
+	}
+	s.NoError(facades.Event().Listen(eventInstance, failedListener, otherListener))
+
+	// Dispatch runs every listener and aggregates the errors instead of
+	// stopping after the first failure, so both listeners handle the payload.
+	result := facades.Event().Dispatch(eventInstance, []event.Arg{
+		{Type: "string", Value: "should not stop"},
+	})
+
+	s.True(result.Failed())
+	s.ErrorIs(result.Error(), expectedErr)
+	s.Len(failedCapture.Handled(), 1)
+	s.Len(otherCapture.Handled(), 1)
+}
+
+func (s *EventTestSuite) TestDispatchQueuedListenerEventually() {
+	eventInstance := &dispatchQueuedListenerEvent{}
+	capture := &listenerCapture{}
+	listenerInstance := &integrationListener{
+		signature: s.uniqueName("queued_listener"),
+		queueConfig: event.Queue{
+			Enable: true,
+		},
+		capture: capture,
+	}
+	s.NoError(facades.Event().Listen(eventInstance, listenerInstance))
+
+	result := facades.Event().Dispatch(eventInstance, []event.Arg{
+		{Type: "string", Value: "queued"},
+	})
+
+	s.False(result.Failed())
+	s.NoError(result.Error())
+	s.True(waitUntil(5*time.Second, 20*time.Millisecond, func() bool {
+		return len(capture.Handled()) == 1
+	}))
+	s.Equal([][]any{
+		{"queued"},
+	}, capture.Handled())
+	s.Equal(1, capture.QueueCallCount())
+}
+
+func (s *EventTestSuite) TestGetEventsReturnsACopy() {
+	eventInstance := &getEventsEvent{}
+	listener := &integrationListener{
+		signature:   s.uniqueName("get_events_listener"),
+		queueConfig: event.Queue{},
+		capture:     nil,
+	}
+
+	// Register (deprecated) is the only entry that records the event under its
+	// value, which is what GetEvents returns a defensive copy of.
+	//nolint:staticcheck
+	facades.Event().Register(map[event.Event][]event.Listener{
+		eventInstance: {
+			listener,
+		},
+	})
+
+	// GetEvents returns a copy, so lookups are keyed on the event value.
+	//nolint:staticcheck
+	events := facades.Event().GetEvents()
+
+	s.Equal([]event.Listener{listener}, events[eventInstance])
+
+	events[eventInstance] = nil
+
+	//nolint:staticcheck
+	s.Equal([]event.Listener{listener}, facades.Event().GetEvents()[eventInstance])
+}
+
+func (s *EventTestSuite) TestJobDispatchUnregisteredEvent() {
+	eventInstance := &unregisteredIntegrationEvent{}
+
+	// The deprecated Task requires a bound listener; unlike Dispatch, an
+	// unbound event fails with EventListenerNotBind.
+	//nolint:staticcheck
 	err := facades.Event().Job(eventInstance, nil).Dispatch()
 
 	s.Equal(frameworkerrors.EventListenerNotBind.Args(eventInstance), err)
 }
 
-func (s *EventTestSuite) TestDispatchReturnsEventHandleError() {
+func (s *EventTestSuite) TestJobDispatchReturnsEventHandleError() {
 	expectedErr := errors.New("event handle error")
 	eventInstance := &integrationEvent{
 		handle: func(args []event.Arg) ([]event.Arg, error) {
@@ -93,12 +235,19 @@ func (s *EventTestSuite) TestDispatchReturnsEventHandleError() {
 		queueConfig: event.Queue{Enable: false},
 		capture:     capture,
 	}
+
+	// Register (deprecated) replaces the legacy listeners it bound to the shared
+	// integrationEvent name, keeping the Job tests isolated from each other.
+	//nolint:staticcheck
 	facades.Event().Register(map[event.Event][]event.Listener{
 		eventInstance: {
 			listenerInstance,
 		},
 	})
 
+	// The event's own Handle error short-circuits the Task and its error is
+	// returned directly, so the registered listener must not run.
+	//nolint:staticcheck
 	err := facades.Event().Job(eventInstance, []event.Arg{
 		{Type: "string", Value: "test"},
 	}).Dispatch()
@@ -107,7 +256,7 @@ func (s *EventTestSuite) TestDispatchReturnsEventHandleError() {
 	s.Empty(capture.Handled())
 }
 
-func (s *EventTestSuite) TestDispatchSyncListenerWithTransformedArgs() {
+func (s *EventTestSuite) TestJobDispatchSyncListenerWithTransformedArgs() {
 	eventInstance := &integrationEvent{
 		handle: func(args []event.Arg) ([]event.Arg, error) {
 			return []event.Arg{
@@ -122,12 +271,17 @@ func (s *EventTestSuite) TestDispatchSyncListenerWithTransformedArgs() {
 		queueConfig: event.Queue{Enable: false},
 		capture:     capture,
 	}
+
+	//nolint:staticcheck
 	facades.Event().Register(map[event.Event][]event.Listener{
 		eventInstance: {
 			listenerInstance,
 		},
 	})
 
+	// The Task delivers the Handle-transformed payload to the sync listener and
+	// asks for its queue options once.
+	//nolint:staticcheck
 	err := facades.Event().Job(eventInstance, []event.Arg{
 		{Type: "string", Value: "goravel"},
 	}).Dispatch()
@@ -139,7 +293,7 @@ func (s *EventTestSuite) TestDispatchSyncListenerWithTransformedArgs() {
 	s.Equal(1, capture.QueueCallCount())
 }
 
-func (s *EventTestSuite) TestDispatchStopsAfterListenerError() {
+func (s *EventTestSuite) TestJobDispatchStopsAtFirstListenerError() {
 	expectedErr := errors.New("listener handle error")
 	eventInstance := &integrationEvent{
 		handle: func(args []event.Arg) ([]event.Arg, error) {
@@ -159,6 +313,8 @@ func (s *EventTestSuite) TestDispatchStopsAfterListenerError() {
 		queueConfig: event.Queue{Enable: false},
 		capture:     skippedCapture,
 	}
+
+	//nolint:staticcheck
 	facades.Event().Register(map[event.Event][]event.Listener{
 		eventInstance: {
 			failedListener,
@@ -166,6 +322,9 @@ func (s *EventTestSuite) TestDispatchStopsAfterListenerError() {
 		},
 	})
 
+	// The Task is fail-fast: the first failing listener returns its error
+	// directly and the listener behind it is never invoked.
+	//nolint:staticcheck
 	err := facades.Event().Job(eventInstance, []event.Arg{
 		{Type: "string", Value: "should stop"},
 	}).Dispatch()
@@ -175,7 +334,7 @@ func (s *EventTestSuite) TestDispatchStopsAfterListenerError() {
 	s.Empty(skippedCapture.Handled())
 }
 
-func (s *EventTestSuite) TestDispatchQueuedListenerEventually() {
+func (s *EventTestSuite) TestJobDispatchQueuedListenerEventually() {
 	eventInstance := &integrationEvent{
 		handle: func(args []event.Arg) ([]event.Arg, error) {
 			return args, nil
@@ -189,12 +348,17 @@ func (s *EventTestSuite) TestDispatchQueuedListenerEventually() {
 		},
 		capture: capture,
 	}
+
+	//nolint:staticcheck
 	facades.Event().Register(map[event.Event][]event.Listener{
 		eventInstance: {
 			listenerInstance,
 		},
 	})
 
+	// A queueable listener is pushed onto the queue, the Task reports no error
+	// and the listener handles the payload once through the worker.
+	//nolint:staticcheck
 	err := facades.Event().Job(eventInstance, []event.Arg{
 		{Type: "string", Value: "queued"},
 	}).Dispatch()
@@ -345,6 +509,44 @@ func (receiver *integrationEvent) Handle(args []event.Arg) ([]event.Arg, error) 
 	return receiver.handle(args)
 }
 
+// unregisteredIntegrationEvent is the payload of TestDispatchUnregisteredEvent.
+// It must not be integrationEvent itself: Listen appends registrations by the
+// event's type name, so giving this payload its own never-registered type name
+// guarantees the dispatch can't hit a foreign registration. Embedding gives
+// this type the same Handle behaviour under its own name.
+type unregisteredIntegrationEvent struct {
+	integrationEvent
+}
+
+// The event types below give each dispatch test its own event name. Listen
+// appends registrations instead of overwriting them, so two tests sharing the
+// plain integrationEvent name would accumulate each other's listeners and make
+// every dispatch run foreign captures.
+type dispatchHandleErrorEvent struct {
+	integrationEvent
+}
+
+type dispatchTransformedArgsEvent struct {
+	integrationEvent
+}
+
+type dispatchMultipleListenersEvent struct {
+	integrationEvent
+}
+
+type dispatchQueuedListenerEvent struct {
+	integrationEvent
+}
+
+// getEventsEvent is the payload of TestGetEventsReturnsACopy. Register keys the
+// deprecated events registry by the event value, so this dedicated type keeps
+// the GetEvents copy assertions clear of the bootstrapped OrderShipped and
+// OrderCanceled entries as well as the integrationEvent registrations of the
+// other deprecated tests.
+type getEventsEvent struct {
+	integrationEvent
+}
+
 type integrationListener struct {
 	signature   string
 	queueConfig event.Queue
@@ -364,7 +566,7 @@ func (receiver *integrationListener) Queue(args ...any) event.Queue {
 	return receiver.queueConfig
 }
 
-func (receiver *integrationListener) Handle(args ...any) error {
+func (receiver *integrationListener) Handle(eventName string, args ...any) error {
 	if receiver.capture != nil {
 		receiver.capture.AddHandled(args)
 	}

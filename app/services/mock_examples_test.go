@@ -7,6 +7,7 @@ import (
 	"github.com/goravel/framework/contracts/mail"
 	"github.com/goravel/framework/filesystem"
 	mocksbroadcasting "github.com/goravel/framework/mocks/broadcasting"
+	mocksevent "github.com/goravel/framework/mocks/event"
 	"github.com/goravel/framework/testing/mock"
 	testifymock "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -83,9 +84,9 @@ func (s *MockExamplesTestSuite) TestCrypt() {
 func (s *MockExamplesTestSuite) TestEvent() {
 	mockFactory := mock.Factory()
 	mockEvent := mockFactory.Event()
-	mockTask := mockFactory.EventTask()
-	mockEvent.EXPECT().Job(testifymock.Anything, testifymock.Anything).Return(mockTask).Once()
-	mockTask.EXPECT().Dispatch().Return(nil).Once()
+	mockResult := &mocksevent.Result{}
+	mockEvent.EXPECT().Dispatch(testifymock.Anything, testifymock.Anything).Return(mockResult).Once()
+	mockResult.EXPECT().Error().Return(nil).Once()
 
 	s.Nil(Event())
 }
