@@ -264,4 +264,4 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20260925125002-93850001fe6f
+replace github.com/goravel/framework => github.com/darakanoit/framework v1.18.1-0.20260927233735-13001ebed1a1
