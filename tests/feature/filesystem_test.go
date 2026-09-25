@@ -87,12 +87,14 @@ func initMinio() contractsdocker.ImageDriver {
 	minioBucket := os.Getenv("MINIO_BUCKET")
 
 	docker := testingdocker.NewImageDriver(contractsdocker.Image{
-		Repository: "minio/minio",
-		Tag:        "latest",
+		// MinIO removed its official images from Docker Hub (minio/minio now 404s),
+		// so use a maintained community rebuild of the last official release.
+		Repository: "coollabsio/minio",
+		Tag:        "RELEASE.2025-10-15T17-29-55Z",
 		Cmd:        []string{"server", "/data"},
 		Env: []string{
-			"MINIO_ACCESS_KEY=" + minioAccessKey,
-			"MINIO_SECRET_KEY=" + minioSecretKey,
+			"MINIO_ROOT_USER=" + minioAccessKey,
+			"MINIO_ROOT_PASSWORD=" + minioSecretKey,
 		},
 		ExposedPorts: []string{
 			"9000",
