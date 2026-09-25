@@ -2,12 +2,16 @@ package feature
 
 import (
 	"fmt"
+	"io"
+	nethttp "net/http"
 	"strings"
 	"testing"
 
 	contractshttp "github.com/goravel/framework/contracts/http"
+	contractstestinghttp "github.com/goravel/framework/contracts/testing/http"
 	"github.com/goravel/framework/support/http"
 	"github.com/stretchr/testify/suite"
+	"github.com/valyala/fasthttp"
 
 	"goravel/app/facades"
 	"goravel/app/models"
@@ -44,6 +48,145 @@ func (s *HttpTestSuite) TestBindQuery() {
 	content, err := resp.Content()
 	s.Require().NoError(err)
 	s.Equal("{\"name\":\"Goravel\"}", content)
+}
+
+// bodyLimitByte is the app's configured request body limit and the drivers'
+// fallback for body_limit <= 0: config/http.go sets body_limit to 4096 KiB.
+const bodyLimitByte = 4096 << 10 // 4 MiB
+
+// TestBodyLimit verifies http.drivers.<driver>.body_limit rejects an over-limit
+// request with 413 before any handler runs (goravel/gin#247). The limit is left
+// at the app default so the real 4 MiB boundary is exercised.
+func (s *HttpTestSuite) TestBodyLimit() {
+	s.Run("under the limit", func() {
+		body, err := http.NewBody().SetField("test", map[string]any{"key": "value"}).Build()
+		s.Require().NoError(err)
+
+		resp, err := s.Http(s.T()).Post("/input-map", body.Reader())
+		s.Require().NoError(err)
+		resp.AssertSuccessful()
+
+		content, err := resp.Content()
+		s.Require().NoError(err)
+		s.Equal(`{"test":{"key":"value"}}`, content)
+	})
+
+	s.Run("at the limit", func() {
+		// A valid JSON body of exactly bodyLimitByte bytes is allowed: the
+		// limit rejects only bodies strictly larger than it. The wrapper
+		// `{"test":{"key":"..."}}` adds 19 bytes around the padding.
+		atLimit := `{"test":{"key":"` + strings.Repeat("a", bodyLimitByte-19) + `"}}`
+		s.Require().Len(atLimit, bodyLimitByte)
+
+		resp, err := s.Http(s.T()).Post("/input-map", strings.NewReader(atLimit))
+		s.Require().NoError(err)
+		resp.AssertSuccessful()
+	})
+
+	over := `{"test":"` + strings.Repeat("a", bodyLimitByte+1) + `"}`
+	formBody, err := http.NewBody(http.BodyTypeForm).
+		SetField("test", strings.Repeat("a", bodyLimitByte+1)).
+		Build()
+	s.Require().NoError(err)
+	multipartBody, err := http.NewBody(http.BodyTypeMultipart).
+		SetField("test", strings.Repeat("a", bodyLimitByte+1)).
+		Build()
+	s.Require().NoError(err)
+
+	cases := []struct {
+		name        string
+		path        string
+		body        io.Reader
+		contentType string
+	}{
+		{name: "json", path: "/input-map", body: strings.NewReader(over)},
+		{name: "json to an unmatched route", path: "/not-a-route", body: strings.NewReader(over)},
+		{name: "form", path: "/input-map", body: formBody.Reader(), contentType: formBody.ContentType()},
+		{name: "multipart", path: "/input-map", body: multipartBody.Reader(), contentType: multipartBody.ContentType()},
+	}
+
+	for _, test := range cases {
+		s.Run("over the limit "+test.name, func() {
+			request := s.Http(s.T())
+			if test.contentType != "" {
+				request = request.WithHeader("Content-Type", test.contentType)
+			}
+
+			resp, err := request.Post(test.path, test.body)
+			s.assertBodyRejected(resp, err)
+		})
+	}
+
+	s.Run("over the limit chunked", func() {
+		// fiber's in-process harness appends "Content-Length: -1" for a body with
+		// no declared length, which fasthttp rejects before the limit applies, so
+		// this case runs under gin only.
+		switch driver := facades.Config().GetString("http.default"); driver {
+		case "gin":
+			// gin's in-process harness can express a chunked request.
+		case "fiber":
+			s.T().Skip("fiber's in-process harness cannot express a chunked request")
+		default:
+			s.T().Fatalf("unsupported http driver %q", driver)
+		}
+
+		// io.NopCloser hides the concrete reader from httptest.NewRequest, so the
+		// request is sent without a Content-Length, like a chunked body.
+		resp, err := s.Http(s.T()).Post("/input-map", io.NopCloser(strings.NewReader(over)))
+		s.assertBodyRejected(resp, err)
+	})
+}
+
+// TestBodyLimitDefaultFallback verifies body_limit 0 falls back to 4096 KiB
+// on both drivers instead of disabling the limit.
+func (s *HttpTestSuite) TestBodyLimitDefaultFallback() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"http.drivers.gin.body_limit":   0,
+		"http.drivers.fiber.body_limit": 0,
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
+
+	// On fiber, body_limit 0 is passed straight through as fiber's BodyLimit,
+	// and fiber treats 0 as its own 4 MiB default. The fiber half below
+	// therefore verifies the observable contract (0 keeps the 4 MiB limit)
+	// rather than goravel/fiber's <= 0 fallback mapping; the gin half verifies
+	// the driver's fallback code.
+
+	// 0 must not reject normal requests.
+	body, err := http.NewBody().SetField("test", map[string]any{"key": "value"}).Build()
+	s.Require().NoError(err)
+	resp, err := s.Http(s.T()).Post("/input-map", body.Reader())
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	// One byte over the 4 MiB fallback is rejected.
+	over := `{"test":"` + strings.Repeat("a", bodyLimitByte+1) + `"}`
+	resp, err = s.Http(s.T()).Post("/input-map", strings.NewReader(over))
+	s.assertBodyRejected(resp, err)
+}
+
+// assertBodyRejected asserts that the driver rejected an over-limit request
+// before any handler ran. gin answers with a 413 response. fiber's in-process
+// harness (fiber.App.Test) rejects at the connection layer instead, so it
+// returns no response and fasthttp.ErrBodyTooLarge. Any other driver fails the
+// test rather than silently taking one of those branches.
+func (s *HttpTestSuite) assertBodyRejected(resp contractstestinghttp.Response, err error) {
+	switch driver := facades.Config().GetString("http.default"); driver {
+	case "gin":
+		s.Require().NoError(err)
+		resp.AssertStatus(nethttp.StatusRequestEntityTooLarge)
+		resp.AssertHeader("Content-Type", "text/plain; charset=utf-8")
+
+		content, err := resp.Content()
+		s.Require().NoError(err)
+		s.Equal("Request Entity Too Large", content)
+	case "fiber":
+		s.Require().ErrorIs(err, fasthttp.ErrBodyTooLarge)
+		s.Nil(resp)
+	default:
+		s.T().Fatalf("unsupported http driver %q", driver)
+	}
 }
 
 func (s *HttpTestSuite) TestFallback() {
