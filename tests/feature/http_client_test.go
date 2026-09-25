@@ -7,10 +7,8 @@ import (
 	"testing"
 
 	client "github.com/goravel/framework/contracts/http/client"
-	contractshttptest "github.com/goravel/framework/contracts/testing/http"
 	supporthttp "github.com/goravel/framework/support/http"
 	"github.com/stretchr/testify/suite"
-	"github.com/valyala/fasthttp"
 
 	"goravel/app/facades"
 	"goravel/tests"
@@ -156,9 +154,9 @@ func (s *HttpClientTestSuite) assertBodyTooLarge(resp client.Response, err error
 // on both drivers. Only gin maps <= 0 to 4096 KiB; goravel/fiber passes 0
 // straight through and fiber itself defaults to 4 MiB, so the gin half
 // verifies the fallback code while the fiber half verifies the observable
-// contract. It stays on the in-process harness: a 4 MiB body over a real socket
-// can be cut off by the server's early rejection, and the point here is the
-// mapping, not the wire 413.
+// contract. The payload is real and ~4 MiB, so the server rejects on
+// Content-Length while the client is still uploading; the client normally reads
+// the 413, but a connection reset is possible.
 func (s *HttpClientTestSuite) TestBodyLimitDefaultFallback() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"http.drivers.gin.body_limit":   0,
@@ -168,35 +166,14 @@ func (s *HttpClientTestSuite) TestBodyLimitDefaultFallback() {
 	defer func() { s.NoError(scope.Restore()) }()
 
 	// 0 must not reject normal requests.
-	body, err := supporthttp.NewBody().SetField("test", map[string]any{"key": "value"}).Build()
+	resp, err := facades.Http().WithHeader("Content-Type", "application/json").
+		Post("/input-map", strings.NewReader(`{"test":{"key":"value"}}`))
 	s.Require().NoError(err)
-	resp, err := s.Http(s.T()).Post("/input-map", body.Reader())
-	s.Require().NoError(err)
-	resp.AssertSuccessful()
+	s.Equal(nethttp.StatusOK, resp.Status())
 
 	// One byte over the 4 MiB fallback is rejected.
 	over := `{"test":"` + strings.Repeat("a", defaultBodyLimitByte+1) + `"}`
-	resp, err = s.Http(s.T()).Post("/input-map", strings.NewReader(over))
-	s.assertBodyRejected(resp, err)
-}
-
-// assertBodyRejected covers the in-process harness, where gin answers with a
-// 413 response and fiber returns fasthttp.ErrBodyTooLarge with no response.
-func (s *HttpClientTestSuite) assertBodyRejected(resp contractshttptest.Response, err error) {
-	s.T().Helper()
-
-	switch driver := facades.Config().GetString("http.default"); driver {
-	case "gin":
-		s.Require().NoError(err)
-		resp.AssertStatus(nethttp.StatusRequestEntityTooLarge)
-		resp.AssertHeader("Content-Type", "text/plain; charset=utf-8")
-		content, err := resp.Content()
-		s.Require().NoError(err)
-		s.Equal("Request Entity Too Large", content)
-	case "fiber":
-		s.Require().ErrorIs(err, fasthttp.ErrBodyTooLarge)
-		s.Nil(resp)
-	default:
-		s.Require().FailNow("unsupported http driver: " + driver)
-	}
+	resp, err = facades.Http().WithHeader("Content-Type", "application/json").
+		Post("/input-map", strings.NewReader(over))
+	s.assertBodyTooLarge(resp, err)
 }
