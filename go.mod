@@ -10,7 +10,7 @@ require (
 	github.com/goravel/fiber v1.18.1-0.20260901101548-72e06e6c5635
 	github.com/goravel/framework v1.18.1-0.20260925114822-dab1968caa54
 	github.com/goravel/gemini v1.18.0
-	github.com/goravel/gin v1.18.1-0.20260925062245-9ea42e936ebf
+	github.com/goravel/gin v1.18.1-0.20260926005436-467f03c48058
 	github.com/goravel/inertia v1.18.1-0.20260824090129-ac3d472d028c
 	github.com/goravel/minio v1.18.0
 	github.com/goravel/mysql v1.18.0
@@ -30,7 +30,6 @@ require (
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag v1.16.2
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
-	github.com/valyala/fasthttp v1.73.0
 	github.com/vektah/gqlparser/v2 v2.5.19
 	go.opentelemetry.io/otel v1.46.0
 	go.opentelemetry.io/otel/metric v1.46.0
@@ -214,6 +213,7 @@ require (
 	github.com/unrolled/secure v1.17.0 // indirect
 	github.com/urfave/cli/v3 v3.13.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasthttp v1.73.0 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/xrash/smetrics v0.0.0-20250705151800-55b8f293f342 // indirect
@@ -265,11 +265,3 @@ require (
 )
 
 replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20260925114822-dab1968caa54
-
-// TEMPORARY: goravel/gin#247 (request body limit) is not merged upstream yet, so
-// the gin driver is pinned to the PR head fork. Tracking: https://github.com/goravel/gin/pull/247
-// Once #247 lands, delete this replace and pin the merged commit/release reachable
-// from upstream main or a tag. The indirect dependency bumps in the require blocks
-// above are required by the pinned commit's own go.mod; they are expected and
-// disappear with the replace.
-replace github.com/goravel/gin => github.com/darakanoit/gin v1.18.1-0.20260925062245-9ea42e936ebf
