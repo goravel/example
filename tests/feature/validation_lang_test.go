@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 	_ "unsafe"
 
@@ -16,14 +17,17 @@ import (
 )
 
 // The translation package caches loaded lang messages in a package-level
-// `loaded` map that never expires. When lang:publish populates this cache
+// `loaded` sync.Map that never expires. When lang:publish populates this cache
 // with custom messages during TestValidationLangTestSuite, those messages
 // leak into TestValidationTestSuite (which runs next alphabetically),
-// causing default-message assertions to fail. Resetting the map here forces
+// causing default-message assertions to fail. Clearing the map here forces
 // the translator to reload from the embedded defaults fresh after each test.
 //
+// The linkname below is not type checked: the declaration must match the type
+// of translation.loaded, otherwise the reset silently stops working.
+//
 //go:linkname translationLoaded github.com/goravel/framework/translation.loaded
-var translationLoaded map[string]map[string]map[string]any
+var translationLoaded sync.Map
 
 type ValidationLangTestSuite struct {
 	suite.Suite
@@ -43,7 +47,7 @@ func (s *ValidationLangTestSuite) SetupTest() {
 
 func (s *ValidationLangTestSuite) TearDownTest() {
 	s.removeValidationLangFiles()
-	translationLoaded = make(map[string]map[string]map[string]any)
+	translationLoaded.Clear()
 }
 
 func (s *ValidationLangTestSuite) removeValidationLangFiles() {
