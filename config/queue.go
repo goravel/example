@@ -26,6 +26,9 @@ func init() {
 				"connection": "sqlite",
 				"queue":      "default",
 				"concurrent": 5,
+				// timeout is the number of seconds to wait for a blocking receive, e.g. 5 or "1s".
+				// Only affects receive-based (DriverWithReceive) connections.
+				"timeout": 5,
 				// Retry_after is the number of seconds a job is reserved for before a
 				// crashed worker's reservation expires and the job is recovered by
 				// other workers. It must exceed the maximum job runtime.

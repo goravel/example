@@ -8,7 +8,7 @@ require (
 	github.com/goravel/cos v1.18.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.18.1-0.20260901101548-72e06e6c5635
-	github.com/goravel/framework v1.18.1-0.20260925125002-93850001fe6f
+	github.com/goravel/framework v1.18.1-0.20261003042419-11d7b3085e4a
 	github.com/goravel/gemini v1.18.0
 	github.com/goravel/gin v1.18.1-0.20260926005436-467f03c48058
 	github.com/goravel/inertia v1.18.1-0.20260824090129-ac3d472d028c
@@ -34,7 +34,7 @@ require (
 	go.opentelemetry.io/otel v1.46.0
 	go.opentelemetry.io/otel/metric v1.46.0
 	go.opentelemetry.io/otel/trace v1.46.0
-	google.golang.org/grpc v1.85.0-dev.0.20260825072537-93e31b48545e
+	google.golang.org/grpc v1.86.0-dev.0.20260925073600-acccf8cd101a
 	google.golang.org/protobuf v1.36.12
 )
 
@@ -264,4 +264,4 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20260925125002-93850001fe6f
+replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261003042419-11d7b3085e4a
