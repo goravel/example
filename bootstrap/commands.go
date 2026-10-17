@@ -11,5 +11,6 @@ func Commands() []console.Command {
 		&commands.ConsoleSingleCommand{},
 		&commands.ConsoleSliceCommand{},
 		&commands.ConsoleShutdownableCommand{},
+		&commands.ConsoleColorCommand{},
 	}
 }
