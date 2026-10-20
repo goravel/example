@@ -377,7 +377,7 @@ func (s *HttpTestSuite) TestView() {
 
 	csrfToken := resp.Headers().Get("X-CSRF-TOKEN")
 	s.NotEmpty(csrfToken)
-	s.Equal(context, fmt.Sprintf("\n  \n<html>\n  <body>\n    <p>I'm the header</p>\n\n  <p>Hello, Goravel</p>\n  <p> CSRF Token: %s </p>\n  \n  <p>I'm the footer</p>\n  </body>\n</html>\n\n", csrfToken))
+	s.Equal(context, fmt.Sprintf("\n  \n<html>\n  <body>\n    <p>I'm the header</p>\n\n  <p>Hello, Goravel</p>\n  <p> CSRF Token: %s </p>\n  <p> CSRF Field: <input type=\"hidden\" name=\"_token\" value=\"%s\" /> </p>\n  \n  <p>I'm the footer</p>\n  </body>\n</html>\n\n", csrfToken, csrfToken))
 }
 
 func (s *HttpTestSuite) TestProviderRoute() {
