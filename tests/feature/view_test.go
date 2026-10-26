@@ -1,6 +1,7 @@
 package feature
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/goravel/framework/support/path"
@@ -9,6 +10,11 @@ import (
 	"goravel/app/facades"
 	"goravel/tests"
 )
+
+// fixedCSRFToken is written into the session as `_token`; the driver copies
+// session.Token() into the shared csrf_token / csrf_field values, so the
+// rendered output is deterministic.
+const fixedCSRFToken = "csrf-field-test-token"
 
 type ViewTestSuite struct {
 	suite.Suite
@@ -60,4 +66,68 @@ func (s *ViewTestSuite) TestRender_SharedViewOverride() {
 	content, err := resp.Content()
 	s.Require().NoError(err)
 	s.Contains(content, "<p>app-shared: Goravel</p>")
+}
+
+// TestRender_CsrfField verifies `{{ .csrf_field }}` from gin#258 / fiber#313:
+// the value is template.HTML, so html/template writes the <input> tag unescaped,
+// while the token itself is HTML-escaped before it is embedded in the attribute.
+func (s *ViewTestSuite) TestRender_CsrfField() {
+	const (
+		hostileToken = `"><script>alert(1)</script>`
+		escapedToken = "&#34;&gt;&lt;script&gt;alert(1)&lt;/script&gt;"
+		body         = `<p>csrf_token=%s</p><input type="hidden" name="_token" value="%s" />`
+	)
+
+	tests := []struct {
+		name     string
+		token    string
+		expected string
+	}{
+		{
+			name:     "should render csrf_field as unescaped html",
+			token:    fixedCSRFToken,
+			expected: fmt.Sprintf(body, fixedCSRFToken, fixedCSRFToken),
+		},
+		{
+			name:     "should escape the token in csrf_field",
+			token:    hostileToken,
+			expected: fmt.Sprintf(body, escapedToken, escapedToken),
+		},
+	}
+
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			resp, err := s.Http(s.T()).
+				WithSession(map[string]any{"_token": tt.token}).
+				Get("/view-csrf/field")
+			s.Require().NoError(err)
+			resp.AssertSuccessful()
+
+			content, err := resp.Content()
+			s.Require().NoError(err)
+			s.Equal(tt.expected, content)
+		})
+	}
+}
+
+// TestRender_StringMapDataWithCsrfField locks in the fillShared guard from
+// gin#258 / fiber#313: with a session present, csrf_field (template.HTML) is not
+// assignable to a map[string]string element, so the driver must skip it instead
+// of panicking in reflect.Value.SetMapIndex, while csrf_token (string) is still
+// merged in. The pre-bump pins had neither csrf_field nor the guard, so this case
+// was already green there: it pins the guard going forward rather than
+// reproducing a 500 from the old pins.
+func (s *ViewTestSuite) TestRender_StringMapDataWithCsrfField() {
+	resp, err := s.Http(s.T()).
+		WithSession(map[string]any{"_token": fixedCSRFToken}).
+		Get("/view-csrf/string-map")
+	s.Require().NoError(err)
+	resp.AssertSuccessful()
+
+	content, err := resp.Content()
+	s.Require().NoError(err)
+	s.Equal(
+		fmt.Sprintf("<p>string-map: Goravel</p><p>csrf_token=%s</p>", fixedCSRFToken),
+		content,
+	)
 }
