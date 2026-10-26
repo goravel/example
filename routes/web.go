@@ -94,6 +94,26 @@ func Web() {
 		})
 	})
 
+	// View CSRF Test: the driver shares csrf_token (string) and csrf_field
+	// (html/template.HTML) on every request that has a session —
+	// middleware.StartSession() is registered globally in bootstrap/app.go.
+	facades.Route().Prefix("view-csrf").Group(func(router route.Router) {
+		// Renders both shared values. csrf_field is template.HTML, so the
+		// <input> tag must reach the page unescaped.
+		router.Get("field", func(ctx http.Context) http.Response {
+			return ctx.Response().View().Make("admin/csrf_field.tmpl")
+		})
+
+		// Renders a view with map[string]string data while the session exists:
+		// the driver must skip shared values that do not fit the map element
+		// type (csrf_field is template.HTML) instead of panicking.
+		router.Get("string-map", func(ctx http.Context) http.Response {
+			return ctx.Response().View().Make("admin/csrf_string_map.tmpl", map[string]string{
+				"name": "Goravel",
+			})
+		})
+	})
+
 	facades.Route().Fallback(func(ctx http.Context) http.Response {
 		return ctx.Response().String(http.StatusNotFound, "fallback")
 	})
