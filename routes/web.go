@@ -94,6 +94,27 @@ func Web() {
 		})
 	})
 
+	// View Funcs: application functions (WithViewFuncs) and package functions
+	// (View.AddFuncs) both reach the template set; the application wins on a
+	// name collision.
+	facades.Route().Prefix("view-funcs").Group(func(router route.Router) {
+		router.Get("app", func(ctx http.Context) http.Response {
+			return ctx.Response().View().Make("app_func.tmpl", map[string]any{
+				"name": "Goravel",
+			})
+		})
+		router.Get("package", func(ctx http.Context) http.Response {
+			return ctx.Response().View().Make("package_func.tmpl", map[string]any{
+				"name": "Goravel",
+			})
+		})
+		router.Get("override", func(ctx http.Context) http.Response {
+			return ctx.Response().View().Make("func_override.tmpl", map[string]any{
+				"name": "Goravel",
+			})
+		})
+	})
+
 	// View CSRF Test: the driver shares csrf_token (string) and csrf_field
 	// (html/template.HTML) on every request that has a session —
 	// middleware.StartSession() is registered globally in bootstrap/app.go.

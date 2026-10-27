@@ -1,6 +1,8 @@
 package bootstrap
 
 import (
+	"html/template"
+
 	"github.com/goravel/framework/auth"
 	"github.com/goravel/framework/contracts/database/schema"
 	"github.com/goravel/framework/contracts/event"
@@ -23,6 +25,7 @@ import (
 	"goravel/app/listeners"
 	"goravel/app/models"
 	"goravel/config"
+	"goravel/packages/viewtest"
 	"goravel/routes"
 )
 
@@ -101,6 +104,18 @@ func Boot() contractsfoundation.Application {
 			paths.App("app")
 		}).
 		WithProviders(Providers).
+		WithViewFuncs(func() template.FuncMap {
+			// app_greeting is the app's own name; greeting exists to override the
+			// package function of that name.
+			greet := func(name string) string {
+				return "app-hello " + name
+			}
+
+			return template.FuncMap{
+				"app_greeting":            greet,
+				viewtest.GreetingFuncName: greet,
+			}
+		}).
 		WithRunners(BootstrapRunners).
 		WithSchedule(func() []schedule.Event {
 			return []schedule.Event{

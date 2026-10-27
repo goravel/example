@@ -68,6 +68,71 @@ func (s *ViewTestSuite) TestRender_SharedViewOverride() {
 	s.Contains(content, "<p>app-shared: Goravel</p>")
 }
 
+func (s *ViewTestSuite) TestRender_ViewFuncs() {
+	tests := []struct {
+		name string
+		path string
+		want string
+	}{
+		{
+			name: "should render an application view function",
+			path: "/view-funcs/app",
+			want: "<p>app-func: app-hello Goravel</p>",
+		},
+		{
+			name: "should render a package view function",
+			path: "/view-funcs/package",
+			want: "<p>package-func: package-hello Goravel</p>",
+		},
+		{
+			// GreetingFuncName is registered by both the package provider and the
+			// application; the application's registration is applied last.
+			name: "should prefer the application function on a name collision",
+			path: "/view-funcs/override",
+			want: "<p>greeting: app-hello Goravel</p>",
+		},
+	}
+
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			resp, err := s.Http(s.T()).Get(tt.path)
+			s.Require().NoError(err)
+			resp.AssertSuccessful()
+
+			content, err := resp.Content()
+			s.Require().NoError(err)
+			s.Contains(content, tt.want)
+		})
+	}
+}
+
+// TestFuncs_AppAndPackage verifies View.Funcs exposes the merged registry and
+// that the application's function won the collision.
+func (s *ViewTestSuite) TestFuncs_AppAndPackage() {
+	funcs := facades.View().Funcs()
+	s.Require().NotNil(funcs)
+
+	// Membership only: a new framework-registered function must not fail this.
+	for _, name := range []string{"app_greeting", "greeting", "package_greeting"} {
+		s.Contains(funcs, name)
+	}
+
+	greeting, ok := funcs["greeting"].(func(string) string)
+	s.Require().True(ok)
+	s.Equal("app-hello Goravel", greeting("Goravel"))
+}
+
+// TestFuncs_ReturnedMapIsACopy verifies View.Funcs hands out a copy, so a caller
+// cannot mutate the registry through it.
+func (s *ViewTestSuite) TestFuncs_ReturnedMapIsACopy() {
+	funcs := facades.View().Funcs()
+	s.Require().NotNil(funcs)
+	funcs["__probe"] = func(string) string { return "mutated" }
+
+	_, ok := facades.View().Funcs()["__probe"]
+	s.False(ok)
+}
+
 // TestRender_CsrfField verifies `{{ .csrf_field }}` from gin#258 / fiber#313:
 // the value is template.HTML, so html/template writes the <input> tag unescaped,
 // while the token itself is HTML-escaped before it is embedded in the attribute.
