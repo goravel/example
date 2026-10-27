@@ -34,7 +34,7 @@ require (
 	go.opentelemetry.io/otel v1.47.0
 	go.opentelemetry.io/otel/metric v1.47.0
 	go.opentelemetry.io/otel/trace v1.47.0
-	google.golang.org/grpc v1.86.0-dev.0.20261016230555-3d85ab3cf6bf
+	google.golang.org/grpc v1.86.0-dev.0.20261023181330-80c1e76a540c
 	google.golang.org/protobuf v1.36.12
 )
 
@@ -133,6 +133,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.21 // indirect
 	github.com/googleapis/gax-go/v2 v2.23.0 // indirect
+	github.com/gookit/color v1.6.3 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/invopop/jsonschema v0.13.0 // indirect
@@ -187,8 +188,8 @@ require (
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
 	github.com/samber/lo v1.53.0 // indirect
-	github.com/samber/slog-common v0.21.0 // indirect
-	github.com/samber/slog-multi v1.8.0 // indirect
+	github.com/samber/slog-common v0.22.0 // indirect
+	github.com/samber/slog-multi v1.9.0 // indirect
 	github.com/slack-go/slack v0.17.3 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
@@ -219,7 +220,7 @@ require (
 	github.com/zeebo/xxh3 v1.1.0 // indirect
 	go.mongodb.org/mongo-driver/v2 v2.8.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.71.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.72.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.72.0 // indirect
 	go.opentelemetry.io/contrib/propagators/b3 v1.47.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.23.0 // indirect
@@ -265,4 +266,4 @@ require (
 
 // The require version above is MVS bookkeeping only: gin and fiber ask for a
 // newer framework, but the framework code compiled here is this pin.
-replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20260925125002-93850001fe6f
+replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261027090652-c67cea858086
