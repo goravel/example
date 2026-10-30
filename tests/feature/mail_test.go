@@ -118,8 +118,9 @@ func (s *MailTestSuite) TestFakeRendersMailableView() {
 	s.Equal("Welcome to Goravel, Ana", sent[0].Subject)
 	s.Equal([]string{"ana@example.com"}, sent[0].To)
 	s.Equal(map[string]string{"X-Mailer": "goravel-example"}, sent[0].Headers)
-	// The view keeps its surrounding newlines, so only the body is asserted.
+	// The views keep their surrounding newlines, so only the bodies are asserted.
 	s.Contains(sent[0].Html, "<p>Hi Ana, welcome to Goravel.</p>")
+	s.Contains(sent[0].Text, "Hi Ana, welcome to Goravel.")
 	s.True(fake.AssertSent(func(message mail.Message) bool {
 		return message.HasTo("ana@example.com") && message.Subject == "Welcome to Goravel, Ana"
 	}))
@@ -140,7 +141,8 @@ func (s *MailTestSuite) TestFakeRecordsQueuedMail() {
 	s.True(fake.AssertQueuedCount(1))
 	s.False(fake.AssertQueuedCount(2))
 	s.True(fake.AssertNothingSent())
-	s.True(fake.AssertNotQueued(func(message mail.Message) bool { return message.Subject == "2002" }))
+	s.True(fake.AssertQueued(func(message mail.Message) bool { return message.Subject == "Invoice 1001" }))
+	s.False(fake.AssertNotQueued(func(message mail.Message) bool { return message.Subject == "Invoice 1001" }))
 
 	// Faking records the mail instead of dispatching the send job.
 	count, err := facades.DB().Table("jobs").Count()

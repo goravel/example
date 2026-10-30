@@ -2,8 +2,9 @@ package mails
 
 import "github.com/goravel/framework/contracts/mail"
 
-// Welcome is the welcome e-mail sent to a new user: the HTML body is the
-// resources/views/mail/welcome.tmpl view, rendered with the user's name.
+// Welcome is the welcome e-mail sent to a new user: the HTML and text bodies
+// are the welcome.tmpl and welcome.txt views under resources/views/mail, both
+// rendered with the user's name.
 type Welcome struct {
 	Name string
 	To   string
@@ -18,6 +19,7 @@ func (r *Welcome) Attachments() []string { return nil }
 func (r *Welcome) Content() *mail.Content {
 	return &mail.Content{
 		HtmlView: "welcome.tmpl",
+		TextView: "welcome.txt",
 		With:     map[string]any{"name": r.Name},
 	}
 }
