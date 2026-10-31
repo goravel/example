@@ -264,6 +264,10 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-// require and replace carry the same pin; replace stops the older framework
-// versions gin and fiber ask for from downgrading the code compiled here.
-replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261029110755-f9582c05db52
+// The require version above is MVS bookkeeping only: gin and fiber ask for a
+// newer framework, but the framework code compiled here is this pin.
+//
+// The pin tracks goravel/framework#1574's head until it merges, which is why it
+// points at the contributor's fork; it flips to the upstream v1.18.1-0.<merge>
+// pseudo-version after the merge.
+replace github.com/goravel/framework => github.com/JGamboa/framework v1.18.1-0.20261030004701-8f2d70224c27

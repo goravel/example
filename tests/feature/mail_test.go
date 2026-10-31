@@ -1,11 +1,3 @@
-//go:build mailfake
-
-// Temporary: this file cannot compile against the pinned framework, which has
-// no facades.Mail().Fake() until goravel/framework#1574 merges. The tag keeps
-// the default ./tests/... build green; drop it together with the pin bump.
-// Run the suite with:
-//
-//	go test -tags mailfake ./tests/feature -run TestMailTestSuite
 package feature
 
 import (
