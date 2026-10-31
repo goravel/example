@@ -1,3 +1,11 @@
+//go:build mailfake
+
+// Temporary: this file cannot compile against the pinned framework, which has
+// no facades.Mail().Fake() until goravel/framework#1574 merges. The tag keeps
+// the default ./tests/... build green; drop it together with the pin bump.
+// Run the suite with:
+//
+//	go test -tags mailfake ./tests/feature -run TestMailTestSuite
 package feature
 
 import (
@@ -118,7 +126,8 @@ func (s *MailTestSuite) TestFakeRendersMailableView() {
 	s.Equal("Welcome to Goravel, Ana", sent[0].Subject)
 	s.Equal([]string{"ana@example.com"}, sent[0].To)
 	s.Equal(map[string]string{"X-Mailer": "goravel-example"}, sent[0].Headers)
-	// The views keep their surrounding newlines, so only the bodies are asserted.
+	// Each view renders its body followed by one trailing newline, so only the
+	// bodies are asserted.
 	s.Contains(sent[0].Html, "<p>Hi Ana, welcome to Goravel.</p>")
 	s.Contains(sent[0].Text, "Hi Ana, welcome to Goravel.")
 	s.True(fake.AssertSent(func(message mail.Message) bool {
