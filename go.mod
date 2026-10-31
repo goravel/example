@@ -8,7 +8,7 @@ require (
 	github.com/goravel/cos v1.18.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.18.1-0.20261026033240-13f6b8ac2d3c
-	github.com/goravel/framework v1.18.1-0.20261019082352-bc9e320af832
+	github.com/goravel/framework v1.18.1-0.20261029110755-f9582c05db52
 	github.com/goravel/gemini v1.18.0
 	github.com/goravel/gin v1.18.1-0.20261026033159-4d2c4e578ae1
 	github.com/goravel/inertia v1.18.1-0.20260824090129-ac3d472d028c
@@ -264,6 +264,6 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-// The require version above is MVS bookkeeping only: gin and fiber ask for a
-// newer framework, but the framework code compiled here is this pin.
-replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261027090652-c67cea858086
+// require and replace carry the same pin; replace stops the older framework
+// versions gin and fiber ask for from downgrading the code compiled here.
+replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261029110755-f9582c05db52
