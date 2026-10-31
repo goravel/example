@@ -8,7 +8,7 @@ require (
 	github.com/goravel/cos v1.18.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.18.1-0.20261030085228-66c98dc71f1d
-	github.com/goravel/framework v1.18.1-0.20261029110755-f9582c05db52
+	github.com/goravel/framework v1.18.1-0.20261031021834-288aa900147e
 	github.com/goravel/gemini v1.18.0
 	github.com/goravel/gin v1.18.1-0.20261030085342-4d9429b10cb3
 	github.com/goravel/inertia v1.18.1-0.20260824090129-ac3d472d028c
@@ -266,4 +266,4 @@ require (
 
 // require and replace carry the same pin; replace stops the older framework
 // versions gin and fiber ask for from downgrading the code compiled here.
-replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261029110755-f9582c05db52
+replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261031021834-288aa900147e
