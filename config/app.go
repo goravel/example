@@ -29,8 +29,8 @@ func init() {
 
 		// Application Debug Mode
 		//
-		// Keep this off: debug mode makes the ORM log every SQL statement to the
-		// console, which buries test results in CI output.
+		// Off everywhere on purpose. This flag gates per-query SQL logging, queue
+		// worker and scheduler output, and the `artisan about` Debug Mode line.
 		"debug": false,
 
 		// Application Timezone
