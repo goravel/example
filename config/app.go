@@ -28,7 +28,10 @@ func init() {
 		"env": config.Env("APP_ENV", "production"),
 
 		// Application Debug Mode
-		"debug": config.Env("APP_DEBUG", false),
+		//
+		// Off everywhere on purpose. This flag gates per-query SQL logging, queue
+		// worker and scheduler output, and the `artisan about` Debug Mode line.
+		"debug": false,
 
 		// Application Timezone
 		//
