@@ -28,7 +28,10 @@ func init() {
 		"env": config.Env("APP_ENV", "production"),
 
 		// Application Debug Mode
-		"debug": config.Env("APP_DEBUG", false),
+		//
+		// Keep this off: debug mode makes the ORM log every SQL statement to the
+		// console, which buries test results in CI output.
+		"debug": false,
 
 		// Application Timezone
 		//
