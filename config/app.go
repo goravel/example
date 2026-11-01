@@ -31,7 +31,7 @@ func init() {
 		//
 		// Off everywhere on purpose. This flag gates per-query SQL logging, queue
 		// worker and scheduler output, and the `artisan about` Debug Mode line.
-		"debug": false,
+		"debug": config.Env("APP_DEBUG", false),
 
 		// Application Timezone
 		//
