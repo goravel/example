@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	_ "unsafe"
 
 	"github.com/goravel/framework/support/file"
 	"github.com/stretchr/testify/suite"
@@ -14,16 +13,6 @@ import (
 	"goravel/app/facades"
 	"goravel/tests"
 )
-
-//go:linkname translationLoaded github.com/goravel/framework/translation.loaded
-//
-// The translation package caches loaded lang messages in a package-level
-// `loaded` map that never expires. When lang:publish populates this cache
-// with custom messages during TestValidationLangTestSuite, those messages
-// leak into TestValidationTestSuite (which runs next alphabetically),
-// causing default-message assertions to fail. Resetting the map here forces
-// the translator to reload from the embedded defaults fresh after each test.
-var translationLoaded map[string]map[string]map[string]any
 
 type ValidationLangTestSuite struct {
 	suite.Suite
@@ -43,12 +32,13 @@ func (s *ValidationLangTestSuite) SetupTest() {
 
 func (s *ValidationLangTestSuite) TearDownTest() {
 	s.removeValidationLangFiles()
-	translationLoaded = make(map[string]map[string]map[string]any)
 }
 
 func (s *ValidationLangTestSuite) removeValidationLangFiles() {
-	for _, locale := range []string{"en", "cn"} {
-		_ = os.Remove(filepath.Join(s.langPath, locale, "validation.json"))
+	for _, locale := range []string{"en", "cn", "fr", "de", "es"} {
+		dir := filepath.Join(s.langPath, locale)
+		_ = os.Remove(filepath.Join(dir, "validation.json"))
+		_ = os.Remove(dir)
 	}
 }
 
@@ -92,7 +82,13 @@ func (s *ValidationLangTestSuite) TestLangPublishForce() {
 func (s *ValidationLangTestSuite) TestOverridePublishedMessages() {
 	s.Require().NoError(facades.Artisan().Call("lang:publish"))
 
-	s.setValidationMessage("en", "required", "Custom required message for :attribute.")
+	s.setValidationMessage("fr", "required", "Custom required message for :attribute.")
+
+	scope, err := tests.OverrideConfig(map[string]any{
+		"app.locale": "fr",
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
 
 	validator, err := facades.Validation().Make(context.Background(),
 		map[string]any{"name": ""},
@@ -106,7 +102,13 @@ func (s *ValidationLangTestSuite) TestOverridePublishedMessages() {
 func (s *ValidationLangTestSuite) TestNonOverriddenMessagesUseDefaults() {
 	s.Require().NoError(facades.Artisan().Call("lang:publish"))
 
-	s.setValidationMessage("en", "required", "Custom required message for :attribute.")
+	s.setValidationMessage("de", "required", "Custom required message for :attribute.")
+
+	scope, err := tests.OverrideConfig(map[string]any{
+		"app.locale": "de",
+	})
+	s.Require().NoError(err)
+	defer func() { s.NoError(scope.Restore()) }()
 
 	validator, err := facades.Validation().Make(context.Background(),
 		map[string]any{"email": "not-an-email"},
@@ -126,18 +128,18 @@ func (s *ValidationLangTestSuite) TestLanguageSwitch() {
 
 	var messages map[string]any
 	s.Require().NoError(json.Unmarshal(content, &messages))
-	messages["required"] = "Chinese: The :attribute field is required."
-	messages["email"] = "Chinese: The :attribute field must be a valid email address."
+	messages["required"] = "Spanish: The :attribute field is required."
+	messages["email"] = "Spanish: The :attribute field must be a valid email address."
 
-	cnData, err := json.MarshalIndent(messages, "", "  ")
+	esData, err := json.MarshalIndent(messages, "", "  ")
 	s.Require().NoError(err)
 
-	cnDir := filepath.Join(s.langPath, "cn")
-	s.Require().NoError(os.MkdirAll(cnDir, 0o755))
-	s.Require().NoError(os.WriteFile(filepath.Join(cnDir, "validation.json"), cnData, 0o644))
+	esDir := filepath.Join(s.langPath, "es")
+	s.Require().NoError(os.MkdirAll(esDir, 0o755))
+	s.Require().NoError(os.WriteFile(filepath.Join(esDir, "validation.json"), esData, 0o644))
 
 	scope, err := tests.OverrideConfig(map[string]any{
-		"app.locale": "cn",
+		"app.locale": "es",
 	})
 	s.Require().NoError(err)
 	defer func() { s.NoError(scope.Restore()) }()
@@ -148,7 +150,7 @@ func (s *ValidationLangTestSuite) TestLanguageSwitch() {
 	)
 	s.Require().NoError(err)
 	s.True(validator.Fails())
-	s.Equal("Chinese: The name field is required.", validator.Errors().One("name"))
+	s.Equal("Spanish: The name field is required.", validator.Errors().One("name"))
 }
 
 func (s *ValidationLangTestSuite) TestFallbackLocale() {
@@ -169,16 +171,20 @@ func (s *ValidationLangTestSuite) TestFallbackLocale() {
 	s.Equal("The name field is required.", validator.Errors().One("name"))
 }
 
+// setValidationMessage writes one rule into lang/<locale>/validation.json, creating it if absent.
+// locale must be one no other suite reads: the translation cache is per-locale and never expires.
 func (s *ValidationLangTestSuite) setValidationMessage(locale, rule, message string) {
 	validationFile := filepath.Join(s.langPath, locale, "validation.json")
-	content, err := os.ReadFile(validationFile)
-	s.Require().NoError(err)
 
-	var messages map[string]any
-	s.Require().NoError(json.Unmarshal(content, &messages))
+	messages := make(map[string]any)
+	if content, err := os.ReadFile(validationFile); err == nil {
+		s.Require().NoError(json.Unmarshal(content, &messages))
+	}
+
 	messages[rule] = message
 
 	modified, err := json.MarshalIndent(messages, "", "  ")
 	s.Require().NoError(err)
+	s.Require().NoError(os.MkdirAll(filepath.Dir(validationFile), 0o755))
 	s.Require().NoError(os.WriteFile(validationFile, modified, 0o644))
 }
