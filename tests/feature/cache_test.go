@@ -299,9 +299,11 @@ func (s *CacheTestSuite) TestTagsFlushRemovesOnlyTaggedItems() {
 			s.Equal("Tom", driver.Tags("other").GetString(s.storeKey(store, "tom")))
 			s.Equal("Plain", driver.GetString(s.storeKey(store, "plain")))
 
-			// A flush reaches every tag of the view, not only the first.
+			// Only the second name of the view indexes the item, so a flush that
+			// stops at the first name leaves it behind.
 			multiKey := s.storeKey(store, "multi")
-			s.True(driver.Tags("people", "nobody").Forever(multiKey, "multi"))
+			s.True(driver.Tags("nobody").Forever(multiKey, "multi"))
+			s.Equal("multi", driver.Tags("nobody").GetString(multiKey))
 			s.True(driver.Tags("people", "nobody").Flush())
 			s.Nil(driver.Tags("nobody").Get(multiKey))
 
