@@ -13,8 +13,7 @@ import (
 // run is told to fail, so a test can assert the After hook receives and wraps it.
 var ErrConsoleHookPublishFailed = errors.New("publish failed")
 
-// ConsoleHookCommand is the command the WithCommandHooks tests run. It is not
-// interesting on its own: the hooks around it are.
+// ConsoleHookCommand is the command the WithCommandHooks tests run.
 type ConsoleHookCommand struct{}
 
 func (r *ConsoleHookCommand) Signature() string {

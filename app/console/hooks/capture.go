@@ -21,8 +21,7 @@ var (
 	latestRun    *RunCapture
 )
 
-// Record appends an event to the run being captured, starting the capture when
-// it is the first event of the run.
+// Record appends an event marker to the current run.
 func Record(event string) {
 	update(func(c *RunCapture) {
 		c.Events = append(c.Events, event)

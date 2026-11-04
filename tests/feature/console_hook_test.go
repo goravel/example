@@ -35,12 +35,24 @@ func (conflictingFlagHook) Flags() []command.Flag {
 	}
 }
 
+// reservedFlagHook adds --help, which every command already reserves.
+type reservedFlagHook struct {
+	contractsconsole.BaseCommandHook
+}
+
+func (reservedFlagHook) Flags() []command.Flag {
+	return []command.Flag{
+		&command.BoolFlag{Name: "help"},
+	}
+}
+
 func TestConsoleHookTestSuite(t *testing.T) {
 	suite.Run(t, new(ConsoleHookTestSuite))
 }
 
 func (s *ConsoleHookTestSuite) SetupTest() {
 	hooks.Reset()
+	commands.ResetConsoleCaptures()
 }
 
 func (s *ConsoleHookTestSuite) TearDownTest() {
@@ -110,7 +122,7 @@ func (s *ConsoleHookTestSuite) TestAfterReplacesHandleError() {
 	}, hooks.GetLatest())
 }
 
-func (s *ConsoleHookTestSuite) TestCommandHelpSucceedsWithHookFlag() {
+func (s *ConsoleHookTestSuite) TestCommandHelpExitsCleanly() {
 	s.NoError(facades.Artisan().Call("test:console-hook --help"))
 }
 
@@ -126,6 +138,21 @@ func (s *ConsoleHookTestSuite) TestHookFlagConflictFailsRegistration() {
 	s.EqualError(
 		artisan.Call("test:console-hook"),
 		"failed to register command 'test:console-hook': command hook flag 'target' conflicts with an existing flag",
+	)
+}
+
+func (s *ConsoleHookTestSuite) TestReservedHookFlagConflictFailsRegistration() {
+	artisan := frameworkconsole.NewApplication(
+		"artisan", "Goravel Framework", "artisan command [options] [arguments...]", "1.0.0", true,
+		map[string][]contractsconsole.CommandHook{
+			"test:console-hook": {reservedFlagHook{}},
+		},
+	)
+	artisan.Register(bootstrap.Commands())
+
+	s.EqualError(
+		artisan.Call("test:console-hook"),
+		"failed to register command 'test:console-hook': command hook flag 'help' conflicts with an existing flag",
 	)
 }
 

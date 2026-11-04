@@ -37,6 +37,8 @@ func (r *ApprovalHook) Before(ctx console.Context) (bool, error) {
 		return false, ErrApprovalRequired
 	}
 
+	ctx.Comment("skipped: pass --approved to run")
+
 	return false, nil
 }
 
