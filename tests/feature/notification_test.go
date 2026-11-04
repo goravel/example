@@ -85,7 +85,7 @@ func (s *NotificationTestSuite) TestSendNowDatabaseNotification() {
 	// background runner.
 	scope, err := tests.OverrideConfig(map[string]any{
 		"queue.default":        "database",
-		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+		"app.disabled_runners": []string{"goravel:queue", "app:queue:database", "app:queue:test"},
 	})
 	s.Require().NoError(err)
 	defer func() { s.NoError(scope.Restore()) }()
@@ -110,7 +110,7 @@ func (s *NotificationTestSuite) TestSendQueuedDatabaseNotification() {
 
 	scope, err := tests.OverrideConfig(map[string]any{
 		"queue.default":        "database",
-		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+		"app.disabled_runners": []string{"goravel:queue", "app:queue:database", "app:queue:test"},
 	})
 	s.Require().NoError(err)
 	defer func() { s.NoError(scope.Restore()) }()
@@ -529,7 +529,7 @@ func (s *NotificationTestSuite) extendFlakyChannel(name string, failUntil int, a
 func (s *NotificationTestSuite) TestSendQueuedNotificationWithTriesAndBackoff() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"queue.default":        "database",
-		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+		"app.disabled_runners": []string{"goravel:queue", "app:queue:database", "app:queue:test"},
 	})
 	s.Require().NoError(err)
 	defer func() { s.NoError(scope.Restore()) }()
@@ -619,7 +619,7 @@ func (s *NotificationTestSuite) TestSendQueuedNotificationWithoutTriesFallsBackT
 func (s *NotificationTestSuite) TestSendQueuedNotificationBackoffWithoutTriesSerialized() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"queue.default":        "database",
-		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+		"app.disabled_runners": []string{"goravel:queue", "app:queue:database", "app:queue:test"},
 	})
 	s.Require().NoError(err)
 	defer func() { s.NoError(scope.Restore()) }()
@@ -681,7 +681,7 @@ func (s *NotificationTestSuite) TestSendQueuedNotificationBackoffWithoutTriesFal
 func (s *NotificationTestSuite) TestSendQueuedOrderFailedCapturesRetryPolicy() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"queue.default":        "database",
-		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+		"app.disabled_runners": []string{"goravel:queue", "app:queue:database", "app:queue:test"},
 	})
 	s.Require().NoError(err)
 	defer func() { s.NoError(scope.Restore()) }()
@@ -699,7 +699,7 @@ func (s *NotificationTestSuite) TestSendQueuedOrderFailedCapturesRetryPolicy() {
 func (s *NotificationTestSuite) TestSendQueuedNotificationRetriesTransientFailure() {
 	scope, err := tests.OverrideConfig(map[string]any{
 		"queue.default":        "database",
-		"app.disabled_runners": []string{"app:queue:database", "app:queue:test"},
+		"app.disabled_runners": []string{"goravel:queue", "app:queue:database", "app:queue:test"},
 	})
 	s.Require().NoError(err)
 	defer func() { s.NoError(scope.Restore()) }()
