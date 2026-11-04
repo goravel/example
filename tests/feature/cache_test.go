@@ -246,3 +246,249 @@ func (s *CacheTestSuite) TestDockerAndStore() {
 	s.NoError(redisDriver.Put("cache:redis:docker", "ok", time.Second))
 	s.Equal("ok", redisDriver.GetString("cache:redis:docker"))
 }
+
+// TestTagsNamespacing covers Driver.Tags (framework#1579, redis#170): a tagged
+// view namespaces its items by tag list and flushes only what it stored.
+func (s *CacheTestSuite) TestTagsNamespacing() {
+	for _, store := range []string{"memory", "redis"} {
+		s.Run(store, func() {
+			driver := facades.Cache().Store(store)
+			tagged := driver.Tags("people", "authors")
+			key := s.storeKey(store, "john")
+
+			s.NoError(tagged.Put(key, "John", time.Minute))
+			s.Equal("John", tagged.GetString(key))
+			s.True(tagged.Has(key))
+
+			// Tagged items are invisible to the untagged store and to any other tag list, in any order.
+			s.Nil(driver.Get(key))
+			s.False(driver.Has(key))
+			s.Nil(driver.Tags("people").Get(key))
+			s.Nil(driver.Tags("authors", "people").Get(key))
+			s.Equal("default", driver.Tags("people").Get(key, "default"))
+
+			// The same key lives separately under each tag list and under the untagged store.
+			s.NoError(driver.Put(key, "plain", time.Minute))
+			s.NoError(driver.Tags("people").Put(key, "people", time.Minute))
+			s.NoError(driver.Tags("authors", "people").Put(key, "reversed", time.Minute))
+
+			s.Equal("plain", driver.GetString(key))
+			s.Equal("people", driver.Tags("people").GetString(key))
+			s.Equal("reversed", driver.Tags("authors", "people").GetString(key))
+			s.Equal("John", tagged.GetString(key))
+		})
+	}
+}
+
+func (s *CacheTestSuite) TestTagsFlushRemovesOnlyTaggedItems() {
+	for _, store := range []string{"memory", "redis"} {
+		s.Run(store, func() {
+			driver := facades.Cache().Store(store)
+
+			s.NoError(driver.Tags("people", "authors").Put(s.storeKey(store, "john"), "John", time.Minute))
+			s.True(driver.Tags("people").Forever(s.storeKey(store, "anne"), "Anne"))
+			s.True(driver.Tags("authors").Forever(s.storeKey(store, "bob"), "Bob"))
+			s.True(driver.Tags("other").Forever(s.storeKey(store, "tom"), "Tom"))
+			s.True(driver.Forever(s.storeKey(store, "plain"), "Plain"))
+
+			s.True(driver.Tags("people").Flush())
+
+			s.Nil(driver.Tags("people", "authors").Get(s.storeKey(store, "john")))
+			s.Nil(driver.Tags("people").Get(s.storeKey(store, "anne")))
+			s.Equal("Bob", driver.Tags("authors").GetString(s.storeKey(store, "bob")))
+			s.Equal("Tom", driver.Tags("other").GetString(s.storeKey(store, "tom")))
+			s.Equal("Plain", driver.GetString(s.storeKey(store, "plain")))
+
+			// A flushed tag can be reused.
+			s.True(driver.Tags("people").Forever(s.storeKey(store, "anne"), "Again"))
+			s.Equal("Again", driver.Tags("people").GetString(s.storeKey(store, "anne")))
+		})
+	}
+}
+
+func (s *CacheTestSuite) TestTagsStoreFlush() {
+	for _, store := range []string{"memory", "redis"} {
+		s.Run(store, func() {
+			driver := facades.Cache().Store(store)
+			key := s.storeKey(store, "flush")
+
+			s.True(driver.Tags("a", "b").Forever(key, "tagged"))
+			s.True(driver.Forever(key, "plain"))
+
+			// Flushing the whole store drops the tagged items too.
+			s.True(driver.Flush())
+			s.False(driver.Tags("a", "b").Has(key))
+			s.False(driver.Has(key))
+
+			// Flushing a tag that holds nothing is a no-op, and the tag still works.
+			s.True(driver.Tags("a").Flush())
+			s.True(driver.Tags("a", "b").Forever(key, "after-flush"))
+			s.Equal("after-flush", driver.Tags("a", "b").GetString(key))
+		})
+	}
+}
+
+func (s *CacheTestSuite) TestTagsExpiration() {
+	for _, store := range []string{"memory", "redis"} {
+		s.Run(store, func() {
+			driver := facades.Cache().Store(store)
+			key := s.storeKey(store, "expiring")
+
+			s.NoError(driver.Tags("ttl").Put(key, "value", 100*time.Millisecond))
+			s.True(driver.Tags("ttl").Has(key))
+			time.Sleep(200 * time.Millisecond)
+			s.False(driver.Tags("ttl").Has(key))
+			s.Nil(driver.Tags("ttl").Get(key))
+
+			// Flushing a tag whose items have expired still succeeds.
+			s.True(driver.Tags("ttl").Flush())
+		})
+	}
+}
+
+func (s *CacheTestSuite) TestTagsOperations() {
+	for _, store := range []string{"memory", "redis"} {
+		s.Run(store, func() {
+			driver := facades.Cache().Store(store)
+			tagged := driver.Tags("ops")
+
+			addKey := s.storeKey(store, "add")
+			s.True(tagged.Add(addKey, "first", time.Minute))
+			s.False(tagged.Add(addKey, "second", time.Minute))
+			s.Equal("first", tagged.GetString(addKey))
+
+			counterKey := s.storeKey(store, "counter")
+			incremented, err := tagged.Increment(counterKey)
+			s.NoError(err)
+			s.Equal(int64(1), incremented)
+			incremented, err = tagged.Increment(counterKey, 4)
+			s.NoError(err)
+			s.Equal(int64(5), incremented)
+			decremented, err := tagged.Decrement(counterKey, 2)
+			s.NoError(err)
+			s.Equal(int64(3), decremented)
+			s.Equal(int64(3), tagged.GetInt64(counterKey))
+
+			s.NoError(tagged.Put(s.storeKey(store, "not-a-number"), "goravel", time.Minute))
+			_, err = tagged.Increment(s.storeKey(store, "not-a-number"))
+			s.Error(err)
+			_, err = tagged.Decrement(s.storeKey(store, "not-a-number"))
+			s.Error(err)
+
+			pullKey := s.storeKey(store, "pull")
+			s.True(tagged.Forever(pullKey, "pull-value"))
+			s.Equal("pull-value", tagged.Pull(pullKey))
+			s.False(tagged.Has(pullKey))
+			s.Equal("default", tagged.Pull(pullKey, "default"))
+
+			forgetKey := s.storeKey(store, "forget")
+			s.True(tagged.Forever(forgetKey, "value"))
+			s.True(tagged.Forget(forgetKey))
+			s.False(tagged.Has(forgetKey))
+
+			var calls atomic.Int32
+			rememberKey := s.storeKey(store, "remember")
+			value, err := tagged.Remember(rememberKey, time.Minute, func() (any, error) {
+				calls.Add(1)
+				return "remember-value", nil
+			})
+			s.NoError(err)
+			s.Equal("remember-value", value)
+			value, err = tagged.Remember(rememberKey, time.Minute, func() (any, error) {
+				calls.Add(1)
+				return "new-value", nil
+			})
+			s.NoError(err)
+			s.Equal("remember-value", value)
+			s.EqualValues(1, calls.Load())
+
+			foreverKey := s.storeKey(store, "remember-forever")
+			foreverValue, err := tagged.RememberForever(foreverKey, func() (any, error) {
+				return "remember-forever-value", nil
+			})
+			s.NoError(err)
+			s.Equal("remember-forever-value", foreverValue)
+
+			errorKey := s.storeKey(store, "remember-error")
+			_, err = tagged.Remember(errorKey, time.Minute, func() (any, error) {
+				return nil, errors.New("remember error")
+			})
+			s.EqualError(err, "remember error")
+			s.False(tagged.Has(errorKey))
+		})
+	}
+}
+
+func (s *CacheTestSuite) TestTagsTypedGetters() {
+	for _, store := range []string{"memory", "redis"} {
+		s.Run(store, func() {
+			driver := facades.Cache().Store(store)
+			tagged := driver.Tags("typed")
+
+			s.Equal("default", tagged.GetString(s.storeKey(store, "missing-string"), "default"))
+			s.Equal(10, tagged.GetInt(s.storeKey(store, "missing-int"), 10))
+			s.Equal(int64(11), tagged.GetInt64(s.storeKey(store, "missing-int64"), 11))
+			s.True(tagged.GetBool(s.storeKey(store, "missing-bool"), true))
+			s.Equal("fallback", tagged.Get(s.storeKey(store, "missing-any"), "fallback").(string))
+			s.Equal("callback", tagged.Get(s.storeKey(store, "missing-callback"), func() any { return "callback" }).(string))
+
+			s.NoError(tagged.Put(s.storeKey(store, "string"), "value", time.Minute))
+			s.NoError(tagged.Put(s.storeKey(store, "int"), 3, time.Minute))
+			s.NoError(tagged.Put(s.storeKey(store, "int64"), int64(4), time.Minute))
+			s.NoError(tagged.Put(s.storeKey(store, "bool"), true, time.Minute))
+
+			s.Equal("value", tagged.GetString(s.storeKey(store, "string")))
+			s.Equal(3, tagged.GetInt(s.storeKey(store, "int")))
+			s.Equal(int64(4), tagged.GetInt64(s.storeKey(store, "int64")))
+			s.True(tagged.GetBool(s.storeKey(store, "bool")))
+
+			// The typed values are not visible outside the tag list.
+			s.Nil(driver.Get(s.storeKey(store, "string")))
+		})
+	}
+}
+
+func (s *CacheTestSuite) TestTagsWithoutNames() {
+	for _, store := range []string{"memory", "redis"} {
+		s.Run(store, func() {
+			driver := facades.Cache().Store(store)
+			key := s.storeKey(store, "empty-tags")
+
+			// An empty tag list still namespaces the item away from the untagged store...
+			s.True(driver.Tags().Forever(key, "value"))
+			s.Equal("value", driver.Tags().GetString(key))
+			s.Nil(driver.Get(key))
+
+			// ...but no tag indexes it, so flushing the empty set removes nothing.
+			s.True(driver.Tags().Flush())
+			s.Equal("value", driver.Tags().GetString(key))
+		})
+	}
+}
+
+func (s *CacheTestSuite) TestTagsNamesAreLengthPrefixed() {
+	for _, store := range []string{"memory", "redis"} {
+		s.Run(store, func() {
+			driver := facades.Cache().Store(store)
+			key := s.storeKey(store, "names")
+
+			s.True(driver.Tags("ab").Forever(key, "joined"))
+			s.True(driver.Tags("a", "b").Forever(key, "split"))
+			s.True(driver.Tags("a|b").Forever(key, "piped"))
+
+			s.Equal("joined", driver.Tags("ab").GetString(key))
+			s.Equal("split", driver.Tags("a", "b").GetString(key))
+			s.Equal("piped", driver.Tags("a|b").GetString(key))
+
+			// "ab" is one tag named "ab", not the two tags "a" and "b".
+			s.True(driver.Tags("a").Flush())
+			s.Equal("joined", driver.Tags("ab").GetString(key))
+			s.Nil(driver.Tags("a", "b").Get(key))
+			s.Equal("piped", driver.Tags("a|b").GetString(key))
+
+			s.True(driver.Tags("ab").Flush())
+			s.Nil(driver.Tags("ab").Get(key))
+			s.Equal("piped", driver.Tags("a|b").GetString(key))
+		})
+	}
+}
