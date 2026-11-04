@@ -1,0 +1,47 @@
+package hooks
+
+import (
+	"strings"
+
+	"github.com/goravel/framework/contracts/console"
+)
+
+// tracePrefix is the command family the trace hook records. The hook is
+// registered on the "*" key, so it runs for every Artisan command in the app
+// and must stay a no-op outside this family.
+const tracePrefix = "test:console-hook"
+
+// TraceHook records the outermost Before and After markers around
+// test:console-hook. It embeds BaseCommandHook so Flags stays empty: a "*"
+// hook that added a flag would add it to every command in the app.
+type TraceHook struct {
+	console.BaseCommandHook
+}
+
+func NewTraceHook() *TraceHook {
+	return &TraceHook{}
+}
+
+func (r *TraceHook) Before(ctx console.Context) (bool, error) {
+	if !r.traced(ctx) {
+		return true, nil
+	}
+
+	Record("trace:before")
+
+	return true, nil
+}
+
+func (r *TraceHook) After(ctx console.Context, handleErr error) error {
+	if !r.traced(ctx) {
+		return handleErr
+	}
+
+	Record("trace:after")
+
+	return handleErr
+}
+
+func (r *TraceHook) traced(ctx console.Context) bool {
+	return strings.HasPrefix(ctx.Instance().Name, tracePrefix)
+}
