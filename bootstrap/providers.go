@@ -29,6 +29,7 @@ import (
 	"github.com/goravel/framework/translation"
 	"github.com/goravel/framework/validation"
 	"github.com/goravel/framework/view"
+	"github.com/goravel/framework/vite"
 	"github.com/goravel/gemini"
 	"github.com/goravel/gin"
 	"github.com/goravel/inertia"
@@ -53,6 +54,7 @@ func Providers() []foundation.ServiceProvider {
 		&validation.ServiceProvider{},
 		&http.ServiceProvider{},
 		&view.ServiceProvider{},
+		&vite.ServiceProvider{},
 		&route.ServiceProvider{},
 		&database.ServiceProvider{},
 		&auth.ServiceProvider{},
