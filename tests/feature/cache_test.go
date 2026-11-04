@@ -248,7 +248,7 @@ func (s *CacheTestSuite) TestDockerAndStore() {
 }
 
 // TestTagsNamespacing covers Driver.Tags (framework#1579, redis#170): a tagged
-// view namespaces its items by tag list and flushes only what it stored.
+// view keeps its items apart from the untagged store and from other tag lists.
 func (s *CacheTestSuite) TestTagsNamespacing() {
 	for _, store := range []string{"memory", "redis"} {
 		s.Run(store, func() {
@@ -299,6 +299,12 @@ func (s *CacheTestSuite) TestTagsFlushRemovesOnlyTaggedItems() {
 			s.Equal("Tom", driver.Tags("other").GetString(s.storeKey(store, "tom")))
 			s.Equal("Plain", driver.GetString(s.storeKey(store, "plain")))
 
+			// A flush reaches every tag of the view, not only the first.
+			multiKey := s.storeKey(store, "multi")
+			s.True(driver.Tags("people", "nobody").Forever(multiKey, "multi"))
+			s.True(driver.Tags("people", "nobody").Flush())
+			s.Nil(driver.Tags("nobody").Get(multiKey))
+
 			// A flushed tag can be reused.
 			s.True(driver.Tags("people").Forever(s.storeKey(store, "anne"), "Again"))
 			s.Equal("Again", driver.Tags("people").GetString(s.storeKey(store, "anne")))
@@ -321,7 +327,9 @@ func (s *CacheTestSuite) TestTagsStoreFlush() {
 			s.False(driver.Has(key))
 
 			// Flushing a tag that holds nothing is a no-op, and the tag still works.
+			s.True(driver.Tags("b").Forever(key, "keep"))
 			s.True(driver.Tags("a").Flush())
+			s.Equal("keep", driver.Tags("b").GetString(key))
 			s.True(driver.Tags("a", "b").Forever(key, "after-flush"))
 			s.Equal("after-flush", driver.Tags("a", "b").GetString(key))
 		})
@@ -334,8 +342,9 @@ func (s *CacheTestSuite) TestTagsExpiration() {
 			driver := facades.Cache().Store(store)
 			key := s.storeKey(store, "expiring")
 
-			s.NoError(driver.Tags("ttl").Put(key, "value", 100*time.Millisecond))
+			s.NoError(driver.Tags("ttl").Put(key, "value", time.Minute))
 			s.True(driver.Tags("ttl").Has(key))
+			s.NoError(driver.Tags("ttl").Put(key, "value", 100*time.Millisecond))
 			time.Sleep(200 * time.Millisecond)
 			s.False(driver.Tags("ttl").Has(key))
 			s.Nil(driver.Tags("ttl").Get(key))
@@ -415,6 +424,13 @@ func (s *CacheTestSuite) TestTagsOperations() {
 			})
 			s.EqualError(err, "remember error")
 			s.False(tagged.Has(errorKey))
+
+			// Every write above went through the tagged view, so the tag flush takes them all.
+			s.True(tagged.Flush())
+			s.False(tagged.Has(addKey))
+			s.False(tagged.Has(counterKey))
+			s.False(tagged.Has(rememberKey))
+			s.False(tagged.Has(foreverKey))
 		})
 	}
 }

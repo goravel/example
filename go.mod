@@ -266,6 +266,7 @@ require (
 
 // require and replace carry the same pin; replace stops the older framework
 // versions gin and fiber ask for from downgrading the code compiled here.
+// framework#1579 is fork-only; swap both lines back when it merges.
 replace github.com/goravel/framework => github.com/JGamboa/framework v1.18.1-0.20261104024648-07d86d888d82
 
 // goravel/redis#170 (cache tags) is not on the upstream module yet, so the
