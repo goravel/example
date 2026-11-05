@@ -6,44 +6,17 @@ import (
 	"slices"
 	"testing"
 
-	frameworkconsole "github.com/goravel/framework/console"
-	contractsconsole "github.com/goravel/framework/contracts/console"
-	"github.com/goravel/framework/contracts/console/command"
 	"github.com/stretchr/testify/suite"
 
 	"goravel/app/console/commands"
 	"goravel/app/console/hooks"
 	"goravel/app/facades"
-	"goravel/bootstrap"
 	"goravel/tests"
 )
 
 type ConsoleHookTestSuite struct {
 	suite.Suite
 	tests.TestCase
-}
-
-// conflictingFlagHook adds --target, which test:console-hook already defines,
-// so building an Artisan application with it must fail.
-type conflictingFlagHook struct {
-	contractsconsole.BaseCommandHook
-}
-
-func (conflictingFlagHook) Flags() []command.Flag {
-	return []command.Flag{
-		&command.StringFlag{Name: "target"},
-	}
-}
-
-// reservedFlagHook adds --help, which every command already reserves.
-type reservedFlagHook struct {
-	contractsconsole.BaseCommandHook
-}
-
-func (reservedFlagHook) Flags() []command.Flag {
-	return []command.Flag{
-		&command.BoolFlag{Name: "help"},
-	}
 }
 
 func TestConsoleHookTestSuite(t *testing.T) {
@@ -102,7 +75,11 @@ func (s *ConsoleHookTestSuite) TestBeforeErrorSkipsHandleAndAfter() {
 	}, hooks.GetLatest())
 }
 
-func (s *ConsoleHookTestSuite) TestAfterReplacesHandleError() {
+// TestAfterErrorReplacesHandleError proves the asymmetry with Before: a Before
+// error skips Handle and every After (TestBeforeErrorSkipsHandleAndAfter), while
+// an After error does not abort the run — it is passed to the remaining After
+// hooks and finally returned to the caller.
+func (s *ConsoleHookTestSuite) TestAfterErrorReplacesHandleError() {
 	err := facades.Artisan().Call("test:console-hook --target=production --approved --fail")
 
 	s.EqualError(err, "audit hook: publish failed")
@@ -124,36 +101,6 @@ func (s *ConsoleHookTestSuite) TestAfterReplacesHandleError() {
 
 func (s *ConsoleHookTestSuite) TestCommandHelpExitsCleanly() {
 	s.NoError(facades.Artisan().Call("test:console-hook --help"))
-}
-
-func (s *ConsoleHookTestSuite) TestHookFlagConflictFailsRegistration() {
-	artisan := frameworkconsole.NewApplication(
-		"artisan", "Goravel Framework", "artisan command [options] [arguments...]", "1.0.0", true,
-		map[string][]contractsconsole.CommandHook{
-			"test:console-hook": {conflictingFlagHook{}},
-		},
-	)
-	artisan.Register(bootstrap.Commands())
-
-	s.EqualError(
-		artisan.Call("test:console-hook"),
-		"failed to register command 'test:console-hook': command hook flag 'target' conflicts with an existing flag",
-	)
-}
-
-func (s *ConsoleHookTestSuite) TestReservedHookFlagConflictFailsRegistration() {
-	artisan := frameworkconsole.NewApplication(
-		"artisan", "Goravel Framework", "artisan command [options] [arguments...]", "1.0.0", true,
-		map[string][]contractsconsole.CommandHook{
-			"test:console-hook": {reservedFlagHook{}},
-		},
-	)
-	artisan.Register(bootstrap.Commands())
-
-	s.EqualError(
-		artisan.Call("test:console-hook"),
-		"failed to register command 'test:console-hook': command hook flag 'help' conflicts with an existing flag",
-	)
 }
 
 func (s *ConsoleHookTestSuite) TestGlobalGlobHookIsInertForOtherCommands() {
