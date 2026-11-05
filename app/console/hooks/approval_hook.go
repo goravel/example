@@ -12,12 +12,12 @@ import (
 // After, and the error becomes the command's result.
 var ErrApprovalRequired = errors.New("publishing to production requires --approved")
 
-var _ console.CommandHook = (*ApprovalHook)(nil)
-
 // ApprovalHook is a confirmation-style gate: it adds an --approved flag and
 // skips the command unless the flag is set. After is a pass-through, so the
 // command's error reaches the caller untouched.
 type ApprovalHook struct{}
+
+var _ console.CommandHook = (*ApprovalHook)(nil)
 
 func NewApprovalHook() *ApprovalHook {
 	return &ApprovalHook{}
@@ -42,7 +42,7 @@ func (r *ApprovalHook) Before(ctx console.Context) (bool, error) {
 	return false, nil
 }
 
-// After is a pass-through: the gate never rewrites the command's result.
+// After exists only because CommandHook requires it; the gate acts in Before.
 func (r *ApprovalHook) After(_ console.Context, handleErr error) error {
 	return handleErr
 }

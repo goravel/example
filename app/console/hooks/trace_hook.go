@@ -12,12 +12,12 @@ import (
 // and must stay a no-op outside this family.
 const tracePrefix = "test:console-hook"
 
-var _ console.CommandHook = (*TraceHook)(nil)
-
 // TraceHook records the outermost Before and After markers around
 // test:console-hook. Flags stays empty on purpose: a "*" hook that added a flag
 // would add it to every command in the app.
 type TraceHook struct{}
+
+var _ console.CommandHook = (*TraceHook)(nil)
 
 func NewTraceHook() *TraceHook {
 	return &TraceHook{}
@@ -43,8 +43,6 @@ func (r *TraceHook) After(ctx console.Context, handleErr error) error {
 	return handleErr
 }
 
-// Flags adds none: a "*" hook that defined a flag would add it to every
-// command in the app.
 func (r *TraceHook) Flags() []command.Flag {
 	return nil
 }

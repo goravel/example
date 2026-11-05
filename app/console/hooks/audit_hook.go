@@ -7,12 +7,12 @@ import (
 	"github.com/goravel/framework/contracts/console/command"
 )
 
-var _ console.CommandHook = (*AuditHook)(nil)
-
 // AuditHook records what the command was asked to do and annotates a failed
 // run with the hook's own context. It defines no flags, so it only reads what
 // the command and the other hooks already add.
 type AuditHook struct{}
+
+var _ console.CommandHook = (*AuditHook)(nil)
 
 func NewAuditHook() *AuditHook {
 	return &AuditHook{}
