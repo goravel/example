@@ -304,8 +304,6 @@ github.com/goravel/example-proto v0.0.1 h1:ZxETeKREQWjuJ49bX/Hqj1NLR5Vyj489Ks6dR
 github.com/goravel/example-proto v0.0.1/go.mod h1:I8IPsHr4Ndf7KxmdsRpBR2LQ0Geo48+pjv9IIWf3mZg=
 github.com/goravel/fiber v1.18.1-0.20261030085228-66c98dc71f1d h1:KmI8hhOJ5ZNOsoglzZN1PCYg4czQ4wQlBz5P6aPS+yE=
 github.com/goravel/fiber v1.18.1-0.20261030085228-66c98dc71f1d/go.mod h1:F8p0N9fzqenUyvmsDxusXB+9Nsnf0b8IbrwOcB3jM9w=
-github.com/goravel/framework v1.18.1-0.20261104142013-5c5dd1a79b2e h1:C+UzK6G5aNXX12Kzb0r8ajnpErDL3oOf/XbMd5qLfxM=
-github.com/goravel/framework v1.18.1-0.20261104142013-5c5dd1a79b2e/go.mod h1:c1E+U9i+h6lBGYCT1F4mAiEU+J98QsCyuVQe5NBotho=
 github.com/goravel/gemini v1.18.0 h1:Tv6IJ3KvBvH5QD7kAM3XFQR0g8IUfkqMbRGi7dtlWUo=
 github.com/goravel/gemini v1.18.0/go.mod h1:b4FueB0O0Qkz71eVWLiSaKghp+Eb/1hNNICkk7vMgrQ=
 github.com/goravel/gin v1.18.1-0.20261030085342-4d9429b10cb3 h1:SUF7aInB7u3uAyM2RlI5/XD+HN6mNZzethRyOu/P3Ms=
@@ -462,6 +460,8 @@ github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c h1:+mdjkGKdHQG3305AYmd
 github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c/go.mod h1:7rwL4CYBLnjLxUqIJNnCWiEdr3bn6IUYi15bNlnbCCU=
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/protibimbok/goravel-framework v0.0.0-20261104162447-53d6e1acad58 h1:ZfqlkJkmvb6vM87sZDg+i2uIvsybxVetrF/sRae/Rbk=
+github.com/protibimbok/goravel-framework v0.0.0-20261104162447-53d6e1acad58/go.mod h1:c1E+U9i+h6lBGYCT1F4mAiEU+J98QsCyuVQe5NBotho=
 github.com/pterm/pterm v0.12.84 h1:DA9943h1RfwlpcGWCIbD6f6nRTLCe09gK7w6GDXaIzE=
 github.com/pterm/pterm v0.12.84/go.mod h1:LVerZ1tFVFZrTv7lRbLdbrrTLSLAB5oZY8z3IY/z+IQ=
 github.com/quic-go/go-ossfuzz-seeds v0.1.0 h1:APacT+iIaNF6fd8AGEiN3bT/Jtkd2jz4v4TzM7MFjy0=

@@ -264,7 +264,10 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-// require and replace carry the same pin; replace stops the older framework
-// versions gin and fiber ask for from downgrading the code compiled here.
-// The pin tracks goravel/framework#1601 (WithCommandHooks) until it merges.
-replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261104142013-5c5dd1a79b2e
+// replace points every github.com/goravel/framework version at the fork head of
+// goravel/framework#1601 (WithCommandHooks), so the commit built here does not
+// depend on the commit being mirrored to a goravel/framework branch. Replacing
+// all versions, not one, keeps that head compiled even though gin and fiber
+// require older framework versions. The pin is temporary and moves to the
+// merged commit once #1601 lands.
+replace github.com/goravel/framework => github.com/protibimbok/goravel-framework v0.0.0-20261104162447-53d6e1acad58
