@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/goravel/framework/contracts/console"
+	"github.com/goravel/framework/contracts/console/command"
 )
 
 // tracePrefix is the command family the trace hook records. The hook is
@@ -11,12 +12,12 @@ import (
 // and must stay a no-op outside this family.
 const tracePrefix = "test:console-hook"
 
+var _ console.CommandHook = (*TraceHook)(nil)
+
 // TraceHook records the outermost Before and After markers around
-// test:console-hook. It embeds BaseCommandHook so Flags stays empty: a "*"
-// hook that added a flag would add it to every command in the app.
-type TraceHook struct {
-	console.BaseCommandHook
-}
+// test:console-hook. Flags stays empty on purpose: a "*" hook that added a flag
+// would add it to every command in the app.
+type TraceHook struct{}
 
 func NewTraceHook() *TraceHook {
 	return &TraceHook{}
@@ -40,6 +41,12 @@ func (r *TraceHook) After(ctx console.Context, handleErr error) error {
 	Record("trace:after")
 
 	return handleErr
+}
+
+// Flags adds none: a "*" hook that defined a flag would add it to every
+// command in the app.
+func (r *TraceHook) Flags() []command.Flag {
+	return nil
 }
 
 func (r *TraceHook) traced(ctx console.Context) bool {

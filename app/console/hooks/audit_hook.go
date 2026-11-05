@@ -4,13 +4,15 @@ import (
 	"fmt"
 
 	"github.com/goravel/framework/contracts/console"
+	"github.com/goravel/framework/contracts/console/command"
 )
 
+var _ console.CommandHook = (*AuditHook)(nil)
+
 // AuditHook records what the command was asked to do and annotates a failed
-// run with the hook's own context.
-type AuditHook struct {
-	console.BaseCommandHook
-}
+// run with the hook's own context. It defines no flags, so it only reads what
+// the command and the other hooks already add.
+type AuditHook struct{}
 
 func NewAuditHook() *AuditHook {
 	return &AuditHook{}
@@ -32,4 +34,9 @@ func (r *AuditHook) After(_ console.Context, handleErr error) error {
 	}
 
 	return fmt.Errorf("audit hook: %w", handleErr)
+}
+
+// Flags adds none: --target belongs to the command, not to the hook.
+func (r *AuditHook) Flags() []command.Flag {
+	return nil
 }
