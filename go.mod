@@ -264,7 +264,6 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-// The replace selects a fork that adds the vite module (goravel/framework#1603);
-// the fork's go.mod still declares module github.com/goravel/framework, so import
-// paths do not change. Revert to github.com/goravel/framework once #1603 merges.
-replace github.com/goravel/framework => github.com/protibimbok/goravel-framework v0.0.0-20261103170153-1b09b7a650b4
+// require and replace carry the same pin; replace stops the older framework
+// versions gin and fiber ask for from downgrading the code compiled here.
+replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261106074009-5cfb2e524d62
