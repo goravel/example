@@ -6,9 +6,10 @@ import "sync"
 // test:console-hook. The suite asserts the whole struct.
 type RunCapture struct {
 	// Events holds the markers in the order they ran: "trace:before",
-	// "audit:before", "approval:before", "handle", "audit:after", "trace:after".
+	// "approval:before", "audit:before", "handle", "audit:after", "trace:after".
 	Events []string
-	// Target is the --target value the audit hook read in Before.
+	// Target is the --target value the audit hook read in Before. It stays empty
+	// when an outer hook skips the run, because the audit hook never gets a Before.
 	Target string
 	// Approved is the --approved value the approval hook read in Before.
 	Approved bool

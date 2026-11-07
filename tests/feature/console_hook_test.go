@@ -45,8 +45,8 @@ func (s *ConsoleHookTestSuite) TestHooksRunAroundHandle() {
 	s.Equal(&hooks.RunCapture{
 		Events: []string{
 			"trace:before",
-			"audit:before",
 			"approval:before",
+			"audit:before",
 			"handle",
 			"audit:after",
 			"trace:after",
@@ -60,8 +60,8 @@ func (s *ConsoleHookTestSuite) TestBeforeFalseSkipsHandleAndAfter() {
 	s.NoError(facades.Artisan().Call("test:console-hook --target=staging"))
 
 	s.Equal(&hooks.RunCapture{
-		Events: []string{"trace:before", "audit:before", "approval:before"},
-		Target: "staging",
+		Events: []string{"trace:before", "approval:before"},
+		Target: "",
 	}, hooks.GetLatest())
 }
 
@@ -70,8 +70,8 @@ func (s *ConsoleHookTestSuite) TestBeforeErrorSkipsHandleAndAfter() {
 
 	s.Equal(hooks.ErrApprovalRequired, err)
 	s.Equal(&hooks.RunCapture{
-		Events: []string{"trace:before", "audit:before", "approval:before"},
-		Target: "production",
+		Events: []string{"trace:before", "approval:before"},
+		Target: "",
 	}, hooks.GetLatest())
 }
 
@@ -87,8 +87,8 @@ func (s *ConsoleHookTestSuite) TestAfterErrorReplacesHandleError() {
 	s.Equal(&hooks.RunCapture{
 		Events: []string{
 			"trace:before",
-			"audit:before",
 			"approval:before",
+			"audit:before",
 			"handle",
 			"audit:after",
 			"trace:after",
