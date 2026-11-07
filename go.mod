@@ -8,7 +8,7 @@ require (
 	github.com/goravel/cos v1.18.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.18.1-0.20261030085228-66c98dc71f1d
-	github.com/goravel/framework v1.18.1-0.20261104024648-07d86d888d82
+	github.com/goravel/framework v1.18.1-0.20261106074009-5cfb2e524d62
 	github.com/goravel/gemini v1.18.0
 	github.com/goravel/gin v1.18.1-0.20261030085342-4d9429b10cb3
 	github.com/goravel/inertia v1.18.1-0.20260824090129-ac3d472d028c
@@ -17,7 +17,7 @@ require (
 	github.com/goravel/openai v1.18.0
 	github.com/goravel/oss v1.18.0
 	github.com/goravel/postgres v1.18.0
-	github.com/goravel/redis v1.18.1-0.20261104025200-0cf8d0121442
+	github.com/goravel/redis v1.18.1-0.20261106073153-f8a5cf4cf116
 	github.com/goravel/s3 v1.18.0
 	github.com/goravel/slack v0.0.0-20260819081718-3f42493b34e4
 	github.com/goravel/sqlite v1.18.0
@@ -266,9 +266,4 @@ require (
 
 // require and replace carry the same pin; replace stops the older framework
 // versions gin and fiber ask for from downgrading the code compiled here.
-// framework#1579 is fork-only; swap both lines back when it merges.
-replace github.com/goravel/framework => github.com/JGamboa/framework v1.18.1-0.20261104024648-07d86d888d82
-
-// goravel/redis#170 (cache tags) is not on the upstream module yet, so the
-// tagged redis driver comes from the PR author's fork.
-replace github.com/goravel/redis => github.com/JGamboa/redis v1.18.1-0.20261104025200-0cf8d0121442
+replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261106074009-5cfb2e524d62
