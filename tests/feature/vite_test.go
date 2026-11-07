@@ -1,6 +1,7 @@
 package feature
 
 import (
+	"encoding/json"
 	"html/template"
 	"os"
 	"path/filepath"
@@ -21,11 +22,13 @@ import (
 const fixtureBuildDirectory = "build/feature-test"
 
 // viteTestManifest mirrors what `vite build` writes for this app: the Inertia
-// entry with its own CSS, a static CSS entry, and a vendor chunk the entry
-// imports which itself imports a shared chunk.
+// entry with its own CSS, a static CSS entry, a file only a view names through
+// viteAsset, and a vendor chunk the entry imports which itself imports a shared
+// chunk.
 const viteTestManifest = `{
   "resources/inertia/app.ts": {"file": "assets/app-4ed993c7.js", "src": "resources/inertia/app.ts", "isEntry": true, "css": ["assets/app-9a1b2c3d.css"], "imports": ["_vendor-1f2e3d4c.js"]},
   "resources/css/app.css": {"file": "assets/site-0a0b0c0d.css", "src": "resources/css/app.css", "isEntry": true},
+  "resources/images/logo.svg": {"file": "assets/logo-0a0b0c0d.svg", "src": "resources/images/logo.svg"},
   "_vendor-1f2e3d4c.js": {"file": "assets/vendor-1f2e3d4c.js", "css": ["assets/vendor-aabbccdd.css"], "imports": ["_shared-9c8b7a6f.js"]},
   "_shared-9c8b7a6f.js": {"file": "assets/shared-9c8b7a6f.js"}
 }`
@@ -120,7 +123,7 @@ func (s *ViteTestSuite) TestRender() {
 			check: func(html string) {
 				s.Contains(html, `<script type="module" src="http://localhost:5173/@vite/client"></script>`)
 				s.Contains(html, `<script type="module" src="http://localhost:5173/resources/inertia/app.ts"></script>`)
-				s.Contains(html, `href="http://localhost:5173/resources/inertia/app.ts"`)
+				s.Contains(html, `href="http://localhost:5173/resources/images/logo.svg"`)
 				s.Equal(1, strings.Count(html, "@vite/client"))
 				s.NotContains(html, "/build/")
 			},
@@ -136,7 +139,7 @@ func (s *ViteTestSuite) TestRender() {
 				s.Contains(html, `<link rel="modulepreload" href="/build/feature-test/assets/vendor-1f2e3d4c.js">`)
 				s.Contains(html, `<link rel="stylesheet" href="/build/feature-test/assets/app-9a1b2c3d.css">`)
 				s.Contains(html, `<script type="module" src="/build/feature-test/assets/app-4ed993c7.js"></script>`)
-				s.Contains(html, `href="/build/feature-test/assets/app-4ed993c7.js"`)
+				s.Contains(html, `<link rel="icon" href="/build/feature-test/assets/logo-0a0b0c0d.svg" />`)
 				s.Less(strings.Index(html, `rel="stylesheet"`), strings.Index(html, `<script type="module" src=`))
 			},
 		},
@@ -179,8 +182,35 @@ func (s *ViteTestSuite) TestInputsCommand() {
 	// Field by field, so a vite call added to another view does not read as a
 	// broken command.
 	s.Contains(output, `"inputs":["resources/inertia/app.ts"]`)
-	s.Contains(output, `"assets":["resources/inertia/app.ts"]`)
+	s.Contains(output, `"assets":["resources/images/logo.svg"]`)
 	s.Contains(output, `"build_directory":"build"`)
+}
+
+// TestInputs_Paths pins the handshake goravel-vite-plugin reads: it builds into
+// the paths reported here, so they have to be the paths the framework resolves.
+func (s *ViteTestSuite) TestInputs_Paths() {
+	output, err := s.CaptureArtisanOutput("vite:inputs")
+	s.Require().NoError(err)
+
+	// Artisan colours the line, so decode from the object rather than the whole
+	// output; the decoder stops at the end of it.
+	start := strings.Index(output, "{")
+	s.Require().NotEqual(-1, start, output)
+
+	var inputs struct {
+		Paths struct {
+			PublicDirectory string `json:"public_directory"`
+			BuildDirectory  string `json:"build_directory"`
+			HotFile         string `json:"hot_file"`
+			Manifest        string `json:"manifest"`
+		} `json:"paths"`
+	}
+	s.Require().NoError(json.NewDecoder(strings.NewReader(output[start:])).Decode(&inputs))
+
+	s.Equal("public", inputs.Paths.PublicDirectory)
+	s.Equal(facades.Vite().BuildDirectory(), inputs.Paths.BuildDirectory)
+	s.Equal(facades.Vite().ManifestFilename(), inputs.Paths.Manifest)
+	s.Equal("public/hot", inputs.Paths.HotFile)
 }
 
 // TestErrors covers the three failures in the order a build goes wrong: no
