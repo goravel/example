@@ -2,9 +2,11 @@ package feature
 
 import (
 	"encoding/json"
+	"net"
 	"os"
 	"os/exec"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -16,10 +18,6 @@ import (
 	"goravel/app/facades"
 	"goravel/tests"
 )
-
-// devServerPort is not 5173 so the suite runs next to a developer's own
-// `npm run dev`; vite.config.ts keeps 5173 for the real thing.
-const devServerPort = "5180"
 
 // vitePluginInstalled is what npm writes for the published package.
 var vitePluginInstalled = path.Base("node_modules", "goravel-vite-plugin", "package.json")
@@ -38,6 +36,10 @@ type VitePluginTestSuite struct {
 	suite.Suite
 	tests.TestCase
 	root string
+	// Whether a dev server the developer left running had already announced
+	// itself, and what it said, so the suite can put it back.
+	hadHotFile       bool
+	announcedHotFile []byte
 }
 
 func TestVitePluginTestSuite(t *testing.T) {
@@ -52,6 +54,11 @@ func (s *VitePluginTestSuite) SetupSuite() {
 	// process started with it does not depend on the working directory.
 	s.root = path.Base()
 
+	if content, err := os.ReadFile(facades.Vite().HotFile()); err == nil {
+		s.hadHotFile = true
+		s.announcedHotFile = content
+	}
+
 	if file.Exists(vitePluginInstalled) {
 		return
 	}
@@ -65,7 +72,30 @@ func (s *VitePluginTestSuite) SetupSuite() {
 
 func (s *VitePluginTestSuite) TearDownTest() {
 	s.Require().NoError(file.Remove(path.Public(facades.Vite().BuildDirectory())))
-	s.Require().NoError(file.Remove(facades.Vite().HotFile()))
+	s.Require().NoError(s.releaseHotFile())
+}
+
+// releaseHotFile removes the hot file the cases wrote, and puts back the one a
+// dev server had announced before the suite took it away.
+func (s *VitePluginTestSuite) releaseHotFile() error {
+	hotFile := facades.Vite().HotFile()
+	if !s.hadHotFile {
+		return file.Remove(hotFile)
+	}
+
+	return os.WriteFile(hotFile, s.announcedHotFile, 0o644)
+}
+
+// freePort asks the OS for a port, so a leftover server cannot make Vite refuse
+// to bind and the wait below run out.
+func freePort() (string, error) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = listener.Close() }()
+
+	return strconv.Itoa(listener.Addr().(*net.TCPAddr).Port), nil
 }
 
 func (s *VitePluginTestSuite) readManifest() map[string]viteManifestChunk {
@@ -84,6 +114,10 @@ func (s *VitePluginTestSuite) readManifest() map[string]viteManifestChunk {
 // came from the views, the files are where config/vite.go points, and the file a
 // view only names through viteAsset is built.
 func (s *VitePluginTestSuite) TestBuild_ProducesTheManifestTheFrameworkReads() {
+	// A running dev server answers Tags and Asset with its own URLs; this case
+	// reads the manifest, so its hot file goes first.
+	s.Require().NoError(file.Remove(facades.Vite().HotFile()))
+
 	result := facades.Process().Path(s.root).Timeout(5*time.Minute).Run("npm", "run", "build")
 	s.Require().False(result.Failed(), result.Output()+result.ErrorOutput())
 
@@ -92,7 +126,8 @@ func (s *VitePluginTestSuite) TestBuild_ProducesTheManifestTheFrameworkReads() {
 
 	// vite.config.ts leaves the paths and the entries to the plugin, so none of
 	// its "you are overriding what the application reads" warnings appear
-	// (Vite's logger sends warnings to stderr, hence both streams).
+	// (Vite's logger sends warnings to stderr, hence both streams). The plugin is
+	// pinned in package.json because these sentences are its own.
 	output := result.Output() + result.ErrorOutput()
 	s.NotContains(output, "is set in your Vite config")
 	s.NotContains(output, "the application reads it from")
@@ -138,32 +173,45 @@ func (s *VitePluginTestSuite) TestDevServer_AnnouncesTheHotFile() {
 	hotFile := facades.Vite().HotFile()
 	s.Require().NoError(file.Remove(hotFile))
 
+	port, err := freePort()
+	s.Require().NoError(err)
+
 	// The npm script an author runs; npm forwards SIGTERM to vite, whose shutdown
 	// handler removes the hot file. The plugin refuses to serve when CI is set,
 	// which every CI run is.
 	running, err := facades.Process().
 		Path(s.root).
 		Env(map[string]string{"GORAVEL_BYPASS_ENV_CHECK": "1"}).
-		Start("npm", "run", "dev", "--", "--port", devServerPort)
+		Start("npm", "run", "dev", "--", "--port", port)
 	s.Require().NoError(err)
 	defer func() {
 		_ = running.Stop(10 * time.Second)
 		running.Wait()
 	}()
 
-	// Discovery runs `go run .` first, which compiles the application.
+	// Discovery runs `go run .` first, which compiles the application. A server
+	// that exits first (npm error, a port taken in the meantime) fails here
+	// instead of waiting out the deadline.
 	var url string
-	s.Require().Eventually(func() bool {
-		content, err := os.ReadFile(hotFile)
-		if err != nil {
-			return false
+	deadline := time.After(120 * time.Second)
+	poll := time.NewTicker(100 * time.Millisecond)
+	defer poll.Stop()
+	for url == "" {
+		select {
+		case <-running.Done():
+			s.FailNow("the dev server exited before writing " + hotFile + ":\n" + running.Wait().Output())
+		case <-deadline:
+			_ = running.Stop(10 * time.Second)
+			s.FailNow("the plugin should have written " + hotFile + ":\n" + running.Wait().Output())
+		case <-poll.C:
+			content, err := os.ReadFile(hotFile)
+			if err == nil {
+				url = strings.TrimSpace(string(content))
+			}
 		}
-		url = strings.TrimSpace(string(content))
+	}
 
-		return url != ""
-	}, 120*time.Second, 100*time.Millisecond, "the plugin should write %s:\n%s", hotFile, running.Output())
-
-	s.Regexp(`^http://(localhost|127\.0\.0\.1):`+devServerPort+`$`, url)
+	s.Regexp(`^http://(localhost|127\.0\.0\.1):`+port+`$`, url)
 	s.True(facades.Vite().IsRunningHot())
 
 	tags, err := facades.Vite().Tags("resources/inertia/app.ts")

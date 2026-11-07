@@ -187,7 +187,7 @@ func (s *ViteTestSuite) TestInputsCommand() {
 }
 
 // TestInputs_Paths pins the handshake goravel-vite-plugin reads: it builds into
-// the paths reported here, so they have to be the paths the framework resolves.
+// the paths reported here, so they are the literals config/vite.go sets.
 func (s *ViteTestSuite) TestInputs_Paths() {
 	output, err := s.CaptureArtisanOutput("vite:inputs")
 	s.Require().NoError(err)
@@ -208,8 +208,8 @@ func (s *ViteTestSuite) TestInputs_Paths() {
 	s.Require().NoError(json.NewDecoder(strings.NewReader(output[start:])).Decode(&inputs))
 
 	s.Equal("public", inputs.Paths.PublicDirectory)
-	s.Equal(facades.Vite().BuildDirectory(), inputs.Paths.BuildDirectory)
-	s.Equal(facades.Vite().ManifestFilename(), inputs.Paths.Manifest)
+	s.Equal("build", inputs.Paths.BuildDirectory)
+	s.Equal(".vite/manifest.json", inputs.Paths.Manifest)
 	s.Equal("public/hot", inputs.Paths.HotFile)
 }
 
