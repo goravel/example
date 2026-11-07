@@ -63,6 +63,7 @@ func Boot() contractsfoundation.Application {
 		}).
 		WithCommands(Commands).
 		WithCommandsFilter(CommandsFilter).
+		WithCommandHooks(CommandHooks).
 		WithJobs(Jobs).
 		WithFilters(Filters).
 		WithRules(Rules).
