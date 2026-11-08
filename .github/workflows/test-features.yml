@@ -34,5 +34,11 @@ jobs:
             ${{ runner.os }}-go-
       - name: Install dependencies
         run: go mod tidy
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install frontend dependencies
+        run: npm ci
       - name: Run tests
         run: go test -timeout 20m ./tests/...

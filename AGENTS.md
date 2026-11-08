@@ -74,3 +74,8 @@ func TestFunction(t *testing.T) {
 - Never `time.Sleep` in telemetry suites; readiness and export latency are handled by the kit.
 - Every suite must claim a unique `telemetry.service.name` via `tests.OverrideConfig` and query by it; backends stay warm and accumulate data across suites.
 - Suites never run `docker compose down`; teardown is owned by `TestMain` via `telemetry.TeardownStack`.
+
+### Vite plugin tests
+
+- `tests/feature/vite_plugin_test.go` runs the published `goravel-vite-plugin` against a real `vite build` and `npm run dev`. It runs `npm ci` itself when `node_modules/goravel-vite-plugin` is not installed, so the first run needs the network.
+- The suite builds into `public/build` and owns `public/hot` while it runs; it removes the build and puts back the hot file a dev server had written.
