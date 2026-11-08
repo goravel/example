@@ -162,4 +162,8 @@ func Web() {
 		router.Delete("redirect", inertiaController.RedirectTo)
 		router.Get("location", inertiaController.LocationTo)
 	})
+
+	facades.Route().Get("vite", func(ctx http.Context) http.Response {
+		return ctx.Response().View().Make("vite.tmpl")
+	})
 }
