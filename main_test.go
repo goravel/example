@@ -50,6 +50,71 @@ func (s *MainTestSuite) TestMakeCommand() {
 	s.True(file.Contains(path.Bootstrap("app.go"), "WithCommands(Commands)."))
 }
 
+func (s *MainTestSuite) TestMakeCommandHook() {
+	s.NoError(facades.Artisan().Call("make:command-hook TestCommandHook --command=migrate"))
+
+	hookPath := path.App("console", "hooks", "test_command_hook.go")
+	s.True(file.Exists(hookPath))
+	s.True(file.Contains(hookPath, "package hooks"))
+	s.True(file.Contains(hookPath, "type TestCommandHook struct"))
+	s.True(file.Contains(hookPath, "func (r *TestCommandHook) Before(ctx console.Context) (bool, error)"))
+	s.True(file.Contains(hookPath, "return true, nil"))
+	s.True(file.Contains(hookPath, "func (r *TestCommandHook) After(ctx console.Context, handleErr error) error"))
+	s.True(file.Contains(hookPath, "return handleErr"))
+	s.True(file.Contains(hookPath, "func (r *TestCommandHook) Flags() []command.Flag"))
+	s.True(file.Contains(hookPath, "return nil"))
+
+	// bootstrap/app.go passes the CommandHooks identifier, so the framework
+	// resolves it to bootstrap/command_hooks.go and appends the hook to the map
+	// literal there, leaving app.go untouched.
+	s.True(file.Contains(path.Bootstrap("app.go"), "WithCommandHooks(CommandHooks)."))
+	s.False(file.Contains(path.Bootstrap("app.go"), "TestCommandHook"))
+	s.True(file.Contains(path.Bootstrap("command_hooks.go"), `"migrate": {`))
+	s.True(file.Contains(path.Bootstrap("command_hooks.go"), "&hooks.TestCommandHook{},"))
+
+	// The generated file joins package hooks, which bootstrap imports, so this also
+	// proves the generated file compiles in the app.
+	s.False(facades.Process().Run("go", "build", "./app/console/hooks").Failed())
+}
+
+func (s *MainTestSuite) TestMakeCommandHookForce() {
+	hookPath := path.App("console", "hooks", "test_command_hook_force.go")
+	s.NoError(facades.Artisan().Call("make:command-hook TestCommandHookForce --command=migrate"))
+	s.True(file.Exists(hookPath))
+	s.True(file.Contains(path.Bootstrap("command_hooks.go"), `"migrate": {`))
+	s.True(file.Contains(path.Bootstrap("command_hooks.go"), "&hooks.TestCommandHookForce{},"))
+
+	// A sentinel proves the refused run leaves the file alone and the forced run rewrites it.
+	s.NoError(file.PutContent(hookPath, "package hooks\n\n// keep me\n"))
+
+	s.NoError(facades.Artisan().Call("make:command-hook TestCommandHookForce --command=migrate"))
+	s.True(file.Contains(hookPath, "// keep me"))
+	s.False(file.Contains(hookPath, "type TestCommandHookForce struct"))
+	// The refused run stops before registration, so it adds no second key.
+	s.False(file.Contains(path.Bootstrap("command_hooks.go"), `"make:*": {`))
+
+	s.NoError(facades.Artisan().Call("make:command-hook TestCommandHookForce -c make:* --force"))
+	s.False(file.Contains(hookPath, "// keep me"))
+	s.True(file.Contains(hookPath, "type TestCommandHookForce struct"))
+	// The forced run keeps the "migrate" entry and adds the "make:*" one beside it.
+	s.True(file.Contains(path.Bootstrap("command_hooks.go"), `"migrate": {`))
+	s.True(file.Contains(path.Bootstrap("command_hooks.go"), `"make:*": {`))
+}
+
+func (s *MainTestSuite) TestMakeCommandHookNested() {
+	s.NoError(facades.Artisan().Call("make:command-hook nested/TestNestedHook --command=migrate"))
+
+	hookPath := path.App("console", "hooks", "nested", "test_nested_hook.go")
+	s.True(file.Exists(hookPath))
+	s.True(file.Contains(hookPath, "package nested"))
+	s.True(file.Contains(hookPath, "type TestNestedHook struct"))
+	s.True(file.Contains(path.Bootstrap("command_hooks.go"), "&nested.TestNestedHook{},"))
+
+	// bootstrap/command_hooks.go imports the nested package once the hook is
+	// registered, so this builds the generated file the app compiles.
+	s.False(facades.Process().Run("go", "build", "./app/console/hooks/...").Failed())
+}
+
 func (s *MainTestSuite) TestMakeAgent() {
 	s.NoError(facades.Artisan().Call("make:agent TestAgent"))
 
