@@ -6,6 +6,8 @@ import (
 
 func init() {
 	config := facades.Config()
+	// For version: unset follows the Vite build manifest; set it when the manifest is
+	// not readable at runtime, or to force a reload after a backend-only deploy.
 	config.Add("inertia", map[string]any{
 		"root_view":   "resources/inertia/app.gohtml",
 		"version":     config.Env("INERTIA_VERSION", "test-version"),
@@ -13,11 +15,5 @@ func init() {
 		"ssr_url":     config.Env("INERTIA_SSR_URL", "http://127.0.0.1:13714/render"),
 		"ssr_timeout": config.Env("INERTIA_SSR_TIMEOUT", 5),
 		"flash_keys":  []string{"success", "error", "warning", "info", "message"},
-		"vite": map[string]any{
-			"public_path": "public",
-			"build_dir":   "build",
-			"hot_file":    "public/hot",
-			"dev_url":     config.Env("VITE_DEV_URL", ""),
-		},
 	})
 }

@@ -8,10 +8,10 @@ require (
 	github.com/goravel/cos v1.18.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.18.1-0.20261030085228-66c98dc71f1d
-	github.com/goravel/framework v1.18.1-0.20261109081827-a1fd1ea59809
+	github.com/goravel/framework v1.18.1-0.20261109162935-ac89cb00ec63
 	github.com/goravel/gemini v1.18.0
 	github.com/goravel/gin v1.18.1-0.20261030085342-4d9429b10cb3
-	github.com/goravel/inertia v1.18.1-0.20260824090129-ac3d472d028c
+	github.com/goravel/inertia v1.18.1-0.20261110100536-d39bae9ffcf2
 	github.com/goravel/minio v1.18.0
 	github.com/goravel/mysql v1.18.0
 	github.com/goravel/openai v1.18.0
@@ -265,5 +265,8 @@ require (
 )
 
 // require and replace carry the same pin; replace stops the older framework
-// versions gin and fiber ask for from downgrading the code compiled here.
-replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261109081827-a1fd1ea59809
+// versions gin and fiber ask for from downgrading the code compiled here, and
+// pins inertia to the head that delegates {{ vite }} to that module.
+replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261109162935-ac89cb00ec63
+
+replace github.com/goravel/inertia => github.com/goravel/inertia v1.18.1-0.20261110100536-d39bae9ffcf2

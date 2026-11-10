@@ -1,12 +1,15 @@
 package feature
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"html/template"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	frameworkerrors "github.com/goravel/framework/errors"
 	"github.com/goravel/framework/support/path"
@@ -20,6 +23,11 @@ import (
 // fixtureBuildDirectory keeps the fixtures inside public/build, which is
 // gitignored whole, so they never reach the checked-in tree.
 const fixtureBuildDirectory = "build/feature-test"
+
+// fixtureHotFile keeps the hot file inside that same directory: it is under
+// public, so the framework resolves it, and TearDownTest removes it with the
+// rest of the fixture.
+const fixtureHotFile = fixtureBuildDirectory + "/hot"
 
 // viteTestManifest mirrors what `vite build` writes for this app: the Inertia
 // entry with its own CSS, a static CSS entry, a file only a view names through
@@ -38,7 +46,8 @@ const viteTestManifest = `{
 type ViteTestSuite struct {
 	suite.Suite
 	tests.TestCase
-	// What the singleton held before any case pointed it at fixtures.
+	// The build directory the singleton booted with, and the hot file config
+	// declares, both leaves relative to public.
 	originalBuildDirectory string
 	originalHotFile        string
 }
@@ -50,11 +59,12 @@ func TestViteTestSuite(t *testing.T) {
 // SetupSuite snapshots the boot-time config before any case can change or
 // restore it, so a broken restore fails here instead of hiding until later.
 func (s *ViteTestSuite) SetupSuite() {
+	// config/vite.go holds leaves; the instance resolves both inside public.
 	s.originalBuildDirectory = facades.Vite().BuildDirectory()
-	s.originalHotFile = facades.Vite().HotFile()
+	s.originalHotFile = facades.Config().GetString("vite.hot_file", goravelvite.DefaultHotFile())
 
 	s.Equal("build", s.originalBuildDirectory)
-	s.Equal(path.Base("public", "hot"), s.originalHotFile)
+	s.Equal(path.Public(s.originalHotFile), facades.Vite().HotFile())
 }
 
 func (s *ViteTestSuite) SetupTest() {
@@ -76,15 +86,20 @@ func (s *ViteTestSuite) fixturePath(parts ...string) string {
 }
 
 // useFixtureVite points the shared Vite at the fixture build directory and at a
-// hot file in a per-test temporary directory. The Use* setters are not on the
-// contract on purpose (the instance is configured from config/vite.go), so the
-// concrete type is asserted first.
+// hot file inside it. Both are leaves relative to public, as config/vite.go
+// declares them. The Use* setters are not on the contract on purpose (the
+// instance is configured from config/vite.go), so the concrete type is asserted
+// first.
 func (s *ViteTestSuite) useFixtureVite() *goravelvite.Vite {
 	vite, ok := facades.Vite().(*goravelvite.Vite)
 	s.Require().True(ok, "the container should bind the framework *vite.Vite")
 
-	hotFile := filepath.Join(s.T().TempDir(), "hot")
-	vite.UseBuildDirectory(fixtureBuildDirectory).UseHotFile(hotFile)
+	vite.UseBuildDirectory(fixtureBuildDirectory).UseHotFile(fixtureHotFile)
+
+	// Every case starts from an empty build, so a manifest or a hot file one case
+	// wrote cannot decide what the next one sees.
+	s.Require().NoError(os.RemoveAll(s.fixturePath(".vite")))
+	s.Require().NoError(os.RemoveAll(vite.HotFile()))
 
 	return vite
 }
@@ -180,14 +195,43 @@ func (s *ViteTestSuite) TestInputsCommand() {
 	s.Require().NoError(err)
 
 	// Field by field, so a vite call added to another view does not read as a
-	// broken command.
+	// broken command. The config seeds the same two paths, so the dedup is what
+	// keeps each list at one entry.
 	s.Contains(output, `"inputs":["resources/inertia/app.ts"]`)
 	s.Contains(output, `"assets":["resources/images/logo.svg"]`)
 	s.Contains(output, `"build_directory":"build"`)
+	s.NotContains(output, ":null")
+}
+
+// TestInputsCommand_SeededEntries pins the entries config declares: vite.inputs
+// and vite.assets are merged with the view calls, then deduplicated and sorted,
+// so an entry named in both places is built once.
+func (s *ViteTestSuite) TestInputsCommand_SeededEntries() {
+	scope, err := tests.OverrideConfig(map[string]any{
+		"vite.inputs": []string{"resources/js/admin.ts", "resources/inertia/app.ts"},
+		"vite.assets": []string{"resources/images/logo.svg", "resources/images/favicon.svg"},
+	})
+	s.Require().NoError(err)
+	defer func() { s.Require().NoError(scope.Restore()) }()
+
+	output, err := s.CaptureArtisanOutput("vite:inputs")
+	s.Require().NoError(err)
+
+	// Merged with the view calls (app.ts, logo.svg), once each, in sorted order.
+	s.Contains(output, `"inputs":["resources/inertia/app.ts","resources/js/admin.ts"]`)
+	s.Contains(output, `"assets":["resources/images/favicon.svg","resources/images/logo.svg"]`)
+
+	// The command sorts its own copy; the value config holds keeps its order.
+	s.Equal(
+		[]string{"resources/js/admin.ts", "resources/inertia/app.ts"},
+		facades.Config().GetStringSlice("vite.inputs", []string{}),
+	)
 }
 
 // TestInputs_Paths pins the handshake goravel-vite-plugin reads: it builds into
-// the paths reported here, so they are the literals config/vite.go sets.
+// the paths reported here. The build directory is the leaf config/vite.go sets;
+// the hot file is reported relative to the project root, so "hot" inside public
+// still reads "public/hot".
 func (s *ViteTestSuite) TestInputs_Paths() {
 	output, err := s.CaptureArtisanOutput("vite:inputs")
 	s.Require().NoError(err)
@@ -210,12 +254,94 @@ func (s *ViteTestSuite) TestInputs_Paths() {
 	s.Equal("public", inputs.Paths.PublicDirectory)
 	s.Equal("build", inputs.Paths.BuildDirectory)
 	s.Equal(".vite/manifest.json", inputs.Paths.Manifest)
+	// config/vite.go says "hot"; it resolves inside public, and the command
+	// reports it relative to the project root so the output is machine-independent.
+	s.Equal("hot", facades.Config().GetString("vite.hot_file"))
 	s.Equal("public/hot", inputs.Paths.HotFile)
+}
+
+// TestManifestHash pins the version an app puts on the files it serves itself:
+// the md5 of the build manifest, and "" whenever there is nothing trustworthy to
+// hash — no manifest, a broken one, or a dev server that serves unhashed files.
+func (s *ViteTestSuite) TestManifestHash() {
+	sum := md5.Sum([]byte(viteTestManifest))
+
+	tests := []struct {
+		name     string
+		setup    func(vite *goravelvite.Vite)
+		expected string
+	}{
+		{
+			name: "should hash the manifest a build wrote",
+			setup: func(_ *goravelvite.Vite) {
+				s.writeManifest(viteTestManifest)
+			},
+			expected: hex.EncodeToString(sum[:]),
+		},
+		{
+			name:     "should be empty before the first build",
+			setup:    func(_ *goravelvite.Vite) {},
+			expected: "",
+		},
+		{
+			name: "should be empty while the dev server runs",
+			setup: func(vite *goravelvite.Vite) {
+				s.writeManifest(viteTestManifest)
+				s.writeFile(vite.HotFile(), "http://localhost:5173\n")
+			},
+			expected: "",
+		},
+		{
+			name: "should be empty for a manifest that does not parse",
+			setup: func(_ *goravelvite.Vite) {
+				s.writeManifest("{not json")
+			},
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			vite := s.useFixtureVite()
+			tt.setup(vite)
+
+			s.Equal(tt.expected, vite.ManifestHash())
+		})
+	}
+}
+
+// TestManifestHash_MovesWithTags pins that the version and the tags come from
+// one cache: a rebuild that keeps the file size still moves both, because the
+// mtime is what invalidates it.
+func (s *ViteTestSuite) TestManifestHash_MovesWithTags() {
+	vite := s.useFixtureVite()
+	s.writeManifest(viteTestManifest)
+
+	first := vite.ManifestHash()
+	s.NotEmpty(first)
+
+	_, err := vite.Tags("resources/inertia/app.ts")
+	s.Require().NoError(err)
+	s.Equal(first, vite.ManifestHash(), "a render must not change the cached hash")
+
+	// Same length, new file name: only the mtime tells the two builds apart.
+	rebuilt := strings.Replace(viteTestManifest, "app-4ed993c7.js", "app-44ecf5d8.js", 1)
+	s.writeManifest(rebuilt)
+	future := time.Now().Add(time.Second)
+	s.Require().NoError(os.Chtimes(s.fixturePath(".vite", "manifest.json"), future, future))
+
+	sum := md5.Sum([]byte(rebuilt))
+	second := vite.ManifestHash()
+	s.Equal(hex.EncodeToString(sum[:]), second)
+	s.NotEqual(first, second)
+
+	tags, err := vite.Tags("resources/inertia/app.ts")
+	s.Require().NoError(err)
+	s.Contains(string(tags), "app-44ecf5d8.js", "the tags must come from the bytes the hash covers")
 }
 
 // TestErrors covers the three failures in the order a build goes wrong: no
 // manifest yet, a manifest that does not parse, and an entry the manifest lacks.
-// Each case builds on the file the previous one wrote.
 func (s *ViteTestSuite) TestErrors() {
 	tests := []struct {
 		name        string
