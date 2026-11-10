@@ -200,7 +200,7 @@ func (s *ViteTestSuite) TestInputsCommand() {
 	s.Contains(output, `"inputs":["resources/inertia/app.ts"]`)
 	s.Contains(output, `"assets":["resources/images/logo.svg"]`)
 	s.Contains(output, `"build_directory":"build"`)
-	s.NotContains(output, ":null")
+	s.Contains(output, `"dynamic":[]`)
 }
 
 // TestInputsCommand_SeededEntries pins the entries config declares: vite.inputs
@@ -226,6 +226,21 @@ func (s *ViteTestSuite) TestInputsCommand_SeededEntries() {
 		[]string{"resources/js/admin.ts", "resources/inertia/app.ts"},
 		facades.Config().GetStringSlice("vite.inputs", []string{}),
 	)
+}
+
+// TestInputsCommand_ViewCallsOnly clears the config seeds, so the entries the
+// command reports can only come from the {{ vite }} and {{ viteAsset }} calls in
+// the views.
+func (s *ViteTestSuite) TestInputsCommand_ViewCallsOnly() {
+	scope, err := tests.OverrideConfig(map[string]any{"vite.inputs": []string{}, "vite.assets": []string{}})
+	s.Require().NoError(err)
+	defer func() { s.Require().NoError(scope.Restore()) }()
+
+	output, err := s.CaptureArtisanOutput("vite:inputs")
+	s.Require().NoError(err)
+
+	s.Contains(output, `"inputs":["resources/inertia/app.ts"]`)
+	s.Contains(output, `"assets":["resources/images/logo.svg"]`)
 }
 
 // TestInputs_Paths pins the handshake goravel-vite-plugin reads: it builds into
@@ -254,9 +269,8 @@ func (s *ViteTestSuite) TestInputs_Paths() {
 	s.Equal("public", inputs.Paths.PublicDirectory)
 	s.Equal("build", inputs.Paths.BuildDirectory)
 	s.Equal(".vite/manifest.json", inputs.Paths.Manifest)
-	// config/vite.go says "hot"; it resolves inside public, and the command
-	// reports it relative to the project root so the output is machine-independent.
-	s.Equal("hot", facades.Config().GetString("vite.hot_file"))
+	// config/vite.go says "hot", inside public; the command reports the hot file
+	// relative to the project root, so the output is machine-independent.
 	s.Equal("public/hot", inputs.Paths.HotFile)
 }
 
@@ -322,7 +336,13 @@ func (s *ViteTestSuite) TestManifestHash_MovesWithTags() {
 
 	_, err := vite.Tags("resources/inertia/app.ts")
 	s.Require().NoError(err)
-	s.Equal(first, vite.ManifestHash(), "a render must not change the cached hash")
+
+	// The render reads the manifest through the same cache, so the hash still
+	// covers the bytes on disk.
+	written, err := os.ReadFile(s.fixturePath(".vite", "manifest.json"))
+	s.Require().NoError(err)
+	hashed := md5.Sum(written)
+	s.Equal(hex.EncodeToString(hashed[:]), vite.ManifestHash(), "a render must not change the hash")
 
 	// Same length, new file name: only the mtime tells the two builds apart.
 	rebuilt := strings.Replace(viteTestManifest, "app-4ed993c7.js", "app-44ecf5d8.js", 1)

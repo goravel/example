@@ -27,7 +27,8 @@ func init() {
 		//
 		// Entries and assets `vite build` must include even when no view names
 		// them; vite:inputs merges these with the view calls, once each and
-		// sorted. The views already name both below, so the build is unchanged.
+		// sorted. resources/views/vite.tmpl already names both, so the build is
+		// unchanged.
 		"inputs": []string{"resources/inertia/app.ts"},
 		"assets": []string{"resources/images/logo.svg"},
 	})

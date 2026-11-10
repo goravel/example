@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -230,7 +231,11 @@ func (s *VitePluginTestSuite) TestDevServer_AnnouncesTheHotFile() {
 	s.Regexp(`^http://(localhost|127\.0\.0\.1):`+port+`$`, url)
 	s.True(facades.Vite().IsRunningHot())
 
-	// The dev server serves unhashed files, so there is no version to pin.
+	// The dev server serves unhashed files, so a manifest the last build left
+	// gives no version while it runs. TearDownTest removes it with the build.
+	manifestPath := path.Public(facades.Vite().BuildDirectory(), facades.Vite().ManifestFilename())
+	s.Require().NoError(os.MkdirAll(filepath.Dir(manifestPath), 0o755))
+	s.Require().NoError(os.WriteFile(manifestPath, []byte("{}"), 0o644))
 	s.Empty(facades.Vite().ManifestHash())
 
 	tags, err := facades.Vite().Tags("resources/inertia/app.ts")

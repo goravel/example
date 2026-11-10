@@ -266,7 +266,7 @@ require (
 
 // require and replace carry the same pin; replace stops the older framework
 // versions gin and fiber ask for from downgrading the code compiled here, and
-// pins inertia to the head that delegates {{ vite }} to that module.
+// pins inertia to the head that delegates {{ vite }} to the framework module.
 replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261109162935-ac89cb00ec63
 
 replace github.com/goravel/inertia => github.com/goravel/inertia v1.18.1-0.20261110100536-d39bae9ffcf2
