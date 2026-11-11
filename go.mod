@@ -8,10 +8,10 @@ require (
 	github.com/goravel/cos v1.18.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.18.1-0.20261030085228-66c98dc71f1d
-	github.com/goravel/framework v1.18.1-0.20261109081827-a1fd1ea59809
+	github.com/goravel/framework v1.18.1-0.20261110120158-82c6a43353b4
 	github.com/goravel/gemini v1.18.0
 	github.com/goravel/gin v1.18.1-0.20261030085342-4d9429b10cb3
-	github.com/goravel/inertia v1.18.1-0.20260824090129-ac3d472d028c
+	github.com/goravel/inertia v1.18.1-0.20261110120219-2a36f31baeaa
 	github.com/goravel/minio v1.18.0
 	github.com/goravel/mysql v1.18.0
 	github.com/goravel/openai v1.18.0
@@ -34,7 +34,7 @@ require (
 	go.opentelemetry.io/otel v1.47.0
 	go.opentelemetry.io/otel/metric v1.47.0
 	go.opentelemetry.io/otel/trace v1.47.0
-	google.golang.org/grpc v1.86.0-dev.0.20261029074820-bc90736a6fad
+	google.golang.org/grpc v1.86.0-dev.0.20261104142343-cbf30c413099
 	google.golang.org/protobuf v1.36.12
 )
 
@@ -242,7 +242,7 @@ require (
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/arch v0.29.0 // indirect
 	golang.org/x/crypto v0.58.0 // indirect
-	golang.org/x/exp v0.0.0-20261014143641-f0251eb4aa3e // indirect
+	golang.org/x/exp v0.0.0-20261106192419-47ce03d25ef0 // indirect
 	golang.org/x/mod v0.42.0 // indirect
 	golang.org/x/net v0.61.0 // indirect
 	golang.org/x/sync v0.24.0 // indirect
@@ -250,7 +250,7 @@ require (
 	golang.org/x/term v0.47.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	golang.org/x/tools v0.52.0 // indirect
+	golang.org/x/tools v0.52.1-0.20261106210606-4f7264d11672 // indirect
 	google.golang.org/api v0.293.0 // indirect
 	google.golang.org/genai v1.58.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260928230214-8a89bd6388cc // indirect
@@ -264,6 +264,4 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-// require and replace carry the same pin; replace stops the older framework
-// versions gin and fiber ask for from downgrading the code compiled here.
-replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261109081827-a1fd1ea59809
+replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261110120158-82c6a43353b4

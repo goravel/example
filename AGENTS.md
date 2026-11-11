@@ -79,3 +79,4 @@ func TestFunction(t *testing.T) {
 
 - `tests/feature/vite_plugin_test.go` runs the published `goravel-vite-plugin` against a real `vite build` and `npm run dev`. It runs `npm ci` itself when `node_modules/goravel-vite-plugin` is not installed, so the first run needs the network.
 - The suite builds into `public/build` and owns `public/hot` while it runs; it removes the build and puts back the hot file a dev server had written.
+- `vite.build_directory` and `vite.hot_file` in `config/vite.go` are paths relative to `public` (`build`, `hot`); a fixture hot file is a path under `public` too, never absolute.

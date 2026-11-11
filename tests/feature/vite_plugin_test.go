@@ -1,10 +1,13 @@
 package feature
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -109,6 +112,17 @@ func (s *VitePluginTestSuite) readManifest() map[string]viteManifestChunk {
 	return manifest
 }
 
+// manifestSum is the md5 of the manifest a build wrote: the version an app pins
+// on the files it serves itself, so a new build invalidates them together.
+func (s *VitePluginTestSuite) manifestSum() string {
+	content, err := os.ReadFile(path.Public(facades.Vite().BuildDirectory(), facades.Vite().ManifestFilename()))
+	s.Require().NoError(err)
+
+	sum := md5.Sum(content)
+
+	return hex.EncodeToString(sum[:])
+}
+
 // TestBuild_ProducesTheManifestTheFrameworkReads runs the build an author runs
 // and then resolves the same entry and asset through the framework: the entries
 // came from the views, the files are where config/vite.go points, and the file a
@@ -152,6 +166,9 @@ func (s *VitePluginTestSuite) TestBuild_ProducesTheManifestTheFrameworkReads() {
 	tags, err := facades.Vite().Tags("resources/inertia/app.ts")
 	s.Require().NoError(err)
 	s.Contains(string(tags), `<script type="module" src="/`+buildDirectory+`/`+entry.File+`"></script>`)
+
+	// The version the app serves matches the manifest this build wrote.
+	s.Equal(s.manifestSum(), facades.Vite().ManifestHash())
 
 	url, err := facades.Vite().Asset("resources/images/logo.svg")
 	s.Require().NoError(err)
@@ -213,6 +230,13 @@ func (s *VitePluginTestSuite) TestDevServer_AnnouncesTheHotFile() {
 
 	s.Regexp(`^http://(localhost|127\.0\.0\.1):`+port+`$`, url)
 	s.True(facades.Vite().IsRunningHot())
+
+	// The dev server serves unhashed files, so a manifest the last build left
+	// gives no version while it runs. TearDownTest removes it with the build.
+	manifestPath := path.Public(facades.Vite().BuildDirectory(), facades.Vite().ManifestFilename())
+	s.Require().NoError(os.MkdirAll(filepath.Dir(manifestPath), 0o755))
+	s.Require().NoError(os.WriteFile(manifestPath, []byte("{}"), 0o644))
+	s.Empty(facades.Vite().ManifestHash())
 
 	tags, err := facades.Vite().Tags("resources/inertia/app.ts")
 	s.Require().NoError(err)
