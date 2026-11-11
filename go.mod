@@ -264,9 +264,4 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-// require and replace carry the same pin; replace stops the older framework
-// versions gin and fiber ask for from downgrading the code compiled here, and
-// pins inertia to the release that delegates {{ vite }} to the framework module.
 replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261110120158-82c6a43353b4
-
-replace github.com/goravel/inertia => github.com/goravel/inertia v1.18.1-0.20261110120219-2a36f31baeaa

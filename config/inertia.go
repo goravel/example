@@ -6,8 +6,6 @@ import (
 
 func init() {
 	config := facades.Config()
-	// The demo pins an asset version so the inertia tests and their clients agree;
-	// leave the fallback below empty to follow the Vite build manifest instead.
 	config.Add("inertia", map[string]any{
 		"root_view":   "resources/inertia/app.gohtml",
 		"version":     config.Env("INERTIA_VERSION", "test-version"),
