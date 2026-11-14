@@ -1,0 +1,33 @@
+:root {
+  --admin-bg: #f6f7f9;
+  --admin-surface: #fff;
+  --admin-border: #e3e6ea;
+  --admin-text: #1d2433;
+  --admin-muted: #687284;
+  --admin-accent: #3b5bdb;
+  font-family: system-ui, sans-serif;
+  color: var(--admin-text);
+  background: var(--admin-bg);
+}
+
+body { margin: 0; }
+.admin { display: flex; min-height: 100vh; }
+.admin-sidebar { width: 220px; padding: 20px 12px; background: var(--admin-surface); border-right: 1px solid var(--admin-border); }
+.admin-brand { display: block; padding: 0 8px 16px; }
+.admin-sidebar h2 { margin: 16px 8px 4px; font-size: 12px; text-transform: uppercase; color: var(--admin-muted); }
+.admin-sidebar a { display: block; padding: 6px 8px; border-radius: 6px; color: inherit; text-decoration: none; }
+.admin-sidebar a.active { background: var(--admin-bg); color: var(--admin-accent); }
+.admin-main { flex: 1; padding: 20px 32px; }
+.admin-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.admin-header h1 { margin: 0; font-size: 22px; }
+.admin-header-actions { display: flex; gap: 8px; }
+.admin-widgets { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.admin-card { padding: 16px; background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: 8px; }
+.admin-card h3 { margin: 0 0 4px; font-size: 13px; font-weight: 500; color: var(--admin-muted); }
+.admin-stat { font-size: 30px; font-weight: 600; }
+.admin-button { display: inline-block; padding: 7px 14px; border: 0; border-radius: 6px; background: var(--admin-accent); color: #fff; font: inherit; text-decoration: none; cursor: pointer; }
+.admin-table { width: 100%; border-collapse: collapse; background: var(--admin-surface); }
+.admin-table th, .admin-table td { padding: 8px 12px; border-bottom: 1px solid var(--admin-border); text-align: left; }
+.admin-form { display: grid; gap: 12px; max-width: 520px; }
+.admin-form input, .admin-form textarea { padding: 8px; border: 1px solid var(--admin-border); border-radius: 6px; font: inherit; }
+.admin-error { color: #c92a2a; font-size: 13px; }

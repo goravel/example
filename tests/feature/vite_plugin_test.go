@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -22,7 +21,8 @@ import (
 	"goravel/tests"
 )
 
-// vitePluginInstalled is what npm writes for the published package.
+// vitePluginInstalled is what npm writes for the plugin: a link to the local
+// ../vite-plugin checkout until a release lists module entries.
 var vitePluginInstalled = path.Base("node_modules", "goravel-vite-plugin", "package.json")
 
 // viteManifestChunk is the part of a manifest.json entry the framework reads.
@@ -31,7 +31,7 @@ type viteManifestChunk struct {
 	IsEntry bool   `json:"isEntry"`
 }
 
-// VitePluginTestSuite drives the published goravel-vite-plugin the way an
+// VitePluginTestSuite drives goravel-vite-plugin the way an
 // application author does — `npm run build` and `npm run dev` — and then
 // resolves the same entry and asset through the framework. config/vite.go is the
 // only place the paths are set.
@@ -159,7 +159,18 @@ func (s *VitePluginTestSuite) TestBuild_ProducesTheManifestTheFrameworkReads() {
 	s.Require().True(ok, "the plugin should build the file a view only names through viteAsset")
 	s.NotEmpty(logo.File)
 
+	// The modules' ViteEntries() are built although no view names them.
+	for _, name := range []string{"modules/blog/resources/js/dashboard.ts", "modules/admin/resources/js/main.ts"} {
+		chunk, ok := manifest[name]
+		s.Require().True(ok, "the plugin should build the module entry %s", name)
+		s.True(chunk.IsEntry)
+	}
+
 	for name, chunk := range manifest {
+		// The alias table the plugin writes for the framework is not a chunk.
+		if name == "goravel:aliases" {
+			continue
+		}
 		s.True(file.Exists(path.Public(buildDirectory, chunk.File)), "%s: %s", name, chunk.File)
 	}
 
@@ -209,11 +220,15 @@ func (s *VitePluginTestSuite) TestDevServer_AnnouncesTheHotFile() {
 	// Discovery runs `go run .` first, which compiles the application. A server
 	// that exits first (npm error, a port taken in the meantime) fails here
 	// instead of waiting out the deadline.
-	var url string
+	// The plugin writes JSON: the URL and the alias table, module aliases included.
+	var hot struct {
+		URL     string            `json:"url"`
+		Aliases map[string]string `json:"aliases"`
+	}
 	deadline := time.After(120 * time.Second)
 	poll := time.NewTicker(100 * time.Millisecond)
 	defer poll.Stop()
-	for url == "" {
+	for hot.URL == "" {
 		select {
 		case <-running.Done():
 			s.FailNow("the dev server exited before writing " + hotFile + ":\n" + running.Wait().Output())
@@ -221,14 +236,20 @@ func (s *VitePluginTestSuite) TestDevServer_AnnouncesTheHotFile() {
 			_ = running.Stop(10 * time.Second)
 			s.FailNow("the plugin should have written " + hotFile + ":\n" + running.Wait().Output())
 		case <-poll.C:
-			content, err := os.ReadFile(hotFile)
-			if err == nil {
-				url = strings.TrimSpace(string(content))
+			// The file may be caught half written, so a read that does not parse is retried.
+			if content, err := os.ReadFile(hotFile); err == nil {
+				_ = json.Unmarshal(content, &hot)
 			}
 		}
 	}
 
+	url := hot.URL
 	s.Regexp(`^http://(localhost|127\.0\.0\.1):`+port+`$`, url)
+	s.Equal(map[string]string{
+		"@":      "resources/inertia",
+		"@blog":  "modules/blog/resources/js",
+		"@admin": "modules/admin/resources/js",
+	}, hot.Aliases)
 	s.True(facades.Vite().IsRunningHot())
 
 	// The dev server serves unhashed files, so a manifest the last build left
@@ -243,6 +264,11 @@ func (s *VitePluginTestSuite) TestDevServer_AnnouncesTheHotFile() {
 	got := string(tags)
 	s.Contains(got, `<script type="module" src="`+url+`/@vite/client"></script>`)
 	s.Contains(got, `<script type="module" src="`+url+`/resources/inertia/app.ts"></script>`)
+
+	// A module alias resolves through the table in the hot file.
+	tags, err = facades.Vite().Tags("@blog/dashboard.ts")
+	s.Require().NoError(err)
+	s.Contains(string(tags), `<script type="module" src="`+url+`/modules/blog/resources/js/dashboard.ts"></script>`)
 
 	// The asset URL comes from the dev server too — no manifest is read while it runs.
 	asset, err := facades.Vite().Asset("resources/images/logo.svg")
