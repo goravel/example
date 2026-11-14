@@ -13,9 +13,10 @@
     "skipLibCheck": true,
     "noEmit": true,
     "paths": {
-      "@/*": ["./resources/inertia/*"]
+      "@/*": ["./resources/inertia/*"],
+      "@admin/*": ["./modules/admin/resources/js/*"]
     }
   },
-  "include": ["resources/inertia/**/*.ts", "resources/inertia/**/*.vue", "vite.config.ts"],
+  "include": ["resources/inertia/**/*.ts", "resources/inertia/**/*.vue", "modules/*/resources/js/**/*.ts", "modules/*/resources/js/**/*.vue", "vite.config.ts"],
   "exclude": ["node_modules"]
 }
