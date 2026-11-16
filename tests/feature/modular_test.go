@@ -52,7 +52,6 @@ func (s *ModularTestSuite) TestRegistry() {
 		"config":       true,
 		"middleware":   false,
 		"routes":       true,
-		"api":          true,
 		"migrations":   true,
 		"seeders":      false,
 		"commands":     false,
@@ -86,7 +85,7 @@ func (s *ModularTestSuite) TestModularListCommand() {
 
 	s.Contains(output, "blog modules/blog")
 	s.Contains(output, "local, order 0")
-	s.Contains(output, "api, config, migrations, routes, translations, views, vite-entries")
+	s.Contains(output, "config, migrations, routes, translations, views, vite-entries")
 	s.Contains(output, "vite entries: resources/js/dashboard.ts")
 	s.Contains(output, "admin modules/admin")
 	s.Contains(output, "local, order -1")

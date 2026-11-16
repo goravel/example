@@ -32,9 +32,6 @@ func (m *Module) Name() string {
 
 func (m *Module) Routes(router route.Router) {
 	routes.Web(router)
-}
-
-func (m *Module) ApiRoutes(router route.Router) {
 	routes.Api(router)
 }
 
