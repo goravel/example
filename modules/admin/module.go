@@ -4,8 +4,6 @@ import (
 	"embed"
 	"io/fs"
 
-	"github.com/goravel/framework/contracts/route"
-
 	"goravel/modules/admin/dashboard"
 	"goravel/modules/admin/routes"
 )
@@ -36,8 +34,8 @@ func (m *Module) Config() map[string]any {
 	}
 }
 
-func (m *Module) Routes(router route.Router) {
-	routes.Web(router)
+func (m *Module) Routes() {
+	routes.Web()
 }
 
 // Views are named "admin/<file>". The application already has views under

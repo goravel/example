@@ -5,7 +5,6 @@ import (
 	"io/fs"
 
 	"github.com/goravel/framework/contracts/database/schema"
-	"github.com/goravel/framework/contracts/route"
 
 	admincontracts "goravel/modules/admin/contracts"
 	"goravel/modules/blog/database/migrations"
@@ -30,9 +29,9 @@ func (m *Module) Name() string {
 	return "blog"
 }
 
-func (m *Module) Routes(router route.Router) {
-	routes.Web(router)
-	routes.Api(router)
+func (m *Module) Routes() {
+	routes.Web()
+	routes.Api()
 }
 
 // Config is available as "modules.blog".
