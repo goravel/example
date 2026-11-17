@@ -11,7 +11,7 @@ import (
 // admin's own router decides which page is shown, so a refresh on
 // /admin/blog/posts works.
 func Web() {
-	base := "/" + strings.Trim(facades.Config().GetString("modules.admin.path", "admin"), "/")
+	base := "/" + strings.Trim(facades.Config().Module("admin").GetString("path", "admin"), "/")
 	controller := controllers.NewDashboardController()
 
 	facades.Route().Get(base, controller.Show)

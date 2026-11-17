@@ -31,7 +31,7 @@ func (r *DashboardController) Show(ctx http.Context) http.Response {
 
 	boot, err := json.Marshal(map[string]any{
 		"appName":  facades.Config().GetString("app.name"),
-		"basePath": "/" + strings.Trim(facades.Config().GetString("modules.admin.path", "admin"), "/"),
+		"basePath": "/" + strings.Trim(facades.Config().Module("admin").GetString("path", "admin"), "/"),
 	})
 	if err != nil {
 		return r.fail(ctx, err)

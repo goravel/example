@@ -74,6 +74,10 @@ func (s *ModularTestSuite) TestConfigAndTranslations() {
 	s.Equal(10, facades.Config().GetInt("modules.blog.per_page"))
 	s.Equal("admin", facades.Config().GetString("modules.admin.path"))
 
+	// Config().Module("<name>") reads the same keys without the prefix.
+	s.Equal(10, facades.Config().Module("blog").GetInt("per_page"))
+	s.Equal("admin", facades.Config().Module("admin").GetString("path"))
+
 	// lang/en/messages.json of a module is the group "<name>/messages".
 	s.Equal("Blog", facades.Lang(context.Background()).Get("blog/messages.title"))
 	s.Equal("Admin", facades.Lang(context.Background()).Get("admin/messages.title"))
