@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/goravel/framework/contracts/modular"
+	"github.com/goravel/framework/contracts/module"
 	frameworkmodular "github.com/goravel/framework/modular"
 	"github.com/goravel/framework/support/path"
 	goravelvite "github.com/goravel/framework/vite"
@@ -86,18 +86,18 @@ func (m *plainModule) Name() string { return "plain" }
 func (s *AdminDashboardTestSuite) TestEntries() {
 	tests := []struct {
 		name        string
-		modules     []modular.Module
+		modules     []module.Module
 		expect      []string
 		expectError error
 	}{
 		{
 			name:    "should load the blog's script before the admin's main",
-			modules: []modular.Module{&admin.Module{}, &blog.Module{}},
+			modules: []module.Module{&admin.Module{}, &blog.Module{}},
 			expect:  []string{"modules/blog/resources/js/dashboard.ts", "modules/admin/resources/js/main.ts"},
 		},
 		{
 			name: "should follow module order and skip modules without dashboard scripts",
-			modules: []modular.Module{
+			modules: []module.Module{
 				&admin.Module{},
 				&dashboardModule{name: "reports", order: 5, entries: []string{"resources/js/reports.ts"}, scripts: []string{"resources/js/reports.ts"}},
 				&plainModule{},
@@ -112,7 +112,7 @@ func (s *AdminDashboardTestSuite) TestEntries() {
 		},
 		{
 			name: "should refuse a script that is not a Vite entry, since nothing would build it",
-			modules: []modular.Module{
+			modules: []module.Module{
 				&admin.Module{},
 				&dashboardModule{name: "shop", scripts: []string{"resources/js/shop.ts"}},
 			},
@@ -120,7 +120,7 @@ func (s *AdminDashboardTestSuite) TestEntries() {
 		},
 		{
 			name:        "should need the admin module",
-			modules:     []modular.Module{&blog.Module{}},
+			modules:     []module.Module{&blog.Module{}},
 			expectError: errors.New("module [admin] is not registered"),
 		},
 	}

@@ -31,7 +31,7 @@ func (s *ModularTestSuite) SetupTest() {
 }
 
 func (s *ModularTestSuite) TestRegistry() {
-	registry := facades.Modular()
+	registry := facades.Module()
 
 	// bootstrap/modules.go lists admin first, but its Order() is -1: last.
 	var names []string
@@ -84,7 +84,7 @@ func (s *ModularTestSuite) TestConfigAndTranslations() {
 }
 
 func (s *ModularTestSuite) TestModularListCommand() {
-	output, err := s.CaptureArtisanOutput("--no-ansi modular:list")
+	output, err := s.CaptureArtisanOutput("--no-ansi module:list")
 	s.Require().NoError(err)
 
 	s.Contains(output, "blog modules/blog")

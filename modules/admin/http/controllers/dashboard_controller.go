@@ -19,7 +19,7 @@ func NewDashboardController() *DashboardController {
 // Show renders the page the admin mounts in, with every dashboard script in one
 // Vite call so shared chunks are preloaded once.
 func (r *DashboardController) Show(ctx http.Context) http.Response {
-	entries, err := dashboard.Entries(facades.Modular())
+	entries, err := dashboard.Entries(facades.Module())
 	if err != nil {
 		return r.fail(ctx, err)
 	}

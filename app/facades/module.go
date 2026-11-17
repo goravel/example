@@ -1,9 +1,9 @@
 package facades
 
 import (
-	"github.com/goravel/framework/contracts/modular"
+	"github.com/goravel/framework/contracts/module"
 )
 
-func Modular() modular.Registry {
-	return App().MakeModular()
+func Module() module.Registry {
+	return App().MakeModule()
 }

@@ -4,7 +4,7 @@ import (
 	"goravel/bootstrap"
 )
 
-//go:generate go run . artisan modular:publish
+//go:generate go run . artisan module:publish
 
 func main() {
 	app := bootstrap.Boot()
