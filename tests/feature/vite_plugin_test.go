@@ -21,8 +21,7 @@ import (
 	"goravel/tests"
 )
 
-// vitePluginInstalled is what npm writes for the plugin: a link to the local
-// ../vite-plugin checkout until a release lists module entries.
+// vitePluginInstalled is what npm writes for the plugin once it is installed.
 var vitePluginInstalled = path.Base("node_modules", "goravel-vite-plugin", "package.json")
 
 // viteManifestChunk is the part of a manifest.json entry the framework reads.
