@@ -1,6 +1,7 @@
 package feature
 
 import (
+	"context"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -72,19 +73,24 @@ func (s *ScheduleTestSuite) SetupTest() {
 	s.hourly.reset()
 }
 
-// startWork runs the worker in the background and returns a stop func that
-// shuts the loop down and waits for Work to return.
+// startWork runs schedule:work in the background and returns a stop func that
+// shuts the loop down and waits for the command to return.
 func (s *ScheduleTestSuite) startWork() (stop func()) {
+	var callErr error
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		facades.Schedule().Work()
+		callErr = facades.Artisan().Call("schedule:work")
 	}()
 
 	var once sync.Once
 	return func() {
 		once.Do(func() {
-			s.NoError(facades.Schedule().Shutdown())
+			// A deadline turns a wedged event into a failure instead of a hung run.
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			s.NoError(facades.Schedule().Shutdown(ctx))
 			s.Require().Eventually(func() bool {
 				select {
 				case <-done:
@@ -92,7 +98,8 @@ func (s *ScheduleTestSuite) startWork() (stop func()) {
 				default:
 					return false
 				}
-			}, 2*time.Second, 10*time.Millisecond, "Shutdown should make Work return")
+			}, 2*time.Second, 10*time.Millisecond, "Shutdown should make schedule:work return")
+			s.NoError(callErr, "schedule:work should return without an error")
 		})
 	}
 }
@@ -104,7 +111,7 @@ func (s *ScheduleTestSuite) TestRunExecutesEachDueEventOnce() {
 	s.Equal(1, s.everyMinute.value(), "an event due this minute runs once")
 	s.Equal(1, s.everySecond.value(), "an event that fires every second runs once per trigger")
 	s.Equal(0, s.never.value(), "an expression that can never match is skipped")
-	s.Equal(0, s.hourly.value(), "@every longer than a minute belongs to schedule:work")
+	s.Equal(0, s.hourly.value(), "no unrelated event ran")
 }
 
 func (s *ScheduleTestSuite) TestRunRunsAgainOnTheNextTrigger() {
@@ -128,6 +135,7 @@ func (s *ScheduleTestSuite) TestWorkCommandIsRegistered() {
 	output, err = s.CaptureArtisanOutput("--no-ansi schedule:missing")
 	s.NoError(err)
 	s.Contains(output, "Command 'schedule:missing' is not defined.")
+	s.Contains(output, "schedule:work", "the new command is registered on the app")
 }
 
 func (s *ScheduleTestSuite) TestWorkKeepsRunningEventsUntilShutdown() {
