@@ -1,9 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
-	"strings"
-
 	"github.com/goravel/framework/contracts/http"
 
 	"goravel/app/facades"
@@ -29,18 +26,9 @@ func (r *DashboardController) Show(ctx http.Context) http.Response {
 		return r.fail(ctx, err)
 	}
 
-	boot, err := json.Marshal(map[string]any{
-		"appName":  facades.Config().GetString("app.name"),
-		"basePath": "/" + strings.Trim(facades.Config().Module("admin").GetString("path", "admin"), "/"),
-	})
-	if err != nil {
-		return r.fail(ctx, err)
-	}
-
 	return ctx.Response().View().Make("admin/dashboard.tmpl", map[string]any{
 		"title": facades.Lang(ctx).Get("admin/messages.title"),
 		"tags":  tags,
-		"boot":  string(boot),
 	})
 }
 

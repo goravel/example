@@ -1,27 +1,12 @@
 // The blog's dashboard script: listed in DashboardScripts() (and ViteEntries())
-// of modules/blog/module.go, loaded by the admin page before the admin mounts.
-import { registerModule } from '@admin/index'
+// of modules/blog/module.go, so the admin page loads it before its main.ts.
+const card = document.createElement('div')
+card.className = 'admin-card'
+card.innerHTML = '<h3>Blog posts</h3><div class="admin-stat">…</div><a href="/blog">View all</a>'
+document.getElementById('widgets')!.append(card)
 
-import BlogFills from './components/BlogFills.vue'
-import NewPostPage from './components/NewPostPage.vue'
-import PostsPage from './components/PostsPage.vue'
-
-registerModule({
-  id: 'blog',
-  menu: (menu) => [
-    ...menu,
-    {
-      label: 'Blog',
-      items: [
-        { label: 'Posts', path: '/blog' },
-        { label: 'New post', path: '/blog/new' },
-      ],
-    },
-  ],
-  routes: [
-    { path: '/blog', component: PostsPage },
-    { path: '/blog/new', component: NewPostPage },
-  ],
-  // The stat card on the dashboard: rendered on every page, shown only where the outlet is.
-  fills: BlogFills,
-})
+fetch('/api/blog/posts', { headers: { Accept: 'application/json' } })
+  .then((response) => response.json() as Promise<{ total: number }>)
+  .then(({ total }) => {
+    card.querySelector('.admin-stat')!.textContent = String(total)
+  })

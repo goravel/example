@@ -23,17 +23,16 @@ import (
 const adminBuildDirectory = "build/admin-test"
 
 // adminManifest is what `vite build` writes for the two dashboard entries: both
-// import the shared chunk holding the admin's registry, so it is one instance.
+// import a shared chunk, which the page preloads once.
 const adminManifest = `{
-  "modules/blog/resources/js/dashboard.ts": {"file": "assets/dashboard-b1.js", "src": "modules/blog/resources/js/dashboard.ts", "isEntry": true, "imports": ["_registry-r1.js"]},
-  "modules/admin/resources/js/main.ts": {"file": "assets/main-a1.js", "src": "modules/admin/resources/js/main.ts", "isEntry": true, "css": ["assets/main-a1.css"], "imports": ["_registry-r1.js"]},
-  "_registry-r1.js": {"file": "assets/registry-r1.js"}
+  "modules/blog/resources/js/dashboard.ts": {"file": "assets/dashboard-b1.js", "src": "modules/blog/resources/js/dashboard.ts", "isEntry": true, "imports": ["_shared-s1.js"]},
+  "modules/admin/resources/js/main.ts": {"file": "assets/main-a1.js", "src": "modules/admin/resources/js/main.ts", "isEntry": true, "css": ["assets/main-a1.css"], "imports": ["_shared-s1.js"]},
+  "_shared-s1.js": {"file": "assets/shared-s1.js"}
 }`
 
 // AdminDashboardTestSuite covers the admin module's own capability,
 // contracts.ProvidesDashboardScripts: modules list Vite entries, the admin
-// page loads them before its main.ts, and the scripts fill the admin's slots
-// (DashboardWidgets, HeaderActions) in the browser.
+// page loads them before its main.ts, and each script appends its widget.
 type AdminDashboardTestSuite struct {
 	suite.Suite
 	tests.TestCase
@@ -146,21 +145,16 @@ func (s *AdminDashboardTestSuite) TestPage() {
 	s.Require().NoError(os.MkdirAll(filepath.Dir(manifest), 0o755))
 	s.Require().NoError(os.WriteFile(manifest, []byte(adminManifest), 0o644))
 
-	// The admin's client-side router owns everything beneath /admin.
-	for _, uri := range []string{"/admin", "/admin/blog", "/admin/blog/new"} {
-		s.Run(uri, func() {
-			resp, err := s.Http(s.T()).Get(uri)
-			s.Require().NoError(err)
-			resp.AssertOk().AssertSeeInOrder([]string{
-				"<title>Admin</title>",
-				`<link rel="modulepreload" href="/build/admin-test/assets/registry-r1.js">`,
-				`<link rel="stylesheet" href="/build/admin-test/assets/main-a1.css">`,
-				`<script type="module" src="/build/admin-test/assets/dashboard-b1.js"></script>`,
-				`<script type="module" src="/build/admin-test/assets/main-a1.js"></script>`,
-				`<div id="admin" data-boot="{&#34;appName&#34;:&#34;Goravel&#34;,&#34;basePath&#34;:&#34;/admin&#34;}"></div>`,
-			}, false)
-		})
-	}
+	resp, err := s.Http(s.T()).Get("/admin")
+	s.Require().NoError(err)
+	resp.AssertOk().AssertSeeInOrder([]string{
+		"<title>Admin</title>",
+		`<link rel="modulepreload" href="/build/admin-test/assets/shared-s1.js">`,
+		`<link rel="stylesheet" href="/build/admin-test/assets/main-a1.css">`,
+		`<script type="module" src="/build/admin-test/assets/dashboard-b1.js"></script>`,
+		`<script type="module" src="/build/admin-test/assets/main-a1.js"></script>`,
+		`<main id="widgets" class="admin-widgets"></main>`,
+	}, false)
 }
 
 // TestPage_WithoutBuild reports the Vite error instead of a page without scripts.

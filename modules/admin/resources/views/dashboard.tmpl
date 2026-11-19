@@ -8,6 +8,8 @@
     {{ .tags }}
 </head>
 <body>
-    <div id="admin" data-boot="{{ .boot }}"></div>
+    <h1>{{ .title }}</h1>
+    {{/* Each dashboard script appends its card here. */}}
+    <main id="widgets" class="admin-widgets"></main>
 </body>
 </html>

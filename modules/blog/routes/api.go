@@ -7,7 +7,7 @@ import (
 	"goravel/modules/blog/http/controllers"
 )
 
-// Api is what the blog's admin pages call: /api/blog/posts.
+// Api serves /api/blog/posts; the blog's dashboard widget reads the total.
 func Api() {
 	posts := controllers.NewPostController()
 

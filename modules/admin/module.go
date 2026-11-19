@@ -14,8 +14,8 @@ var views embed.FS
 //go:embed lang
 var lang embed.FS
 
-// Module is a Vue admin that other modules fill: they register pages and
-// dashboard widgets from a dashboard script (contracts.ProvidesDashboardScripts).
+// Module is an admin page that other modules fill with widgets from their own
+// dashboard scripts (contracts.ProvidesDashboardScripts).
 type Module struct{}
 
 func (m *Module) Name() string {
@@ -29,7 +29,7 @@ func (m *Module) Config() map[string]any {
 	}
 }
 
-// LateRoutes runs after every module's routes, so the admin's catch-all comes last.
+// LateRoutes runs after every module's routes.
 func (m *Module) LateRoutes() {
 	routes.Web()
 }
