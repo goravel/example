@@ -43,6 +43,7 @@ var BootstrapRunners = func() []contractsfoundation.Runner {
 
 func Boot() contractsfoundation.Application {
 	return foundation.Setup().
+		WithModules(Modules).
 		WithMigrations(Migrations).
 		WithSeeders(Seeders).
 		WithRouting(func() {
