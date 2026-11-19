@@ -38,7 +38,7 @@ func (s *ModularTestSuite) TestRegistry() {
 	for _, module := range registry.All() {
 		names = append(names, module.Name())
 	}
-	s.Equal([]string{"blog", "admin"}, names)
+	s.Equal([]string{"admin", "blog"}, names)
 
 	// The directory is derived from the Go package, goravel/modules/blog.
 	dir, ok := registry.Path("blog")
@@ -92,7 +92,7 @@ func (s *ModularTestSuite) TestModularListCommand() {
 	s.Contains(output, "config, migrations, routes, translations, views, vite-entries")
 	s.Contains(output, "vite entries: resources/js/dashboard.ts")
 	s.Contains(output, "admin modules/admin")
-	s.Less(strings.Index(output, "blog modules/blog"), strings.Index(output, "admin modules/admin"))
+	s.Less(strings.Index(output, "admin modules/admin"), strings.Index(output, "blog modules/blog"))
 }
 
 // TestViteInputs pins what goravel-vite-plugin builds for the modules: each
@@ -102,8 +102,8 @@ func (s *ModularTestSuite) TestViteInputs() {
 	s.Require().NoError(err)
 
 	s.Contains(output, `"modules":[`+
-		`{"name":"blog","path":"modules/blog","entries":["modules/blog/resources/js/dashboard.ts"],"aliases":{}},`+
-		`{"name":"admin","path":"modules/admin","entries":["modules/admin/resources/js/main.ts"],"aliases":{}}]`)
+		`{"name":"admin","path":"modules/admin","entries":["modules/admin/resources/js/main.ts"],"aliases":{}},`+
+		`{"name":"blog","path":"modules/blog","entries":["modules/blog/resources/js/dashboard.ts"],"aliases":{}}]`)
 }
 
 func (s *ModularTestSuite) TestBlogApi() {
