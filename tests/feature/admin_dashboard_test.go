@@ -67,14 +67,14 @@ func (s *AdminDashboardTestSuite) useFixtureVite() {
 
 // The fakes live in this package, so their directory is "tests/feature".
 type dashboardModule struct {
-	name    string
-	order   int
-	entries []string
-	scripts []string
+	name         string
+	dependencies []string
+	entries      []string
+	scripts      []string
 }
 
 func (m *dashboardModule) Name() string               { return m.name }
-func (m *dashboardModule) Order() int                 { return m.order }
+func (m *dashboardModule) Dependencies() []string     { return m.dependencies }
 func (m *dashboardModule) ViteEntries() []string      { return m.entries }
 func (m *dashboardModule) DashboardScripts() []string { return m.scripts }
 
@@ -96,12 +96,12 @@ func (s *AdminDashboardTestSuite) TestEntries() {
 			expect:  []string{"modules/blog/resources/js/dashboard.ts", "modules/admin/resources/js/main.ts"},
 		},
 		{
-			name: "should follow module order and skip modules without dashboard scripts",
+			name: "should follow dependency order and skip modules without dashboard scripts",
 			modules: []module.Module{
 				&admin.Module{},
-				&dashboardModule{name: "reports", order: 5, entries: []string{"resources/js/reports.ts"}, scripts: []string{"resources/js/reports.ts"}},
+				&dashboardModule{name: "reports", dependencies: []string{"shop"}, entries: []string{"resources/js/reports.ts"}, scripts: []string{"resources/js/reports.ts"}},
 				&plainModule{},
-				&dashboardModule{name: "shop", order: 1, entries: []string{"resources/js/a.ts", "resources/js/b.ts"}, scripts: []string{"resources/js/a.ts", "resources/js/b.ts"}},
+				&dashboardModule{name: "shop", entries: []string{"resources/js/a.ts", "resources/js/b.ts"}, scripts: []string{"resources/js/a.ts", "resources/js/b.ts"}},
 			},
 			expect: []string{
 				"tests/feature/resources/js/a.ts",

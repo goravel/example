@@ -33,7 +33,7 @@ func (s *ModularTestSuite) SetupTest() {
 func (s *ModularTestSuite) TestRegistry() {
 	registry := facades.Module()
 
-	// bootstrap/modules.go lists admin first, but its Order() is -1: last.
+	// Registration order of bootstrap/modules.go; neither module declares dependencies.
 	var names []string
 	for _, module := range registry.All() {
 		names = append(names, module.Name())
@@ -52,6 +52,7 @@ func (s *ModularTestSuite) TestRegistry() {
 		"config":       true,
 		"middleware":   false,
 		"routes":       true,
+		"late-routes":  false,
 		"migrations":   true,
 		"seeders":      false,
 		"commands":     false,
@@ -88,11 +89,9 @@ func (s *ModularTestSuite) TestModularListCommand() {
 	s.Require().NoError(err)
 
 	s.Contains(output, "blog modules/blog")
-	s.Contains(output, "local, order 0")
 	s.Contains(output, "config, migrations, routes, translations, views, vite-entries")
 	s.Contains(output, "vite entries: resources/js/dashboard.ts")
 	s.Contains(output, "admin modules/admin")
-	s.Contains(output, "local, order -1")
 	s.Less(strings.Index(output, "blog modules/blog"), strings.Index(output, "admin modules/admin"))
 }
 

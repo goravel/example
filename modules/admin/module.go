@@ -22,11 +22,6 @@ func (m *Module) Name() string {
 	return dashboard.Name
 }
 
-// Order -1 makes the admin the last module, so its routes come after the others'.
-func (m *Module) Order() int {
-	return -1
-}
-
 // Config is available as "modules.admin": path is where the admin answers.
 func (m *Module) Config() map[string]any {
 	return map[string]any{
@@ -34,7 +29,8 @@ func (m *Module) Config() map[string]any {
 	}
 }
 
-func (m *Module) Routes() {
+// LateRoutes runs after every module's routes, so the admin's catch-all comes last.
+func (m *Module) LateRoutes() {
 	routes.Web()
 }
 
