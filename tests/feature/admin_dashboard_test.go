@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/goravel/framework/contracts/binding"
 	"github.com/goravel/framework/contracts/module"
 	frameworkmodular "github.com/goravel/framework/modular"
 	"github.com/goravel/framework/support/path"
@@ -62,6 +63,12 @@ func (s *AdminDashboardTestSuite) useFixtureVite() {
 	vite, ok := facades.Vite().(*goravelvite.Vite)
 	s.Require().True(ok)
 	vite.UseBuildDirectory(adminBuildDirectory).UseHotFile(adminBuildDirectory + "/hot")
+}
+
+// useRegistry swaps the registry facades.Module() returns.
+func (s *AdminDashboardTestSuite) useRegistry(registry module.Registry) {
+	facades.App().Fresh(binding.Module)
+	facades.App().Instance(binding.Module, registry)
 }
 
 // The fakes live in this package, so their directory is "tests/feature".
@@ -124,12 +131,16 @@ func (s *AdminDashboardTestSuite) TestEntries() {
 		},
 	}
 
+	original := facades.Module()
+	defer s.useRegistry(original)
+
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
 			registry := frameworkmodular.NewRegistry("")
 			s.Require().NoError(registry.Register(tt.modules...))
+			s.useRegistry(registry)
 
-			entries, err := dashboard.Entries(registry)
+			entries, err := dashboard.Entries()
 			s.Equal(tt.expect, entries)
 			s.Equal(tt.expectError, err)
 		})

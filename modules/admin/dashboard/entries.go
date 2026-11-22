@@ -9,6 +9,7 @@ import (
 
 	"github.com/goravel/framework/contracts/module"
 
+	"goravel/app/facades"
 	"goravel/modules/admin/contracts"
 )
 
@@ -21,7 +22,9 @@ const (
 // Entries returns the project-relative Vite entries of the admin page: every
 // module's dashboard scripts in module order, then the admin's Main, so all
 // modules have registered by the time the admin mounts.
-func Entries(registry module.Registry) ([]string, error) {
+func Entries() ([]string, error) {
+	registry := facades.Module()
+
 	var entries []string
 	for _, mod := range registry.All() {
 		provider, ok := mod.(contracts.ProvidesDashboardScripts)
