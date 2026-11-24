@@ -49,12 +49,12 @@ func (m *Module) Migrations() []schema.Migration {
 
 // Views are named "blog/<file>", e.g. "blog/index.tmpl".
 func (m *Module) Views() module.Files {
-	return module.Files{FS: views}
+	return module.FS(views)
 }
 
 // Translations are grouped as "blog/<file>", e.g. "blog/messages.title".
 func (m *Module) Translations() module.Files {
-	return module.Files{FS: lang}
+	return module.FS(lang)
 }
 
 // Frontend builds the dashboard script; DashboardScripts has the admin load it.

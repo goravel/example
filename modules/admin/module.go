@@ -38,11 +38,11 @@ func (m *Module) LateRoutes() {
 // Views are named "admin/<file>". The application already has views under
 // resources/views/admin, so this module's page is "admin/dashboard.tmpl".
 func (m *Module) Views() module.Files {
-	return module.Files{FS: views}
+	return module.FS(views)
 }
 
 func (m *Module) Translations() module.Files {
-	return module.Files{FS: lang}
+	return module.FS(lang)
 }
 
 // Frontend has Vite build the admin's entry, which no view names.
