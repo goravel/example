@@ -1,6 +1,6 @@
 module goravel
 
-go 1.26.1
+go 1.26.10
 
 require (
 	github.com/99designs/gqlgen v0.17.57
@@ -8,7 +8,7 @@ require (
 	github.com/goravel/cos v1.18.0
 	github.com/goravel/example-proto v0.0.1
 	github.com/goravel/fiber v1.18.1-0.20261030085228-66c98dc71f1d
-	github.com/goravel/framework v1.18.1-0.20261118072219-cc4bb811d18e
+	github.com/goravel/framework v1.18.1-0.20261124085604-564725930119
 	github.com/goravel/gemini v1.18.0
 	github.com/goravel/gin v1.18.1-0.20261030085342-4d9429b10cb3
 	github.com/goravel/inertia v1.18.1-0.20261110120219-2a36f31baeaa
@@ -34,7 +34,7 @@ require (
 	go.opentelemetry.io/otel v1.47.0
 	go.opentelemetry.io/otel/metric v1.47.0
 	go.opentelemetry.io/otel/trace v1.47.0
-	google.golang.org/grpc v1.86.0-dev.0.20261113084307-f8bb66bd7775
+	google.golang.org/grpc v1.86.0-dev.0.20261122155159-341c59808a9a
 	google.golang.org/protobuf v1.36.12
 )
 
@@ -98,7 +98,7 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.16 // indirect
 	github.com/gin-contrib/sse v1.1.1 // indirect
-	github.com/gin-contrib/timeout v1.2.3 // indirect
+	github.com/gin-contrib/timeout v1.2.5 // indirect
 	github.com/gin-gonic/gin v1.12.0 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -121,7 +121,7 @@ require (
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/gofiber/fiber/v3 v3.6.1 // indirect
 	github.com/gofiber/schema v1.8.8 // indirect
-	github.com/gofiber/utils/v2 v2.6.2 // indirect
+	github.com/gofiber/utils/v2 v2.6.5 // indirect
 	github.com/goforj/godump v1.10.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
@@ -242,15 +242,15 @@ require (
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/arch v0.29.0 // indirect
 	golang.org/x/crypto v0.59.0 // indirect
-	golang.org/x/exp v0.0.0-20261113113407-e3970619a1a4 // indirect
-	golang.org/x/mod v0.42.0 // indirect
-	golang.org/x/net v0.62.0 // indirect
+	golang.org/x/exp v0.0.0-20261121134650-e1094eeca1b5 // indirect
+	golang.org/x/mod v0.43.0 // indirect
+	golang.org/x/net v0.63.0 // indirect
 	golang.org/x/sync v0.25.0 // indirect
 	golang.org/x/sys v0.50.0 // indirect
 	golang.org/x/term v0.48.0 // indirect
 	golang.org/x/text v0.44.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
-	golang.org/x/tools v0.52.1-0.20261113204035-cba9b8046c90 // indirect
+	golang.org/x/tools v0.53.0 // indirect
 	google.golang.org/api v0.293.0 // indirect
 	google.golang.org/genai v1.58.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260928230214-8a89bd6388cc // indirect
@@ -264,4 +264,8 @@ require (
 	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
 
-replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261118072219-cc4bb811d18e
+replace github.com/goravel/framework => github.com/goravel/framework v1.18.1-0.20261124085604-564725930119
+
+replace github.com/goravel/gin => github.com/JGamboa/gin v1.18.1-0.20261124023544-6ba078e8ae12
+
+replace github.com/goravel/fiber => github.com/JGamboa/fiber v1.18.1-0.20261124023544-fb85f8e05340
