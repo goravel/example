@@ -29,10 +29,15 @@ func (s *QueueTestSuite) SetupTest() {
 	jobs.TestResult = nil
 	jobs.TestErrResult = nil
 	jobs.ResetTestRetryable()
+
+	// The Queue binding is a singleton, so a fake left enabled by the test
+	// before would record its jobs instead of pushing them.
+	facades.Queue().Fake().Reset()
 }
 
 // TearDownTest will run after each test in the suite.
 func (s *QueueTestSuite) TearDownTest() {
+	facades.Queue().Fake().Reset()
 }
 
 func (s *QueueTestSuite) TestDispatch() {
@@ -208,6 +213,139 @@ func (s *QueueTestSuite) TestReleaseBasedRetryExhausted() {
 
 	// 3 Handle calls (attempts 1,2,3 → all fail), then ShouldRetry gives up.
 	s.Equal([]any{"exhausted", "exhausted", "exhausted"}, jobs.TestRetryableResult)
+}
+
+func (s *QueueTestSuite) TestFakeRecordsInsteadOfPushing() {
+	s.requireSyncQueue()
+
+	fake := facades.Queue().Fake()
+	delay := time.Now().Add(time.Minute)
+	job := &jobs.Test{}
+
+	// redis1 is never contacted: a faked job is recorded before its
+	// connection is resolved.
+	s.NoError(facades.Queue().
+		Job(job, testQueueArgs).
+		OnConnection("redis1").
+		OnQueue("emails").
+		Delay(delay).
+		Dispatch())
+
+	s.Empty(jobs.TestResult)
+	s.True(fake.AssertPushed(&jobs.Test{}))
+	s.True(fake.AssertPushed("test"))
+	s.True(fake.AssertPushed(&jobs.Test{}, func(pushed contractsqueue.Pushed) bool {
+		return pushed.Connection() == "redis1" && pushed.Queue() == "emails"
+	}))
+	s.False(fake.AssertPushed(&jobs.Test{}, func(pushed contractsqueue.Pushed) bool {
+		return pushed.Queue() == "default"
+	}))
+	s.True(fake.AssertPushedOn("emails", &jobs.Test{}))
+	s.False(fake.AssertPushedOn("default", &jobs.Test{}))
+	s.True(fake.AssertPushedTimes(&jobs.Test{}, 1))
+	s.True(fake.AssertNotPushed(&jobs.TestErr{}))
+	s.False(fake.AssertNothingPushed())
+
+	pushed := fake.Pushed(&jobs.Test{})
+	s.Require().Len(pushed, 1)
+	s.Same(job, pushed[0].Job())
+	s.Equal(testQueueArgs, pushed[0].Args())
+	s.True(pushed[0].Delay().Equal(delay))
+}
+
+func (s *QueueTestSuite) TestFakeRecordsAChainAsItsFirstJob() {
+	s.requireSyncQueue()
+
+	fake := facades.Queue().Fake()
+
+	s.NoError(facades.Queue().Chain([]contractsqueue.ChainJob{
+		{Job: &jobs.Test{}, Args: testQueueArgs},
+		{Job: &jobs.TestErr{}, Args: []contractsqueue.Arg{{Type: "string", Value: "chained"}}},
+	}).Dispatch())
+
+	// Nothing ran: both jobs would have executed inline on the sync connection.
+	s.Empty(jobs.TestResult)
+	s.Empty(jobs.TestErrResult)
+
+	s.True(fake.AssertPushedTimes(&jobs.Test{}, 1))
+	s.True(fake.AssertNotPushed(&jobs.TestErr{}))
+
+	pushed := fake.Pushed(&jobs.Test{})
+	s.Require().Len(pushed, 1)
+	s.True(pushed[0].HasChain(&jobs.TestErr{}))
+	s.True(pushed[0].HasChain("test_err"))
+	s.False(pushed[0].HasChain(&jobs.Test{}))
+	s.False(pushed[0].HasChain())
+}
+
+func (s *QueueTestSuite) TestFakeOnlyTheGivenJobs() {
+	s.requireSyncQueue()
+
+	for _, tt := range []struct {
+		name string
+		job  any
+	}{
+		{name: "instance", job: &jobs.Test{}},
+		{name: "signature", job: "test"},
+		{name: "wildcard", job: "*est"},
+	} {
+		s.Run(tt.name, func() {
+			jobs.TestResult = nil
+			jobs.TestErrResult = nil
+
+			fake := facades.Queue().Fake(tt.job)
+			defer fake.Reset()
+
+			// The faked job is recorded, not pushed.
+			s.NoError(facades.Queue().Job(&jobs.Test{}, testQueueArgs).Dispatch())
+			s.Empty(jobs.TestResult)
+
+			// A job that is not faked is pushed: on the sync connection it runs
+			// inline, so its error reaches the caller.
+			s.Error(facades.Queue().Job(&jobs.TestErr{}, []contractsqueue.Arg{
+				{Type: "string", Value: "pushed"},
+			}).Dispatch())
+			s.Equal([]any{"pushed"}, jobs.TestErrResult)
+
+			s.True(fake.AssertPushedTimes(&jobs.Test{}, 1))
+			s.True(fake.AssertNotPushed(&jobs.TestErr{}))
+		})
+	}
+}
+
+func (s *QueueTestSuite) TestFakeLeavesDispatchSyncAlone() {
+	s.requireSyncQueue()
+
+	fake := facades.Queue().Fake()
+
+	s.NoError(facades.Queue().Job(&jobs.Test{}, testQueueArgs).DispatchSync())
+
+	s.Equal(utils.ConvertArgs(testQueueArgs), jobs.TestResult)
+	s.True(fake.AssertNothingPushed())
+}
+
+func (s *QueueTestSuite) TestFakeResetRestoresPushing() {
+	s.requireSyncQueue()
+
+	fake := facades.Queue().Fake()
+	s.NoError(facades.Queue().Job(&jobs.Test{}, testQueueArgs).Dispatch())
+	s.Empty(jobs.TestResult)
+
+	fake.Reset()
+
+	s.True(fake.AssertNothingPushed())
+
+	s.NoError(facades.Queue().Job(&jobs.Test{}, testQueueArgs).Dispatch())
+
+	s.Equal(utils.ConvertArgs(testQueueArgs), jobs.TestResult)
+}
+
+// requireSyncQueue skips the test when the default connection queues instead of
+// running the job inline, which the assertions below rely on.
+func (s *QueueTestSuite) requireSyncQueue() {
+	if facades.Config().GetString("queue.default") != "sync" {
+		s.T().Skip("skip test due to only for sync")
+	}
 }
 
 var (

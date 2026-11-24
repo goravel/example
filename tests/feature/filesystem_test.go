@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/goravel/framework/contracts/filesystem"
@@ -56,6 +57,14 @@ func (s *FilesystemTestSuite) SetupSuite() {
 func (s *FilesystemTestSuite) SetupTest() {
 }
 
+// TearDownTest heals a fake left enabled by an earlier test: Fake on the
+// default disk takes over the driver the real disk replaced, and its Reset
+// restores it, so the next test sees the configured disk again.
+func (s *FilesystemTestSuite) TearDownTest() {
+	fake := facades.Storage().Fake()
+	s.NoError(fake.Reset())
+}
+
 func (s *FilesystemTestSuite) TearDownSuite() {
 	if s.minioDocker != nil {
 		s.NoError(s.minioDocker.Shutdown())
@@ -79,6 +88,83 @@ func (s *FilesystemTestSuite) TestPutAndGet() {
 
 		s.NoError(storage.Delete("test.txt"))
 	}
+}
+
+func (s *FilesystemTestSuite) TestFakeDoesNotWriteIntoTheRealDisk() {
+	disk := facades.Config().GetString("filesystems.default")
+	realRoot := facades.Config().GetString("filesystems.disks." + disk + ".root")
+
+	fake := facades.Storage().Fake()
+	defer func() { s.NoError(fake.Reset()) }()
+
+	s.NoError(facades.Storage().Put("avatars/1.png", "image"))
+	s.NoError(facades.Storage().Disk(disk).Put("avatars/2.png", "image"))
+
+	// The facade and the named disk both resolve to the fake...
+	s.NotEqual(filepath.Clean(realRoot), filepath.Clean(fake.Path("")))
+	s.True(fake.AssertExists("avatars/1.png", "avatars/2.png", "avatars"))
+	content, err := fake.Get("avatars/1.png")
+	s.NoError(err)
+	s.Equal("image", content)
+
+	// ...and the real storage directory was never written to.
+	s.NoFileExists(filepath.Join(realRoot, "avatars", "1.png"))
+	s.NoFileExists(filepath.Join(realRoot, "avatars", "2.png"))
+
+	s.False(fake.AssertExists("avatars/1.png", "avatars/3.png"))
+	s.True(fake.AssertMissing("avatars/3.png", "other"))
+	s.False(fake.AssertMissing("avatars/3.png", "avatars/1.png"))
+}
+
+func (s *FilesystemTestSuite) TestFakeCountsAndDirectories() {
+	fake := facades.Storage().Fake()
+	defer func() { s.NoError(fake.Reset()) }()
+
+	s.True(fake.AssertCount("", 0))
+
+	s.NoError(fake.Put("a.txt", "a"))
+	s.NoError(fake.Put("nested/b.txt", "b"))
+	s.NoError(fake.MakeDirectory("empty"))
+
+	s.True(fake.AssertCount("", 1))
+	s.True(fake.AssertCount("", 2, true))
+	s.True(fake.AssertCount("nested", 1))
+	s.False(fake.AssertCount("missing", 0))
+	s.False(fake.AssertDirectoryEmpty(""))
+	s.True(fake.AssertDirectoryEmpty("empty"))
+}
+
+func (s *FilesystemTestSuite) TestFakeKeepsTheDiskUrl() {
+	fake := facades.Storage().Fake("public")
+	defer func() { s.NoError(fake.Reset()) }()
+
+	s.Same(fake, facades.Storage().Disk("public"))
+	s.Equal(
+		facades.Config().GetString("filesystems.disks.public.url")+"/avatars/1.png",
+		fake.Url("avatars/1.png"),
+	)
+}
+
+func (s *FilesystemTestSuite) TestFakeResetRestoresTheRealDisk() {
+	disk := facades.Config().GetString("filesystems.default")
+	realRoot := facades.Config().GetString("filesystems.disks." + disk + ".root")
+
+	fake := facades.Storage().Fake()
+	fakeRoot := fake.Path("")
+
+	s.NoError(fake.Put("tmp/fake.txt", "fake"))
+	s.True(fake.AssertExists("tmp/fake.txt"))
+
+	s.NoError(fake.Reset())
+
+	s.NoDirExists(fakeRoot)
+
+	// The facade writes to the configured root again.
+	s.NoError(facades.Storage().Put("tmp/real.txt", "real"))
+	s.T().Cleanup(func() { s.NoError(facades.Storage().Delete("tmp/real.txt")) })
+
+	s.FileExists(filepath.Join(realRoot, "tmp", "real.txt"))
+	s.NoFileExists(filepath.Join(realRoot, "tmp", "fake.txt"))
 }
 
 func initMinio() contractsdocker.ImageDriver {
