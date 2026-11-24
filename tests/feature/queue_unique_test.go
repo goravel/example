@@ -101,6 +101,11 @@ func (s *QueueUniqueTestSuite) TestUniqueJobIsSkippedWhilePending() {
 	s.NoError(facades.Queue().Job(&jobs.TestUnique{}, uniqueArgs("pending")).OnConnection("database").Dispatch())
 	s.Equal(int64(1), s.pendingJobs())
 
+	// The lock must be in the shared store the worker sees, not in this
+	// process's memory.
+	s.True(facades.Cache().Store("redis").Has("goravel:queue-unique:test_unique:pending"))
+	s.False(facades.Cache().Store("memory").Has("goravel:queue-unique:test_unique:pending"))
+
 	// The same unique ID is already pending: the push is skipped and returns
 	// nil instead of an error.
 	s.NoError(facades.Queue().Job(&jobs.TestUnique{}, uniqueArgs("pending")).OnConnection("database").Dispatch())
@@ -195,18 +200,59 @@ func (s *QueueUniqueTestSuite) TestUniqueJobLockIsHeldWhileItWaitsForRetry() {
 func (s *QueueUniqueTestSuite) TestUniqueJobLockExpiresAfterUniqueFor() {
 	s.T().Cleanup(func() { s.releaseLock("test_unique", "ttl") })
 
-	s.NoError(facades.Queue().Job(jobs.NewTestUnique(500*time.Millisecond), uniqueArgs("ttl")).OnConnection("database").Dispatch())
+	s.NoError(facades.Queue().Job(jobs.NewTestUnique(2*time.Second), uniqueArgs("ttl")).OnConnection("database").Dispatch())
 	s.Equal(int64(1), s.pendingJobs())
 
 	// Held while UniqueFor has not elapsed.
 	s.NoError(facades.Queue().Job(&jobs.TestUnique{}, uniqueArgs("ttl")).OnConnection("database").Dispatch())
 	s.Equal(int64(1), s.pendingJobs())
 
-	time.Sleep(700 * time.Millisecond)
+	time.Sleep(2300 * time.Millisecond)
 
 	// The lock expired, so the same unique ID is pushed again.
 	s.NoError(facades.Queue().Job(&jobs.TestUnique{}, uniqueArgs("ttl")).OnConnection("database").Dispatch())
 	s.Equal(int64(2), s.pendingJobs())
+}
+
+func (s *QueueUniqueTestSuite) TestUniqueJobInChainIsSkippedWithTheRestOfTheChain() {
+	s.T().Cleanup(func() {
+		s.releaseLock("test_unique", "chain-first")
+		s.releaseLock("test_unique", "chain-blocked")
+		s.releaseLock("test_unique", "chain-last")
+	})
+
+	chain := func() error {
+		return facades.Queue().Chain([]contractsqueue.ChainJob{
+			{Job: &jobs.TestUnique{}, Args: uniqueArgs("chain-first")},
+			{Job: &jobs.TestUnique{}, Args: uniqueArgs("chain-blocked")},
+			{Job: &jobs.TestUnique{}, Args: uniqueArgs("chain-last")},
+		}).OnConnection("database").Dispatch()
+	}
+
+	stop := s.startWorker()
+	defer stop()
+
+	// With every lock free the chain runs all its jobs, in order.
+	s.NoError(chain())
+	s.Require().Eventually(func() bool {
+		return s.pendingJobs() == 0 && jobs.TestUniqueResultLen() == 3
+	}, 5*time.Second, 25*time.Millisecond)
+
+	// Another copy of the second job holds its lock, as if it were pending
+	// elsewhere. A chained job takes its lock when its turn comes, so this one
+	// is skipped together with everything after it.
+	s.Require().True(facades.Cache().Lock("goravel:queue-unique:test_unique:chain-blocked").Get())
+
+	s.NoError(chain())
+	s.Require().Eventually(func() bool {
+		return s.pendingJobs() == 0 && jobs.TestUniqueResultLen() == 4
+	}, 5*time.Second, 25*time.Millisecond)
+
+	stop()
+
+	// The second run stops after the first job: the blocked one broke the
+	// chain, so the last one never got its turn.
+	s.Equal([]any{"chain-first", "chain-blocked", "chain-last", "chain-first"}, jobs.TestUniqueResult)
 }
 
 func (s *QueueUniqueTestSuite) TestDispatchSyncIgnoresUniqueness() {

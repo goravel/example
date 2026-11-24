@@ -47,12 +47,14 @@ func TestUniqueRetryableResultLen() int {
 	return len(TestUniqueRetryableResult)
 }
 
-// Signature The name and signature of the job.
+// Signature returns the unique signature of the job.
 func (r *TestUniqueRetryable) Signature() string {
 	return "test_unique_retryable"
 }
 
-// Handle Execute the job.
+// Handle records the arguments and fails while TestUniqueRetryableNeverSucceed
+// is set, or while the recorded count is within
+// TestUniqueRetryableFailUntil.
 func (r *TestUniqueRetryable) Handle(args ...any) error {
 	if len(args) > 0 {
 		testUniqueRetryableMu.Lock()
@@ -70,7 +72,7 @@ func (r *TestUniqueRetryable) Handle(args ...any) error {
 	return nil
 }
 
-// UniqueID tells jobs apart by their first argument.
+// UniqueID builds the unique ID from the first argument.
 func (r *TestUniqueRetryable) UniqueID(args ...any) string {
 	if len(args) == 0 {
 		return ""

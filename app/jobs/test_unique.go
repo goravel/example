@@ -46,12 +46,12 @@ func TestUniqueResultLen() int {
 	return len(TestUniqueResult)
 }
 
-// Signature The name and signature of the job.
+// Signature returns the unique signature of the job.
 func (r *TestUnique) Signature() string {
 	return "test_unique"
 }
 
-// Handle Execute the job.
+// Handle records the arguments it receives and always succeeds.
 func (r *TestUnique) Handle(args ...any) error {
 	if len(args) > 0 {
 		testUniqueMu.Lock()
@@ -62,8 +62,8 @@ func (r *TestUnique) Handle(args ...any) error {
 	return nil
 }
 
-// UniqueID tells jobs apart by their first argument; an empty ID falls back to
-// the signature alone.
+// UniqueID builds the unique ID from the first argument, so two dispatches
+// with the same value collide and an empty ID falls back to the signature.
 func (r *TestUnique) UniqueID(args ...any) string {
 	if len(args) == 0 {
 		return ""
