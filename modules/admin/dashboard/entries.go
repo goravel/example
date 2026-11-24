@@ -33,13 +33,13 @@ func Entries() ([]string, error) {
 		}
 
 		var declared []string
-		if vite, ok := mod.(module.ProvidesViteEntries); ok {
-			declared = vite.ViteEntries()
+		if frontend, ok := mod.(module.ProvidesFrontend); ok {
+			declared = frontend.Frontend().Entries
 		}
 
 		for _, script := range provider.DashboardScripts() {
 			if !slices.Contains(declared, script) {
-				return nil, fmt.Errorf("dashboard script [%s] of module [%s] is not in its ViteEntries()", script, mod.Name())
+				return nil, fmt.Errorf("dashboard script [%s] of module [%s] is not in its Frontend().Entries", script, mod.Name())
 			}
 
 			entries = append(entries, entry(registry, mod.Name(), script))

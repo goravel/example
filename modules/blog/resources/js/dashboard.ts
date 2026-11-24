@@ -1,4 +1,4 @@
-// The blog's dashboard script: listed in DashboardScripts() (and ViteEntries())
+// The blog's dashboard script: listed in DashboardScripts() (and Frontend().Entries)
 // of modules/blog/module.go, so the admin page loads it before its main.ts.
 const card = document.createElement('div')
 card.className = 'admin-card'

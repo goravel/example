@@ -2,9 +2,9 @@ package blog
 
 import (
 	"embed"
-	"io/fs"
 
 	"github.com/goravel/framework/contracts/database/schema"
+	"github.com/goravel/framework/contracts/module"
 
 	admincontracts "goravel/modules/admin/contracts"
 	"goravel/modules/blog/database/migrations"
@@ -34,7 +34,7 @@ func (m *Module) Routes() {
 	routes.Api()
 }
 
-// Config is available as "modules.blog".
+// Config is available as "modules.blog", or through Config().Module("blog").
 func (m *Module) Config() map[string]any {
 	return map[string]any{
 		"per_page": 10,
@@ -48,22 +48,20 @@ func (m *Module) Migrations() []schema.Migration {
 }
 
 // Views are named "blog/<file>", e.g. "blog/index.tmpl".
-func (m *Module) Views() fs.FS {
-	sub, _ := fs.Sub(views, "resources/views")
-
-	return sub
+func (m *Module) Views() module.Files {
+	return module.Files{FS: views}
 }
 
 // Translations are grouped as "blog/<file>", e.g. "blog/messages.title".
-func (m *Module) Translations() fs.FS {
-	sub, _ := fs.Sub(lang, "lang")
-
-	return sub
+func (m *Module) Translations() module.Files {
+	return module.Files{FS: lang}
 }
 
-// ViteEntries builds the dashboard script; DashboardScripts has the admin load it.
-func (m *Module) ViteEntries() []string {
-	return []string{dashboardScript}
+// Frontend builds the dashboard script; DashboardScripts has the admin load it.
+func (m *Module) Frontend() module.Frontend {
+	return module.Frontend{
+		Entries: []string{dashboardScript},
+	}
 }
 
 func (m *Module) DashboardScripts() []string {

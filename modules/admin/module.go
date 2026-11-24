@@ -2,7 +2,8 @@ package admin
 
 import (
 	"embed"
-	"io/fs"
+
+	"github.com/goravel/framework/contracts/module"
 
 	"goravel/modules/admin/dashboard"
 	"goravel/modules/admin/routes"
@@ -36,18 +37,17 @@ func (m *Module) LateRoutes() {
 
 // Views are named "admin/<file>". The application already has views under
 // resources/views/admin, so this module's page is "admin/dashboard.tmpl".
-func (m *Module) Views() fs.FS {
-	sub, _ := fs.Sub(views, "resources/views")
-
-	return sub
+func (m *Module) Views() module.Files {
+	return module.Files{FS: views}
 }
 
-func (m *Module) Translations() fs.FS {
-	sub, _ := fs.Sub(lang, "lang")
-
-	return sub
+func (m *Module) Translations() module.Files {
+	return module.Files{FS: lang}
 }
 
-func (m *Module) ViteEntries() []string {
-	return []string{dashboard.Main}
+// Frontend has Vite build the admin's entry, which no view names.
+func (m *Module) Frontend() module.Frontend {
+	return module.Frontend{
+		Entries: []string{dashboard.Main},
+	}
 }

@@ -4,7 +4,7 @@ package contracts
 
 // ProvidesDashboardScripts lists the Vite entries the admin loads before it
 // mounts, relative to the module directory, e.g. "resources/js/dashboard.ts".
-// Each one must also be in the module's ViteEntries(), which is what builds it.
+// Each one must also be in the module's Frontend().Entries, which is what builds it.
 type ProvidesDashboardScripts interface {
 	DashboardScripts() []string
 }
