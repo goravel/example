@@ -48,23 +48,21 @@ func (s *ModularTestSuite) TestRegistry() {
 	blog, ok := registry.Find("blog")
 	s.Require().True(ok)
 	s.Equal(map[string]bool{
-		"services":     false,
-		"config":       true,
-		"middleware":   false,
-		"routes":       true,
-		"late-routes":  false,
-		"migrations":   true,
-		"seeders":      false,
-		"commands":     false,
-		"jobs":         false,
-		"events":       false,
-		"schedule":     false,
-		"views":        true,
-		"translations": true,
-		"vite-entries": true,
-		"vite-aliases": false,
-		"static":       false,
-		"sources":      false,
+		"service-providers": false,
+		"config":            true,
+		"middleware":        false,
+		"routes":            true,
+		"late-routes":       false,
+		"migrations":        true,
+		"seeders":           false,
+		"commands":          false,
+		"jobs":              false,
+		"events":            false,
+		"schedule":          false,
+		"views":             true,
+		"translations":      true,
+		"frontend":          true,
+		"static":            false,
 	}, registry.Capabilities(blog))
 
 	s.False(registry.Has("comments"))
@@ -89,14 +87,14 @@ func (s *ModularTestSuite) TestModularListCommand() {
 	s.Require().NoError(err)
 
 	s.Contains(output, "blog modules/blog")
-	s.Contains(output, "config, migrations, routes, translations, views, vite-entries")
+	s.Contains(output, "config, frontend, migrations, routes, translations, views")
 	s.Contains(output, "vite entries: resources/js/dashboard.ts")
 	s.Contains(output, "admin modules/admin")
 	s.Less(strings.Index(output, "admin modules/admin"), strings.Index(output, "blog modules/blog"))
 }
 
 // TestViteInputs pins what goravel-vite-plugin builds for the modules: each
-// module's ViteEntries joined onto its directory, in module order.
+// module's Frontend().Entries joined onto its directory, in module order.
 func (s *ModularTestSuite) TestViteInputs() {
 	output, err := s.CaptureArtisanOutput("vite:inputs")
 	s.Require().NoError(err)

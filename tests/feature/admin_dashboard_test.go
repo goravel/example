@@ -8,7 +8,7 @@ import (
 
 	"github.com/goravel/framework/contracts/binding"
 	"github.com/goravel/framework/contracts/module"
-	frameworkmodular "github.com/goravel/framework/modular"
+	frameworkmodule "github.com/goravel/framework/module"
 	"github.com/goravel/framework/support/path"
 	goravelvite "github.com/goravel/framework/vite"
 	"github.com/stretchr/testify/suite"
@@ -81,8 +81,10 @@ type dashboardModule struct {
 
 func (m *dashboardModule) Name() string               { return m.name }
 func (m *dashboardModule) Dependencies() []string     { return m.dependencies }
-func (m *dashboardModule) ViteEntries() []string      { return m.entries }
 func (m *dashboardModule) DashboardScripts() []string { return m.scripts }
+func (m *dashboardModule) Frontend() module.Frontend {
+	return module.Frontend{Entries: m.entries}
+}
 
 // plainModule has no dashboard scripts and is skipped.
 type plainModule struct{}
@@ -122,7 +124,7 @@ func (s *AdminDashboardTestSuite) TestEntries() {
 				&admin.Module{},
 				&dashboardModule{name: "shop", scripts: []string{"resources/js/shop.ts"}},
 			},
-			expectError: errors.New("dashboard script [resources/js/shop.ts] of module [shop] is not in its ViteEntries()"),
+			expectError: errors.New("dashboard script [resources/js/shop.ts] of module [shop] is not in its Frontend().Entries"),
 		},
 		{
 			name:        "should need the admin module",
@@ -136,7 +138,7 @@ func (s *AdminDashboardTestSuite) TestEntries() {
 
 	for _, tt := range tests {
 		s.Run(tt.name, func() {
-			registry := frameworkmodular.NewRegistry("")
+			registry := frameworkmodule.NewRegistry("")
 			s.Require().NoError(registry.Register(tt.modules...))
 			s.useRegistry(registry)
 

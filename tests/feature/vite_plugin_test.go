@@ -158,7 +158,7 @@ func (s *VitePluginTestSuite) TestBuild_ProducesTheManifestTheFrameworkReads() {
 	s.Require().True(ok, "the plugin should build the file a view only names through viteAsset")
 	s.NotEmpty(logo.File)
 
-	// The modules' ViteEntries() are built although no view names them.
+	// The modules' Frontend().Entries are built although no view names them.
 	for _, name := range []string{"modules/blog/resources/js/dashboard.ts", "modules/admin/resources/js/main.ts"} {
 		chunk, ok := manifest[name]
 		s.Require().True(ok, "the plugin should build the module entry %s", name)
