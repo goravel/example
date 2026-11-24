@@ -649,12 +649,7 @@ func (s *EventTestSuite) TestListenSliceOfEventValues() {
 	s.False(facades.Event().Dispatch(&listenSliceEventA{}).Failed())
 	s.False(facades.Event().Dispatch(&listenSliceEventB{}).Failed())
 
-	nameOf := func(v any) string {
-		t := reflect.TypeOf(v)
-
-		return t.PkgPath() + "." + t.Name()
-	}
-	s.ElementsMatch([]string{nameOf(listenSliceEventA{}), nameOf(listenSliceEventB{})}, capture.EventNames())
+	s.ElementsMatch([]string{eventTypeName(listenSliceEventA{}), eventTypeName(listenSliceEventB{})}, capture.EventNames())
 }
 
 // TestListenRejectsInvalidRegistrations checks every rejected form returns its
@@ -1031,8 +1026,7 @@ func (s *EventTestSuite) TestFakeRecordsInsteadOfCallingTheListener() {
 
 func (s *EventTestSuite) TestFakeRecordsEventsWithoutListeners() {
 	fake := facades.Event().Fake()
-	// Registrations live for the whole process, so names must stay unique.
-	name := fmt.Sprintf("fake.started%d", eventNameCounter.Add(1))
+	name := s.uniqueName("fake.started")
 
 	s.False(facades.Event().Dispatch(name).Failed())
 
@@ -1046,11 +1040,15 @@ func (s *EventTestSuite) TestFakeOnlyTheGivenEvents() {
 	s.False(facades.Event().Dispatch(events.NewOrderShipped(), []event.Arg{
 		{Type: "string", Value: "shipped"},
 	}).Failed())
-	// OrderCanceled is not faked, so its listener still runs.
+	// OrderCanceled is not faked, so its listener still runs. It runs on the
+	// queue worker on a non-sync connection, hence the wait.
 	s.False(facades.Event().Dispatch(events.NewOrderCanceled(), []event.Arg{
 		{Type: "string", Value: "canceled"},
 	}).Failed())
 
+	s.True(waitUntil(5*time.Second, 20*time.Millisecond, func() bool {
+		return len(listeners.TestResultOfSendShipmentNotification) == 1
+	}))
 	s.Equal([]string{"canceled"}, listeners.TestResultOfSendShipmentNotification)
 	s.True(fake.AssertDispatched(&events.OrderShipped{}))
 	s.True(fake.AssertNotDispatched(&events.OrderCanceled{}))
@@ -1110,6 +1108,9 @@ func (s *EventTestSuite) TestFakeResetRestoresDispatch() {
 		{Type: "string", Value: "second"},
 	}).Failed())
 
+	s.True(waitUntil(5*time.Second, 20*time.Millisecond, func() bool {
+		return len(listeners.TestResultOfSendShipmentNotification) == 1
+	}))
 	s.Equal([]string{"second"}, listeners.TestResultOfSendShipmentNotification)
 	s.True(fake.AssertNothingDispatched())
 }

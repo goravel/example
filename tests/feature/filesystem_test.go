@@ -93,6 +93,9 @@ func (s *FilesystemTestSuite) TestPutAndGet() {
 func (s *FilesystemTestSuite) TestFakeDoesNotWriteIntoTheRealDisk() {
 	disk := facades.Config().GetString("filesystems.default")
 	realRoot := facades.Config().GetString("filesystems.disks." + disk + ".root")
+	if realRoot == "" {
+		s.T().Skip("the default disk has no local root")
+	}
 
 	fake := facades.Storage().Fake()
 	defer func() { s.NoError(fake.Reset()) }()
@@ -148,6 +151,9 @@ func (s *FilesystemTestSuite) TestFakeKeepsTheDiskUrl() {
 func (s *FilesystemTestSuite) TestFakeResetRestoresTheRealDisk() {
 	disk := facades.Config().GetString("filesystems.default")
 	realRoot := facades.Config().GetString("filesystems.disks." + disk + ".root")
+	if realRoot == "" {
+		s.T().Skip("the default disk has no local root")
+	}
 
 	fake := facades.Storage().Fake()
 	fakeRoot := fake.Path("")
