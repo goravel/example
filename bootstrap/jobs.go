@@ -11,5 +11,7 @@ func Jobs() []queue.Job {
 		&jobs.Test{},
 		&jobs.TestErr{},
 		&jobs.TestRetryable{},
+		&jobs.TestUnique{},
+		&jobs.TestUniqueRetryable{},
 	}
 }
