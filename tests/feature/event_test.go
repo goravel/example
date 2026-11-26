@@ -39,6 +39,15 @@ func TestEventTestSuite(t *testing.T) {
 
 func (s *EventTestSuite) SetupTest() {
 	listeners.TestResultOfSendShipmentNotification = nil
+
+	// The Event binding is a singleton, so a fake left enabled by the test
+	// before would record its dispatch instead of calling its listeners.
+	facades.Event().Fake().Reset()
+}
+
+// TearDownTest leaves the fake off for the rest of the process.
+func (s *EventTestSuite) TearDownTest() {
+	facades.Event().Fake().Reset()
 }
 
 func (s *EventTestSuite) TestDispatchBootstrappedEvents() {
@@ -640,12 +649,7 @@ func (s *EventTestSuite) TestListenSliceOfEventValues() {
 	s.False(facades.Event().Dispatch(&listenSliceEventA{}).Failed())
 	s.False(facades.Event().Dispatch(&listenSliceEventB{}).Failed())
 
-	nameOf := func(v any) string {
-		t := reflect.TypeOf(v)
-
-		return t.PkgPath() + "." + t.Name()
-	}
-	s.ElementsMatch([]string{nameOf(listenSliceEventA{}), nameOf(listenSliceEventB{})}, capture.EventNames())
+	s.ElementsMatch([]string{eventTypeName(listenSliceEventA{}), eventTypeName(listenSliceEventB{})}, capture.EventNames())
 }
 
 // TestListenRejectsInvalidRegistrations checks every rejected form returns its
@@ -988,6 +992,129 @@ func (s *EventTestSuite) TestDispatchQueuesAWildcardListenerWithTheMatchedName()
 	s.Equal([]string{matched}, capture.EventNames())
 }
 
+func (s *EventTestSuite) TestFakeRecordsInsteadOfCallingTheListener() {
+	fake := facades.Event().Fake()
+
+	result := facades.Event().Dispatch(events.NewOrderShipped(), []event.Arg{
+		{Type: "string", Value: "A-1"},
+	})
+
+	s.False(result.Failed())
+	// The queued listener runs inline on the sync connection, so an empty
+	// record here means the fake stopped the dispatch before the listeners.
+	s.Empty(listeners.TestResultOfSendShipmentNotification)
+
+	s.True(fake.AssertDispatched(&events.OrderShipped{}))
+	s.True(fake.AssertDispatched((*events.OrderShipped)(nil), func(dispatched event.Dispatched) bool {
+		return dispatched.HasArg("A-1")
+	}))
+	s.False(fake.AssertDispatched(&events.OrderShipped{}, func(dispatched event.Dispatched) bool {
+		return dispatched.HasArg("B-2")
+	}))
+	s.True(fake.AssertDispatchedTimes(&events.OrderShipped{}, 1))
+	s.False(fake.AssertDispatchedTimes(&events.OrderShipped{}, 0))
+	s.True(fake.AssertNotDispatched(&events.OrderCanceled{}))
+	s.False(fake.AssertNothingDispatched())
+
+	dispatched := fake.Dispatched(&events.OrderShipped{})
+	s.Require().Len(dispatched, 1)
+	s.Equal(eventTypeName(events.OrderShipped{}), dispatched[0].Name())
+	s.Equal([]event.Arg{{Type: "string", Value: "A-1"}}, dispatched[0].Args())
+	s.Equal("A-1", dispatched[0].Arg(0))
+	s.Nil(dispatched[0].Arg(1))
+}
+
+func (s *EventTestSuite) TestFakeRecordsEventsWithoutListeners() {
+	fake := facades.Event().Fake()
+	name := s.uniqueName("fake.started")
+
+	s.False(facades.Event().Dispatch(name).Failed())
+
+	s.True(fake.AssertDispatched(name))
+	s.True(fake.AssertDispatchedTimes(name, 1))
+}
+
+func (s *EventTestSuite) TestFakeOnlyTheGivenEvents() {
+	fake := facades.Event().Fake(&events.OrderShipped{})
+
+	s.False(facades.Event().Dispatch(events.NewOrderShipped(), []event.Arg{
+		{Type: "string", Value: "shipped"},
+	}).Failed())
+	// OrderCanceled is not faked, so its listener still runs. It runs on the
+	// queue worker on a non-sync connection, hence the wait.
+	s.False(facades.Event().Dispatch(events.NewOrderCanceled(), []event.Arg{
+		{Type: "string", Value: "canceled"},
+	}).Failed())
+
+	s.True(waitUntil(5*time.Second, 20*time.Millisecond, func() bool {
+		return len(listeners.TestResultOfSendShipmentNotification) == 1
+	}))
+	s.Equal([]string{"canceled"}, listeners.TestResultOfSendShipmentNotification)
+	s.True(fake.AssertDispatched(&events.OrderShipped{}))
+	s.True(fake.AssertNotDispatched(&events.OrderCanceled{}))
+}
+
+func (s *EventTestSuite) TestFakeWildcardMatchesTheEventName() {
+	pattern := reflect.TypeOf(events.OrderShipped{}).PkgPath() + ".*"
+	fake := facades.Event().Fake(pattern)
+
+	s.False(facades.Event().Dispatch(events.NewOrderShipped()).Failed())
+	s.False(facades.Event().Dispatch(events.NewOrderCanceled()).Failed())
+
+	s.Empty(listeners.TestResultOfSendShipmentNotification)
+	s.Len(fake.Dispatched(pattern), 2)
+	s.True(fake.AssertDispatchedTimes(pattern, 2))
+	s.True(fake.AssertDispatchedTimes("*", 2))
+}
+
+func (s *EventTestSuite) TestFakeAssertListening() {
+	fake := facades.Event().Fake()
+
+	// The bootstrapped WithEvents registration mirrors into Listen, so
+	// AssertListening sees it without any dispatch.
+	s.True(fake.AssertListening(&events.OrderShipped{}, "send_shipment_notification"))
+	s.True(fake.AssertListening((*events.OrderShipped)(nil), listeners.NewSendShipmentNotification()))
+	s.True(fake.AssertListening(&events.OrderCanceled{}, "send_shipment_notification"))
+	s.False(fake.AssertListening(&events.OrderShipped{}, "unknown_listener"))
+	s.False(fake.AssertListening(&events.OrderShipped{}, (*listeners.SendShipmentNotification)(nil)))
+}
+
+func (s *EventTestSuite) TestFakeStopsAQueuedListenerFromBeingPushed() {
+	eventFake := facades.Event().Fake()
+	queueFake := facades.Queue().Fake()
+	defer queueFake.Reset()
+
+	s.False(facades.Event().Dispatch(events.NewOrderShipped(), []event.Arg{
+		{Type: "string", Value: "queued"},
+	}).Failed())
+
+	s.True(eventFake.AssertDispatched(&events.OrderShipped{}))
+	s.True(queueFake.AssertNothingPushed())
+	s.Empty(listeners.TestResultOfSendShipmentNotification)
+}
+
+func (s *EventTestSuite) TestFakeResetRestoresDispatch() {
+	fake := facades.Event().Fake()
+	s.False(facades.Event().Dispatch(events.NewOrderShipped(), []event.Arg{
+		{Type: "string", Value: "first"},
+	}).Failed())
+	s.Empty(listeners.TestResultOfSendShipmentNotification)
+
+	fake.Reset()
+
+	s.True(fake.AssertNothingDispatched())
+
+	s.False(facades.Event().Dispatch(events.NewOrderShipped(), []event.Arg{
+		{Type: "string", Value: "second"},
+	}).Failed())
+
+	s.True(waitUntil(5*time.Second, 20*time.Millisecond, func() bool {
+		return len(listeners.TestResultOfSendShipmentNotification) == 1
+	}))
+	s.Equal([]string{"second"}, listeners.TestResultOfSendShipmentNotification)
+	s.True(fake.AssertNothingDispatched())
+}
+
 func (s *EventTestSuite) uniqueName(prefix string) string {
 	return fmt.Sprintf("%s%d", prefix, eventNameCounter.Add(1))
 }
@@ -1196,6 +1323,13 @@ func castString(value any) string {
 	}
 
 	return fmt.Sprintf("%v", value)
+}
+
+// eventTypeName mirrors the framework's event name: the package qualified type.
+func eventTypeName(evt any) string {
+	t := reflect.TypeOf(evt)
+
+	return t.PkgPath() + "." + t.Name()
 }
 
 // waitUntil polls until condition returns true or timeout occurs.
