@@ -12,25 +12,25 @@ import (
 	"goravel/tests"
 )
 
-// ModularTestSuite shows how the framework reads the modules listed in
+// ModuleTestSuite shows how the framework reads the modules listed in
 // bootstrap/modules.go: modules/blog (routes, API routes, config, migrations,
 // views, translations, a Vite entry) and modules/admin, which the blog plugs
 // into through the admin's own capability (see admin_dashboard_test.go).
-type ModularTestSuite struct {
+type ModuleTestSuite struct {
 	suite.Suite
 	tests.TestCase
 }
 
-func TestModularTestSuite(t *testing.T) {
-	suite.Run(t, &ModularTestSuite{})
+func TestModuleTestSuite(t *testing.T) {
+	suite.Run(t, &ModuleTestSuite{})
 }
 
 // The blog's table comes from its Migrations(), run by TestMain's migrate.
-func (s *ModularTestSuite) SetupTest() {
+func (s *ModuleTestSuite) SetupTest() {
 	s.RefreshDatabase()
 }
 
-func (s *ModularTestSuite) TestRegistry() {
+func (s *ModuleTestSuite) TestRegistry() {
 	registry := facades.Module()
 
 	// Registration order of bootstrap/modules.go; neither module declares dependencies.
@@ -68,7 +68,7 @@ func (s *ModularTestSuite) TestRegistry() {
 	s.False(registry.Has("comments"))
 }
 
-func (s *ModularTestSuite) TestConfigAndTranslations() {
+func (s *ModuleTestSuite) TestConfigAndTranslations() {
 	// Config() lands under "modules.<name>".
 	s.Equal(10, facades.Config().GetInt("modules.blog.per_page"))
 	s.Equal("admin", facades.Config().GetString("modules.admin.path"))
@@ -82,7 +82,7 @@ func (s *ModularTestSuite) TestConfigAndTranslations() {
 	s.Equal("Admin", facades.Lang(context.Background()).Get("admin/messages.title"))
 }
 
-func (s *ModularTestSuite) TestModularListCommand() {
+func (s *ModuleTestSuite) TestModuleListCommand() {
 	output, err := s.CaptureArtisanOutput("--no-ansi module:list")
 	s.Require().NoError(err)
 
@@ -95,7 +95,7 @@ func (s *ModularTestSuite) TestModularListCommand() {
 
 // TestViteInputs pins what goravel-vite-plugin builds for the modules: each
 // module's Frontend().Entries joined onto its directory, in module order.
-func (s *ModularTestSuite) TestViteInputs() {
+func (s *ModuleTestSuite) TestViteInputs() {
 	output, err := s.CaptureArtisanOutput("vite:inputs")
 	s.Require().NoError(err)
 
@@ -104,7 +104,7 @@ func (s *ModularTestSuite) TestViteInputs() {
 		`{"name":"blog","path":"modules/blog","entries":["modules/blog/resources/js/dashboard.ts"],"aliases":{}}]`)
 }
 
-func (s *ModularTestSuite) TestBlogApi() {
+func (s *ModuleTestSuite) TestBlogApi() {
 	s.Run("should refuse a post without title and body", func() {
 		resp, err := s.Http(s.T()).Post("/api/blog/posts", strings.NewReader(`{}`))
 		s.Require().NoError(err)
@@ -155,7 +155,7 @@ func (s *ModularTestSuite) TestBlogApi() {
 }
 
 // TestBlogPage renders a module view ("blog/index.tmpl") with a module translation.
-func (s *ModularTestSuite) TestBlogPage() {
+func (s *ModuleTestSuite) TestBlogPage() {
 	s.Require().NoError(facades.Orm().Query().Create(&models.Post{Title: "Hello modules", Body: "First post"}))
 
 	resp, err := s.Http(s.T()).Get("/blog")

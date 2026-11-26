@@ -77,6 +77,14 @@ Laravel！
 
 [routes/api.go](https://github.com/goravel/example/blob/master/routes/api.go#L37)
 
+### 模块
+
+模块在 [bootstrap/modules.go](https://github.com/goravel/example/blob/master/bootstrap/modules.go) 中注册，每个模块在 `modules/<name>` 下维护自己的路由、配置、迁移、视图、翻译和 Vite 入口：
+
+- [modules/blog/module.go](https://github.com/goravel/example/blob/master/modules/blog/module.go)
+- [modules/admin/module.go](https://github.com/goravel/example/blob/master/modules/admin/module.go)
+- [tests/feature/module_test.go](https://github.com/goravel/example/blob/master/tests/feature/module_test.go)
+
 ### GraphQL
 
 ```bash
