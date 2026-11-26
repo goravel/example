@@ -21,6 +21,7 @@ Goravel Example (`github.com/goravel/example`) is the framework example package.
 - Prefer direct value assertions over `mock.MatchedBy`; use it only for dynamically-generated args.
 - Every mock must use `.Once()` or `.Times()`, only use `.Maybe()` when necessary; avoid no-op expectations.
 - Name tests `Test<FunctionName>_[Optional]`; use table style or sub-tests for multiple cases.
+- Event, Queue, Notification and Storage fakes are process-wide singletons: obtain the fake inside each test, `Reset` it in `TearDownTest`, and never leave one enabled across tests.
 - Don't use `assert.*` with `if` statements; use `assert.*` directly for clarity and better failure messages.
 - Use `t.Run()` for sub-tests when testing multiple cases for the same function, and use table-driven tests for multiple cases with similar setup/assertions. Avoid writing separate test functions for each case when they share common logic.
 - The basic table-driven test pattern is:
