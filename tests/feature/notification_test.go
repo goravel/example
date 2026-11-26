@@ -52,6 +52,15 @@ func (s *NotificationTestSuite) SetupTest() {
 
 	afterSendingCalled = false
 	capturedSends = nil
+
+	// The Notification binding is a singleton, so a fake left enabled by the
+	// test before would record sends instead of delivering them.
+	facades.Notification().Fake().Reset()
+}
+
+// TearDownTest leaves the fake off for the rest of the process.
+func (s *NotificationTestSuite) TearDownTest() {
+	facades.Notification().Fake().Reset()
 }
 
 func (s *NotificationTestSuite) TestFacadeResolves() {
@@ -489,6 +498,129 @@ func (s *NotificationTestSuite) TestCommandNotificationsTable() {
 	s.Contains(string(updatedBootstrap), "&migrations.M"+ts+"CreateNotificationsTable{}")
 }
 
+func (s *NotificationTestSuite) TestFakeRecordsInsteadOfDelivering() {
+	user := s.createUser("Bowen", "bowen@example.com")
+	other := s.createUser("Other", "other@example.com")
+	fake := facades.Notification().Fake()
+
+	s.NoError(facades.Notification().Send(user, notifications.NewWelcome("Bowen")))
+
+	// The database channel would have written a row.
+	s.Equal(int64(0), s.notificationCount())
+
+	s.True(fake.AssertCount(1))
+	s.False(fake.AssertNothingSent())
+	s.True(fake.AssertSentTo(user, (*notifications.Welcome)(nil)))
+	s.True(fake.AssertSentTo(user, &notifications.Welcome{}, func(sent notification.Sent) bool {
+		return sent.HasChannel(notification.ChannelDatabase) && !sent.Queued()
+	}))
+	s.False(fake.AssertSentTo(user, &notifications.Welcome{}, func(sent notification.Sent) bool {
+		return sent.Queued()
+	}))
+	s.True(fake.AssertNotSentTo(other, (*notifications.Welcome)(nil)))
+	s.True(fake.AssertNothingSentTo(other))
+	s.True(fake.AssertSentTimes((*notifications.Welcome)(nil), 1))
+
+	sent := fake.Sent((*notifications.Welcome)(nil))
+	s.Require().Len(sent, 1)
+	s.Equal([]string{notification.ChannelDatabase}, sent[0].Channels())
+	s.Equal(user, sent[0].Notifiable())
+	s.IsType(&notifications.Welcome{}, sent[0].Notification())
+}
+
+func (s *NotificationTestSuite) TestFakeRecordsAQueuedNotificationWithoutQueueing() {
+	user := s.createUser("Queued", "queued@example.com")
+	fake := facades.Notification().Fake()
+
+	// OrderProcessed implements ShouldQueue: without the fake the sync
+	// connection would deliver it inline and create the row below.
+	s.NoError(facades.Notification().Send(user, notifications.NewOrderProcessed("42")))
+
+	s.Equal(int64(0), s.notificationCount())
+	s.True(fake.AssertSentTo(user, (*notifications.OrderProcessed)(nil), func(sent notification.Sent) bool {
+		return sent.Queued() && sent.HasChannel(notification.ChannelDatabase)
+	}))
+	s.True(fake.AssertSentTimes((*notifications.OrderProcessed)(nil), 1))
+}
+
+func (s *NotificationTestSuite) TestFakeMatchesAModelLoadedAgain() {
+	user := s.createUser("Reloaded", "reloaded@example.com")
+	fake := facades.Notification().Fake()
+
+	s.NoError(facades.Notification().Send(user, notifications.NewWelcome("reloaded")))
+
+	reloaded := &models.User{}
+	s.Require().NoError(facades.Orm().Query().Find(reloaded, user.ID))
+	s.NotSame(user, reloaded)
+
+	// DatabaseRoutable notifiables are matched by their primary key, so the
+	// reloaded model still matches.
+	s.True(fake.AssertSentTo(reloaded, (*notifications.Welcome)(nil)))
+}
+
+func (s *NotificationTestSuite) TestFakeSentOnDemand() {
+	user := s.createUser("OnDemand", "ondemand@example.com")
+	fake := facades.Notification().Fake()
+
+	s.NoError(facades.Notification().
+		Route(notification.ChannelDatabase, "999").
+		Notify(notifications.NewWelcome("demand")))
+
+	s.Equal(int64(0), s.notificationCount())
+	s.True(fake.AssertSentOnDemand((*notifications.Welcome)(nil)))
+	s.True(fake.AssertSentOnDemand((*notifications.Welcome)(nil), func(sent notification.Sent) bool {
+		return sent.Notifiable().RouteNotificationFor(notification.ChannelDatabase) == "999"
+	}))
+	s.False(fake.AssertSentOnDemand((*notifications.OrderProcessed)(nil)))
+	s.True(fake.AssertNothingSentTo(user))
+}
+
+func (s *NotificationTestSuite) TestFakeSkipsChannelsShouldSendRejects() {
+	user := s.createUser("ShouldSend", "shouldsend@example.com")
+	fake := facades.Notification().Fake()
+
+	// shouldSendNotification is the fixture TestShouldSendSkipsChannel uses.
+	s.NoError(facades.Notification().SendNow(user, &shouldSendNotification{shouldSend: false}))
+
+	// No channel is left, so nothing is recorded and nothing is delivered.
+	s.True(fake.AssertNothingSent())
+	s.Equal(int64(0), s.notificationCount())
+
+	s.NoError(facades.Notification().SendNow(user, &shouldSendNotification{shouldSend: true}))
+
+	s.True(fake.AssertSentTimes((*shouldSendNotification)(nil), 1))
+	s.Equal(int64(0), s.notificationCount())
+}
+
+func (s *NotificationTestSuite) TestFakePreventsMailDelivery() {
+	// No SMTP host is configured for the suite, so an unfaked Send would fail.
+	user := &models.User{Mail: "ana@example.com"}
+	fake := facades.Notification().Fake()
+
+	s.NoError(facades.Notification().Send(user, notifications.NewOrderShipped("fake-1")))
+
+	s.True(fake.AssertSentTo(user, (*notifications.OrderShipped)(nil), func(sent notification.Sent) bool {
+		return sent.HasChannel(notification.ChannelMail) && !sent.Queued()
+	}))
+}
+
+func (s *NotificationTestSuite) TestFakeResetDeliversAgain() {
+	user := s.createUser("Reset", "reset@example.com")
+	fake := facades.Notification().Fake()
+
+	s.NoError(facades.Notification().SendNow(user, notifications.NewWelcome("faked")))
+	s.Equal(int64(0), s.notificationCount())
+
+	fake.Reset()
+
+	s.True(fake.AssertNothingSent())
+
+	s.NoError(facades.Notification().SendNow(user, notifications.NewWelcome("delivered")))
+
+	s.Equal(int64(1), s.notificationCount())
+	s.True(fake.AssertNothingSent())
+}
+
 // mailRecipient skips the test when mail is not configured and resolves the
 // recipient address: MAIL_TO env if set, otherwise the global
 // mail.from.address config.
@@ -502,6 +634,20 @@ func (s *NotificationTestSuite) mailRecipient() string {
 	}
 	s.Require().NotEmpty(mailTo)
 	return mailTo
+}
+
+func (s *NotificationTestSuite) createUser(name, mail string) *models.User {
+	user := &models.User{Name: name, Mail: mail}
+	s.Require().NoError(facades.Orm().Query().Create(user))
+
+	return user
+}
+
+func (s *NotificationTestSuite) notificationCount() int64 {
+	count, err := facades.DB().Table("notifications").Count()
+	s.Require().NoError(err)
+
+	return count
 }
 
 func (s *NotificationTestSuite) uniqueName(prefix string) string {
