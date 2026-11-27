@@ -1,0 +1,6 @@
+body { margin: 0; padding: 24px 32px; font-family: system-ui, sans-serif; color: #1d2433; background: #f6f7f9; }
+h1 { margin: 0 0 24px; font-size: 22px; }
+.admin-widgets { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.admin-card { padding: 16px; background: #fff; border: 1px solid #e3e6ea; border-radius: 8px; }
+.admin-card h3 { margin: 0 0 4px; font-size: 13px; font-weight: 500; color: #687284; }
+.admin-stat { font-size: 30px; font-weight: 600; }

@@ -74,6 +74,14 @@ Covers 18 facades: App, Artisan, Auth, Cache, Config, Crypt, Event, Gate, Grpc, 
 
 [routes/api.go](https://github.com/goravel/example/blob/master/routes/api.go#L37)
 
+### Modules
+
+Modules are registered in [bootstrap/modules.go](https://github.com/goravel/example/blob/master/bootstrap/modules.go). Each one keeps its own routes, config, migrations, views, translations and Vite entries under `modules/<name>`:
+
+- [modules/blog/module.go](https://github.com/goravel/example/blob/master/modules/blog/module.go)
+- [modules/admin/module.go](https://github.com/goravel/example/blob/master/modules/admin/module.go)
+- [tests/feature/module_test.go](https://github.com/goravel/example/blob/master/tests/feature/module_test.go)
+
 ### GraphQL
 
 ```bash

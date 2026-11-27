@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ .title }}</title>
+    {{/* Module dashboard scripts first, the admin's main.ts last. */}}
+    {{ .tags }}
+</head>
+<body>
+    <h1>{{ .title }}</h1>
+    {{/* Each dashboard script appends its card here. */}}
+    <main id="widgets" class="admin-widgets"></main>
+</body>
+</html>
